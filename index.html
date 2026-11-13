@@ -133,6 +133,10 @@ button{transition:transform .12s,background .2s}
 .cm{max-width:82%;padding:7px 12px;border-radius:15px;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
 .cm.me{align-self:flex-end;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;border-bottom-right-radius:5px}
 .cm.th{align-self:flex-start;background:var(--key);border-bottom-left-radius:5px}
+.rx{display:flex;gap:6px;margin-top:10px}
+.rx button{flex:1 1 0;min-width:0;min-height:40px;padding:0;font-size:20px;border-radius:12px;background:var(--key);border:1px solid var(--line)}
+.cm.em{font-size:30px;line-height:1.15;padding:2px 8px;background:transparent}
+.cm.em .cn{font-size:10px}
 #ochatI{flex:1;min-width:0;font:inherit;font-size:14px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--key);color:var(--ink)}
 #ochatI:focus{outline:none;border-color:var(--acc)}
 /* tournament leaderboard + playoffs */
@@ -188,9 +192,6 @@ button{min-height:46px;line-height:1.2}
 #askOk{background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;font-weight:600}
 .gh{cursor:default}
 .cn{display:block;font-size:10px;opacity:.7;margin-top:2px}
-.notes{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:0 0 12px}
-.nt{min-height:34px;padding:0;font-size:13px;border-radius:10px;background:var(--key);border:1px solid var(--line)}
-.nt.x{text-decoration:line-through;opacity:.35}.nt.k{background:var(--bull);color:#06281a;font-weight:700}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
 .stats div{text-align:center;min-width:0}.stats b{display:block;font-size:18px}.stats span{font-size:11px}
 
@@ -212,6 +213,36 @@ button{min-height:46px;line-height:1.2}
 
 #hintrow{display:flex;justify-content:flex-end;margin-bottom:-4px}
 #hint{min-height:32px;padding:6px 14px;font-size:13px;border-radius:999px;background:transparent;border:1px solid var(--line);color:var(--mute)}
+
+/* ===== streak, badges, reminder ===== */
+#streak{padding:14px 16px}
+.stk{display:flex;align-items:center;gap:12px}
+.fl{font-size:34px;line-height:1;flex:none}
+.fl.off{filter:grayscale(1);opacity:.45}
+.stk .sm{flex:1;min-width:0;font-size:16px;font-weight:700;line-height:1.3}
+.stk .sm small{display:block;font-weight:400;font-size:12px;color:var(--mute);margin-top:2px}
+.stk .sm small.warn{color:var(--cow)}
+.days{display:flex;gap:6px;margin-top:14px}
+.dd{flex:1;text-align:center;font-size:10px;font-weight:600;color:var(--mute)}
+.dd i{display:block;width:26px;height:26px;margin:0 auto 5px;border-radius:50%;background:var(--key);border:1px solid var(--line)}
+.dd.on i{background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));border-color:transparent}
+.dd.td i{box-shadow:0 0 0 3px var(--ring,rgba(108,140,255,.2))}
+.bdg{display:flex;align-items:center;gap:12px;padding:10px 0}
+.bdg+.bdg{border-top:1px solid var(--line)}
+.bi{width:44px;height:44px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff))}
+.bdg.lock .bi{background:var(--key);filter:grayscale(1);opacity:.5}
+.bdg .bt{flex:1;min-width:0;font-size:14px;font-weight:700;line-height:1.3}
+.bdg .bt small{display:block;font-weight:400;font-size:12px;color:var(--mute);margin-top:2px}
+.bdg.lock .bt b{color:var(--mute)}
+.bdg .bs{font-size:11px;color:var(--mute);white-space:nowrap;text-align:right}
+.tin{width:100%;font:inherit;font-size:20px;text-align:center;padding:12px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);color-scheme:dark;margin-top:10px}
+.tin:focus{outline:none;border-color:var(--acc)}
+.remrow{display:flex;gap:8px;margin-top:6px}
+.remrow .pill{flex:1;min-height:46px;border-radius:14px}
+#spreq{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(420px,calc(100vw - 24px));z-index:55;background:var(--hdbg,#12172a);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#spreq .sq{display:flex;gap:8px;margin-top:12px}#spreq .sq button{flex:1}
+#spOk{background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;font-weight:600}
+.trow{display:flex;justify-content:space-between;align-items:center;gap:10px}
 </style>
 </head>
 <body>
@@ -220,6 +251,7 @@ button{min-height:46px;line-height:1.2}
   <section id="home">
     <div class="card" id="acct"><button id="burger" class="burger" aria-label="Menu" aria-expanded="false"><i></i><i></i><i></i></button><div class="av" id="av">?</div><div class="at" id="acctText"></div><button class="pill go" id="acctBtn">Sign in</button></div>
     <div class="card" id="pts"></div>
+    <div class="card" id="streak"></div>
     <div class="card">
       <div class="mute">Mode</div>
       <div class="opts" id="mode"></div>
@@ -227,6 +259,7 @@ button{min-height:46px;line-height:1.2}
       <div class="opts" id="dig"></div>
       <div id="fmtwrap"><div class="mute">Match format</div>
       <div class="opts" id="fmt"></div></div>
+      <div id="timedwrap" class="hide"><div class="mute">Clock</div><div class="opts" id="timedopt"></div></div>
       <div id="onlinebox" class="hide"><div id="pins"></div>
       <div class="mute">Friend duel</div>
       <button class="wide" id="ocreate">Create room</button>
@@ -241,6 +274,10 @@ button{min-height:46px;line-height:1.2}
       <div id="menu">
         <button id="openhist">📜 History of games</button>
         <button id="daily">📅 Daily challenge</button>
+        <button id="lbmenu">🌍 Global leaderboard</button>
+        <button id="frmenu">👥 Friends</button>
+        <button id="achmenu">🏅 Achievements</button>
+        <button id="remmenu">🔔 Daily reminder</button>
         <button id="howto">❓ How to play</button>
         <button id="sndbtn"></button>
       </div>
@@ -271,9 +308,11 @@ button{min-height:46px;line-height:1.2}
     </div>
     <div id="play" class="hide">
       <div id="slots"></div>
-      <div class="notes" id="notes"></div><div id="pad"></div>
+      <div id="pad"></div>
     </div>
     <button class="wide hide" id="next">Next round</button>
+    <button class="wide ghost hide" id="share">📤 Share result</button>
+    <button class="wide ghost hide" id="review">🔍 Review my guesses</button>
     <button class="wide ghost hide" id="home2">Back to home</button>
     <button class="wide ghost hide" id="quit">🏳️ Give up</button>
   </section>
@@ -283,7 +322,6 @@ button{min-height:46px;line-height:1.2}
     <div class="card" id="tbody"></div>
     <button class="wide ghost hide" id="tinvite">📨 Invite players</button>
     <button class="wide hide" id="tagain">🔁 Play again with same players</button>
-    <button class="wide ghost" id="tpin">📌 Pin to home screen</button>
     <button class="wide hide" id="tstart">Start tournament</button>
     <button class="wide hide" id="tplay">Play my next match</button>
     <button class="wide hide" id="tshare">📤 Share results</button>
@@ -300,7 +338,7 @@ button{min-height:46px;line-height:1.2}
     <div class="card hide" id="oset"><div class="mute">Digits (next game)</div><div class="opts" id="odig"></div><div class="mute">Tournament</div><div class="opts" id="ofmt" style="margin-bottom:0"></div></div>
     <div id="oplay" class="hide">
       <div id="oslots" style="display:flex;gap:10px;justify-content:center;margin:8px 0 16px"></div>
-      <div class="notes" id="onotes"></div><div id="opad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+      <div id="opad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
     </div>
     <div class="card" id="ochat">
       <button class="pill" id="ochatT" style="width:100%;display:flex;justify-content:space-between;align-items:center;border-radius:12px">
@@ -308,20 +346,32 @@ button{min-height:46px;line-height:1.2}
       </button>
       <div id="ochatBox" class="hide">
         <div id="ochatL"></div>
+        <div class="rx" id="ochatR"></div>
         <div style="display:flex;gap:8px;margin-top:10px">
           <input id="ochatI" maxlength="200" placeholder="Type a message…" autocomplete="off">
           <button class="pill go" id="ochatS">Send</button>
         </div>
       </div>
     </div>
+    <div class="card hide" id="ospec"></div>
     <button class="wide ghost hide" id="onew">New game in this room</button>
     <button class="wide ghost hide" id="ogive">🏳️ Give up this game</button>
     <button class="wide hide" id="oinvite">📨 Invite a friend</button>
-    <button class="wide ghost" id="opin">📌 Pin to home screen</button>
+    <button class="wide ghost" id="opin">➕ Add friend</button>
     <button class="wide ghost" id="oleave">Leave room</button>
+  </section>
+
+  <section id="watch" class="hide">
+    <div class="card" id="winfo"></div>
+    <div class="mute hide" id="wtimer" style="text-align:center"></div>
+    <div id="wlogs" class="hide" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px">
+      <div class="card box" id="wlu"></div><div class="card box" id="wla"></div>
+    </div>
+    <button class="wide ghost" id="wleave">Back to tournament</button>
   </section>
 </main>
 <div id="toast" role="status"></div>
+<div id="spreq" class="hide"><div style="font-weight:700">👀 Let others watch this match?</div><p class="mute" id="spreqP" style="line-height:1.5;margin:6px 0 0"></p><div class="sq"><button class="ghost" id="spNo">Not now</button><button id="spOk">Allow</button></div></div>
 <div id="ask" class="hide">
   <div class="sheetbox">
     <div class="logo">🏳️</div>
@@ -370,7 +420,7 @@ button{min-height:46px;line-height:1.2}
 <script>
 (function(){
   var $=function(i){return document.getElementById(i)};
-  var MAXP=24;
+  var MAXP=24,TLIM={3:90,4:120,5:180};
   var FORMATS=[{n:"Single round",need:1},{n:"Best of 3",need:2},{n:"Best of 5",need:3},{n:"Best of 7",need:4}];
   var LEVELS=[{n:"Newbie",at:0},{n:"Rookie",at:125},{n:"Amateur",at:300},{n:"Skilled",at:550},{n:"Advanced",at:850},{n:"Expert",at:1250},{n:"Elite",at:1750},{n:"Master",at:2400},{n:"Grandmaster",at:3200},{n:"Legend",at:4200}];
   // BOT strength per level (Rookie → Master).
@@ -392,8 +442,8 @@ button{min-height:46px;line-height:1.2}
   // Top levels: BOT also prefers trickier secret numbers (repeated digits) and, from Grandmaster, moves first.
   var TRICKY=[0,0,0,0,0,0,0,0.3,0.5,0.75],FIRST_LVL=8;
   function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick)}
-  var S={mode:"duel",n:3,need:1,score:{u:0,a:0},round:1,starter:"u",next:"u",aSecret:"",cands:[],uT:[],aT:[],cur:"",phase:"home",busy:false,pending:"",rb:-1,rc:-1,cache:{},gid:0,lvl:0,mem:[],pts:load("bot-pts",0),hist:load("bot-hist",[]),pins:load("bot-pins",[]),nick:load("bot-nick",""),open:-1};
+  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"||k==="bot-friends"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends)}
+  var S={mode:"duel",n:3,need:1,score:{u:0,a:0},round:1,starter:"u",next:"u",aSecret:"",cands:[],uT:[],aT:[],cur:"",phase:"home",busy:false,pending:"",rb:-1,rc:-1,cache:{},gid:0,lvl:0,mem:[],pts:load("bot-pts",0),hist:load("bot-hist",[]),pins:load("bot-pins",[]),nick:load("bot-nick",""),open:-1,friends:load("bot-friends",[]),timed:0,deadline:0,lost:false};
 
   function awardPts(dl){
     var b=levelOf(S.pts);S.pts=Math.max(0,S.pts+dl);save("bot-pts",S.pts);
@@ -511,7 +561,7 @@ button{min-height:46px;line-height:1.2}
     h+='<h3>Tournaments (3 to '+MAXP+' players)</h3><ul>'
       +'<li>Up to 6 players: one league, everyone plays everyone once. 7 to 12: two groups. 13 to 24: four groups.</li>'
       +'<li>Playoffs, IPL style: Qualifier 1 (#1 v #2) sends its winner to the Final. Eliminator (#3 v #4). Qualifier 2 is the Qualifier 1 loser v the Eliminator winner.</li>'
-      +'<li>Two groups: top 2 of each group qualify. Four groups: group winners qualify. With 3 players, #1 waits in the Final while #2 v #3 play the Eliminator.</li></ul>';
+      +'<li>Two groups: top 2 of each group qualify. Four groups: group winners qualify. With 3 players, #1 waits in the Final while #2 v #3 play the Eliminator.</li><li>Watch live: once both players in a match allow it, everyone else in the tournament can follow it from the tournament screen.</li></ul>';
     h+='<p class="howto">BOT plays harder with every level. From Master it picks trickier numbers, and from Grandmaster it also moves first.</p>';
     $("infoT").textContent="Points & levels";$("infoBody").innerHTML=h;$("info").classList.remove("hide");
   }
@@ -523,16 +573,16 @@ button{min-height:46px;line-height:1.2}
     var h=S.phase;
     $("home").classList.toggle("hide",h!=="home");
     $("hist").classList.toggle("hide",h!=="hist");
-    $("game").classList.toggle("hide",h==="home"||h==="hist"||h==="online"||h==="tour");$("online").classList.toggle("hide",h!=="online");$("tour").classList.toggle("hide",h!=="tour");
-    if(h==="home")renderHome();else if(h==="hist")renderHist();else if(h==="online")renderOnline();else if(h==="tour")renderTour();else renderGame();
+    $("game").classList.toggle("hide",h==="home"||h==="hist"||h==="online"||h==="tour"||h==="watch");$("online").classList.toggle("hide",h!=="online");$("watch").classList.toggle("hide",h!=="watch");$("tour").classList.toggle("hide",h!=="tour");
+    if(h==="home")renderHome();else if(h==="hist")renderHist();else if(h==="online")renderOnline();else if(h==="tour")renderTour();else if(h==="watch")renderWatch();else renderGame();if(h!=="online")$("spreq").classList.add("hide");
   }
   function renderHome(){
     var l=levelOf(S.pts),cur=LEVELS[l],nx=LEVELS[l+1];
     var pct=nx?Math.round((S.pts-cur.at)/(nx.at-cur.at)*100):100;
     $("pts").innerHTML='<div id="lvl"><span class="mute">Level '+(l+1)+'</span><span class="mute">'+S.pts+' pts</span></div><b style="font-size:22px">'+cur.n+'</b><div class="bar"><i style="width:'+pct+'%"></i></div><div class="mute">'+(nx?(nx.at-S.pts)+' pts to '+nx.n:'Top level')+'</div><button class="pill" id="infoBtn" style="margin-top:12px;min-height:0;padding:7px 14px;font-size:12px">ⓘ Points &amp; levels</button>';
-    $("infoBtn").onclick=openInfo;
+    $("infoBtn").onclick=openInfo;renderStreak();
     opts($("mode"),[{label:"Duel with BOT",v:"duel"},{label:"Solo (just guess)",v:"solo"},{label:"Online (friend)",v:"online"}],function(i){return i.v===S.mode},function(i){S.mode=i.v;if(i.v!=="online"&&S.need<1)S.need=1;render()});
-    $("fmtwrap").classList.toggle("hide",S.mode==="solo");$("start").classList.toggle("hide",S.mode==="online");$("onlinebox").classList.toggle("hide",S.mode!=="online");
+    $("fmtwrap").classList.toggle("hide",S.mode==="solo");$("timedwrap").classList.toggle("hide",S.mode!=="solo");opts($("timedopt"),[{label:"No clock",v:0},{label:"⏱ Timed",v:1}],function(i){return i.v===S.timed},function(i){S.timed=i.v;render()});$("start").classList.toggle("hide",S.mode==="online");$("onlinebox").classList.toggle("hide",S.mode!=="online");
     if(S.mode==="online")renderPins();
     opts($("dig"),[3,4,5].map(function(d){return{label:d+"",v:d}}),function(i){return i.v===S.n},function(i){S.n=i.v;render()});
     opts($("fmt"),(S.mode==="online"?[{n:"Free play",need:0}].concat(FORMATS):FORMATS).map(function(x){return{label:x.n,v:x.need}}),function(i){return i.v===S.need},function(i){S.need=i.v;render()});
@@ -547,6 +597,18 @@ button{min-height:46px;line-height:1.2}
       var b=document.createElement("div");b.className="gh";
       b.innerHTML='<span><b>Game '+(i+1)+'</b> · '+g.n+' digits'+(g.mode==="solo"?' · Solo':'')+'<small>'+d+'</small><small>'+(g.opp?(g.mode==="tour"?"Tournament":"Online")+' · vs '+esc(g.opp):'BOT: '+(g.ln||LEVELS[g.lvl].n)+' · BOT’s number '+g.bot)+'</small></span><b class="'+(g.res==="u"?"u":"a")+'">'+(g.res==="u"?"You won":g.opp?"You lost":"BOT won")+'</b>';
       el.appendChild(b);
+      var rp=!g.opp&&((g.u&&g.u.length)||(g.a&&g.a.length));
+      if(rp){
+        b.style.cursor="pointer";b.setAttribute("role","button");
+        b.onclick=function(){S.open=S.open===i?-1:i;render()};
+        if(S.open===i){
+          b.style.borderRadius="14px 14px 0 0";
+          var d=document.createElement("div");d.className="gd";
+          d.innerHTML='<div>'+list("You",g.u||[],"u",g.n)+'</div>'+(g.mode==="solo"?'':'<div>'+list("BOT",g.a||[],"a",g.n)+'</div>');
+          if(g.mode==="solo")d.style.gridTemplateColumns="1fr";
+          el.appendChild(d);
+        }
+      }
     });
   }
   function renderGame(){
@@ -556,14 +618,16 @@ button{min-height:46px;line-height:1.2}
     $("la").innerHTML=list("BOT’s guesses",S.aT,"a",S.n);
     var solo=S.mode==="solo";
     $("la").classList.toggle("hide",solo);$("logs").style.gridTemplateColumns=solo?"1fr":"1fr 1fr";
-    if(solo)$("score").innerHTML='<span class="u">Solo</span><span class="mute">'+S.n+' digits · '+S.uT.length+' guess'+(S.uT.length===1?"":"es")+'</span><span class="mute">'+S.score.u+' cracked</span>';
+    if(solo)$("score").innerHTML='<span class="u">Solo</span><span class="mute">'+S.n+' digits · '+S.uT.length+' guess'+(S.uT.length===1?"":"es")+(S.deadline?' · ⏱ <span id="tl"></span>':'')+'</span><span class="mute">'+S.score.u+' cracked</span>';
     $("lu").scrollTop=$("lu").scrollHeight;$("la").scrollTop=$("la").scrollHeight;
     $("report").classList.toggle("hide",h!=="report");
     $("play").classList.toggle("hide",h!=="guess");
     $("next").classList.toggle("hide",h!=="between");
     $("hintrow").classList.toggle("hide",!!S.daily||h==="between"||h==="over");
     $("home2").classList.toggle("hide",h!=="between"&&h!=="over");
+    $("share").classList.toggle("hide",(h!=="between"&&h!=="over")||!S.uT.length);
     $("quit").classList.toggle("hide",h==="between"||h==="over");
+    $("review").classList.toggle("hide",!((h==="between"||h==="over")&&S.lost&&S.uT.length));tick();
     if(h==="report"){
       $("bg").textContent=S.pending;
       var nums=function(){var r=[];for(var i=0;i<=S.n;i++)r.push({label:i+"",v:i});return r};
@@ -574,7 +638,7 @@ button{min-height:46px;line-height:1.2}
     if(h==="guess"){
       var sl=$("slots");sl.innerHTML="";
       for(var i=0;i<S.n;i++){var d=document.createElement("div");d.className="slot"+(i===S.cur.length?" on":"");d.textContent=S.cur[i]||"";sl.appendChild(d)}
-      $("go").disabled=!valid(S.cur);mkNotes("notes",SN);
+      $("go").disabled=!valid(S.cur);
     }
   }
 
@@ -587,7 +651,7 @@ button{min-height:46px;line-height:1.2}
   function startRound(){
     var all=allCodes();
     S.gid++;S.lvl=levelOf(S.pts);
-    SN=[];HINT=[];S.aSecret=S.daily?dailySecret():pickSecret(all);S.cands=all;S.uT=[];S.aT=[];S.mem=[];S.cur="";S.rb=-1;S.rc=-1;S.next=S.mode==="solo"?"u":S.starter;S.busy=false;
+    HINT=[];S.aSecret=S.daily?dailySecret():pickSecret(all);S.cands=all;S.uT=[];S.aT=[];S.mem=[];S.cur="";S.rb=-1;S.rc=-1;S.next=S.mode==="solo"?"u":S.starter;S.busy=false;S.lost=false;S.deadline=S.mode==="solo"&&S.timed&&!S.daily?Date.now()+(TLIM[S.n]||120)*1000:0;
     say("");goNext();
   }
   function goNext(){
@@ -602,6 +666,7 @@ button{min-height:46px;line-height:1.2}
   }
   function submitGuess(){
     if(S.phase!=="guess"||!valid(S.cur))return;
+    if(S.uT.some(function(t){return t.g===S.cur})){toast("You already tried "+S.cur);S.cur="";render();return}
     var g=S.cur,k=score(S.aSecret,g);S.cur="";
     S.uT.push({g:g,k:k});
     if(Math.floor(k/(S.n+1))===S.n){endRound("u");return}
@@ -618,16 +683,17 @@ button{min-height:46px;line-height:1.2}
     if(b===n){endRound("a");return}
     S.next="u";say("");goNext();
   }
-  function endRound(w,gaveUp){
+  function endRound(w,gaveUp){var tb=S.deadline?Math.floor(Math.max(0,S.deadline-Date.now())/10000):0;S.deadline=0;S.lost=w==="a";
     sfx(w==="u"?"win":"lose");if(S.daily&&w==="u")dailyDone();S.score[w]++;
     S.hist.push({t:Date.now(),mode:S.mode,n:S.n,res:w,bot:S.aSecret,lvl:S.lvl,ln:LEVELS[S.lvl].n,u:S.uT.slice(),a:S.aT.slice()});
     if(S.hist.length>40)S.hist.shift();
     save("bot-hist",S.hist);
     var win=S.mode!=="solo"&&S.score[w]>=S.need,col=w==="u"?"var(--acc)":"var(--ai)",t,gain=0,before=levelOf(S.pts);
-    if(w==="u"){if(S.mode==="solo")gain=Math.max(5,15*(S.n-2)+10-2*(S.uT.length-1));else{gain=10*(S.n-2);if(win&&S.need>1)gain+=20}}
+    if(w==="u"){if(S.mode==="solo")gain=Math.max(5,15*(S.n-2)+10-2*(S.uT.length-1))+tb;else{gain=10*(S.n-2);if(win&&S.need>1)gain+=20}}
     else if(S.mode!=="solo"){gain=-(gaveUp?10:5)*(S.n-2);if(win&&S.need>1)gain-=10}
     S.pts=Math.max(0,S.pts+gain);save("bot-pts",S.pts);
     var after=levelOf(S.pts);
+    track({won:w==="u",ended:S.mode==="solo"||win,g:(w==="u"&&!gaveUp)?S.uT.length:0,mode:S.mode,n:S.n,lvl:S.lvl,daily:!!S.daily});
     if(win){
       S.phase="over";
       t=w==="u"?(S.need===1?"🎉 You cracked BOT’s number first!":"🏆 You win the match "+S.score.u+"–"+S.score.a+"!"):(S.need===1?"🤖 BOT cracked your number first.":"🤖 BOT wins the match "+S.score.a+"–"+S.score.u+".");
@@ -646,10 +712,10 @@ button{min-height:46px;line-height:1.2}
     if(S.phase==="between"||S.phase==="over"||S.phase==="home")return;
     var pen=10*(S.n-2);
     ask("Give up this round?","You’ll lose "+pen+" points and BOT’s number will be revealed.","Give up",function(){giveUp2(pen)});}
-  function giveUp2(pen){if(S.daily)dailyMark(0);
+  function giveUp2(pen){S.deadline=0;S.lost=true;if(S.daily)dailyMark(0);
     S.gid++;S.busy=false;
     if(S.mode==="solo"){
-      awardPts(-pen);S.phase="between";
+      awardPts(-pen);track({won:false,ended:true,g:0,mode:"solo",n:S.n,lvl:S.lvl,daily:!!S.daily});S.phase="between";
       say("🏳️ You gave up. BOT’s number was "+S.aSecret+". −"+pen+" pts.","var(--cow)");render();return;
     }
     endRound("a",true);
@@ -657,12 +723,63 @@ button{min-height:46px;line-height:1.2}
   function goHome(){S.gid++;S.phase="home";S.busy=false;say("");render()}
   function nextRound(){S.round++;S.starter=S.starter==="u"?"a":"u";startRound()}
 
+
+  function holdBtn(b,tap,clr){var t,f=0;b.onpointerdown=function(){f=0;t=setTimeout(function(){f=1;clr()},450)};b.onpointerup=b.onpointerleave=b.onpointercancel=function(){clearTimeout(t)};b.onclick=function(){if(f){f=0;return}tap()};b.oncontextmenu=function(e){e.preventDefault()}}
+  function tick(){var e=$("tl");if(!e||!S.deadline)return;var l=Math.max(0,Math.ceil((S.deadline-Date.now())/1000));e.textContent=Math.floor(l/60)+":"+lp(l%60);e.style.color=l<=15?"var(--cow)":""}
+  function timeUp(){
+    S.deadline=0;S.gid++;S.busy=false;S.lost=true;var pen=5*(S.n-2);
+    awardPts(-pen);track({won:false,ended:true,g:0,mode:"solo",n:S.n,lvl:S.lvl,daily:false});sfx("lose");S.phase="between";
+    say("⏱ Time’s up! BOT’s number was "+S.aSecret+". −"+pen+" pts.","var(--cow)");render();
+  }
+  setInterval(function(){if(S.deadline&&S.phase==="guess"){if(Date.now()>=S.deadline)timeUp();else tick()}},250);
+  // Post-game review: for each of your guesses, how many codes were still possible and what a sharper guess would have left.
+  function openReview(){
+    var n=S.n,all=allCodes(),cs=all,h="",bad=0;
+    function worst(g,sm){var c={},w=0;sm.forEach(function(x){var k=score(x,g);c[k]=(c[k]||0)+1;if(c[k]>w)w=c[k]});return Math.round(w*cs.length/sm.length)}
+    S.uT.forEach(function(t,i){
+      var sm=sample(cs,400),pool=cs.length<=2?cs.slice():sample(cs,150).concat(sample(all,150));
+      if(i===0&&n>=4)pool.push("0123456789".slice(0,n));
+      var bg=pool[0],bw=1e9;pool.forEach(function(g){var w=worst(g,sm);if(w<bw){bw=w;bg=g}});
+      var aw=worst(t.g,sm),imp=cs.indexOf(t.g)<0,left=cs.filter(function(x){return score(x,t.g)===t.k}),weak=imp||aw>bw*1.5+1;
+      h+='<div class="row" style="display:block"><b>Guess '+(i+1)+': <span class="g" style="font-size:16px">'+t.g+'</span></b> <span class="mute">'+cs.length+' possible → '+left.length+' left</span>'
+        +(weak?'<div class="mute" style="margin-top:4px;line-height:1.5">'+(imp?'This couldn’t be the answer, given your earlier clues. ':'')+'A sharper pick: <b style="color:var(--acc)">'+bg+'</b>, which leaves about '+Math.max(1,bw)+' or fewer in the worst case (yours could leave '+aw+').</div>':'<div class="mute" style="margin-top:4px">✓ Solid guess</div>')+'</div>';
+      if(weak)bad++;cs=left;
+    });
+    $("infoT").textContent="Review · BOT’s number was "+S.aSecret;
+    $("infoBody").innerHTML='<p class="mute" style="margin:0 0 6px;line-height:1.5">'+(bad?bad+" of your "+S.uT.length+" guess"+(S.uT.length===1?"":"es")+" could have narrowed things down faster.":"Your guesses were all solid. Sometimes it just comes down to luck.")+'</p>'+h;
+    $("info").classList.remove("hide");
+  }
+  $("review").onclick=openReview;
+  var DT_N=[3,4,4,5,5],DT_NAME=["Easy","Medium","Hard","Expert","Insane"];
+  function dailyT(l){return l>=8?4:l>=6?3:l>=4?2:l>=2?1:0}
+  function dailyN(l){return DT_N[dailyT(l)]}
+  // Friends: add from an online game, then play any time with no code. Each pair shares one permanent room.
+  function isFriend(u){return S.friends.some(function(f){return f.uid===u})}
+  function addFriend(u,n){if(!u||isFriend(u))return;S.friends.push({uid:u,name:n||"Friend"});save("bot-friends",S.friends);toast((n||"Friend")+" added to friends");if(S.phase==="home")renderPins()}
+  function friendCode(a,b){var s=[a,b].sort().join("|"),h=5381,g=2166136261,i;for(i=0;i<s.length;i++){h=(Math.imul(h,33)^s.charCodeAt(i))>>>0;g=Math.imul(g^s.charCodeAt(i),16777619)>>>0}return"F"+h.toString(36)+g.toString(36)}
+  function friendPlay(f){
+    if(needIn())return;
+    var code=friendCode(S.user.uid,f.uid),dbx=window.botCloud.db;
+    dbx.get("rooms",code).then(function(ex){
+      if(ex)return joinRoom(code);
+      return dbx.set("rooms",code,{n:S.n,need:S.need,nextN:null,fr:{},host:{uid:S.user.uid,name:nm()},guest:{uid:f.uid,name:f.name},status:"secrets",ready:{host:false,guest:false},turn:"host",starter:"host",wins:{host:0,guest:0},guesses:{},winner:null,created:Date.now()}).then(function(){enterRoom(code,"host")});
+    }).catch(oerr);
+  }
+  function openLB(){
+    if(needIn())return;
+    $("infoT").textContent="🌍 Global leaderboard";$("infoBody").innerHTML='<div class="mute">Loading…</div>';$("info").classList.remove("hide");
+    var done=function(rows){$("infoBody").innerHTML=rows.length?rows.map(function(x,i){return'<div class="lb'+(S.user&&x.uid===S.user.uid?' me':'')+'"><span class="rk'+(i<3?' p'+(i+1):'')+'">'+(i+1)+'</span><span class="nm">'+esc(x.name||"?")+'<small>'+LEVELS[levelOf(x.pts||0)].n+'</small></span><span class="st">'+(x.pts||0)+' pts</span></div>'}).join(""):'<p class="mute">No scores yet. Play a game to get on the board.</p>'};
+    if(window.botCloud.db.leaders)window.botCloud.db.leaders().then(done).catch(function(){done([])});else done([]);
+  }
+  $("lbmenu").onclick=openLB;
+  $("frmenu").onclick=function(){S.mode="online";S.phase="home";render()};
+
   function press(d){if(S.phase!=="guess"||S.cur.length>=S.n)return;S.cur+=d;render()}
   function back(){if(S.phase!=="guess")return;S.cur=S.cur.slice(0,-1);render()}
 
   var pad=$("pad");
   for(var d=1;d<=9;d++){(function(d){var b=document.createElement("button");b.textContent=d;b.onclick=function(){press(String(d))};pad.appendChild(b)})(d)}
-  var bk=document.createElement("button");bk.textContent="⌫";bk.onclick=back;pad.appendChild(bk);
+  var bk=document.createElement("button");bk.textContent="⌫";holdBtn(bk,back,function(){if(S.phase==="guess"){S.cur="";render()}});pad.appendChild(bk);
   var z=document.createElement("button");z.textContent="0";z.onclick=function(){press("0")};pad.appendChild(z);
   var go=document.createElement("button");go.id="go";go.textContent="Guess";go.onclick=submitGuess;pad.appendChild(go);
 
@@ -715,7 +832,9 @@ button{min-height:46px;line-height:1.2}
     var ps={};S.pins.forEach(function(x){ps[(x.kind||"room")+x.code]=1});
     (d.pins||[]).forEach(function(x){if(!ps[(x.kind||"room")+x.code])S.pins.push(x)});
     try{localStorage.setItem("bot-pins",JSON.stringify(S.pins))}catch(e){}
-    if(window.botCloud)window.botCloud.save(S.pts,S.hist,S.pins,S.nick);
+    var fs={};S.friends.forEach(function(x){fs[x.uid]=1});(d.friends||[]).forEach(function(x){if(!fs[x.uid])S.friends.push(x)});
+    try{localStorage.setItem("bot-friends",JSON.stringify(S.friends))}catch(e){}
+    if(window.botCloud)window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends);
     if(!S.nick)openName();
     render();tryInvite();
   };
@@ -727,7 +846,7 @@ button{min-height:46px;line-height:1.2}
   function oerr(e){alert(((e&&e.message)||"Something went wrong.")+"\n\n[code: "+((e&&e.code)||"n/a")+" | project: "+((window.botCloud&&window.botCloud.pid)||"?")+" | signed in: "+(S.user?"yes ("+String(S.user.uid).slice(0,6)+")":"no")+"]")}
   function enterRoom(code,role){
     O={code:code,role:role,room:null,secret:"",cur:"",locked:false,unsub:null,done:false,ans:{},chatOpen:false,seen:0};
-    S.phase="online";ON=[];
+    S.phase="online";
     O.unsub=window.botCloud.room.watch(code,onRoom);
     render();
   }
@@ -735,6 +854,9 @@ button{min-height:46px;line-height:1.2}
   function onRoom(r){
     if(!r){if(S.phase==="online")alert("The room no longer exists.");leave();return}
     O.room=r;S.n=r.n;O.tid=r.tid||"";
+    if(r.tid&&T.data&&T.id===r.tid){var wl=shared(r)&&r.status!=="done",cl0=(T.data.live||{})[r.mid]===true;if(wl!==cl0&&O.lw!==wl){O.lw=wl;var lp={};lp["live."+r.mid]=wl;window.botCloud.db.update("tournaments",r.tid,lp).catch(function(){})}}
+    var fo=r[O.role==="host"?"guest":"host"];
+    if(fo&&r.fr&&r.fr[O.role==="host"?"guest":"host"]&&!isFriend(fo.uid)&&!O.frAsked){O.frAsked=1;ask("Friend request",fo.name+" added you as a friend. Add them back so you can play without codes?","Add friend",function(){addFriend(fo.uid,fo.name)})}
     var wasPlaying=O.prev==="playing";O.prev=r.status;
     if(r.status==="secrets"&&O.locked&&!(r.ready&&r.ready[O.role])){O.locked=false;O.secret="";O.cur="";O.ans={};O.done=false}
     var cl=window.botCloud.room,gs=r.guesses||{};
@@ -756,7 +878,7 @@ button{min-height:46px;line-height:1.2}
       O.reported=true;
       var rp={},gc=0,gx=r.guesses||{};
       Object.keys(gx).forEach(function(i){if(gx[i].by===r.winner)gc++});
-      if(/^\d+$/.test(String(r.mid))){rp["m."+r.mid+".winner"]=r[r.winner].uid;rp["m."+r.mid+".gu"]=r.gaveUp?12:gc}
+      rp["live."+r.mid]=false;if(/^\d+$/.test(String(r.mid))){rp["m."+r.mid+".winner"]=r[r.winner].uid;rp["m."+r.mid+".gu"]=r.gaveUp?12:gc}
       else rp["p."+r.mid+".winner"]=r[r.winner].uid;
       window.botCloud.db.update("tournaments",r.tid,rp).catch(oerr);
     }
@@ -768,6 +890,10 @@ button{min-height:46px;line-height:1.2}
         var nd=r.need||0,ww=r.wins||{};
         if(nd>0&&((ww.host||0)>=nd||(ww.guest||0)>=nd))dp+=r.winner===O.role?20:-10;
         awardPts(dp);
+      }
+      if(wasPlaying){
+        var tkW=r.winner===O.role,tkN=r.need||0,tkS=r.wins||{},tkG=Object.keys(r.guesses||{}).filter(function(i){return r.guesses[i].by===O.role}).length;
+        track({won:tkW,ended:tkN<1||(tkS.host||0)>=tkN||(tkS.guest||0)>=tkN,g:(tkW&&!r.gaveUp)?tkG:0,mode:"online",n:S.n,lvl:0,daily:false});
       }
     }
     render();
@@ -788,7 +914,7 @@ button{min-height:46px;line-height:1.2}
     if(r.tid&&r.status==="done")msg=(r.winner===O.role?"🎉 You won this match!":"😅 You lost this match.")+" Go back to the tournament to see the standings.";
     if(r.status==="done"&&over)msg+=mw>=need?" 🏆 You win the tournament "+mw+"–"+ow+"! +20 bonus.":" 🥈 "+on+" wins the tournament "+ow+"–"+mw+". −10 bonus.";
     if(r.status==="playing"&&!O.secret)msg="Your secret number was lost after a reload. Start a new game to continue.";
-    info.innerHTML=(r.tid?'<div class="mute">Tournament match · '+(/^\d+$/.test(String(r.mid))?'Round '+esc(r.round):esc(r.round))+'</div>':'<div class="mute">Room code</div><div style="font-size:30px;font-weight:800;letter-spacing:6px">'+esc(O.code)+'</div>'+series)+'<div style="margin-top:8px;font-weight:600;font-size:14px">'+msg+'</div>';
+    info.innerHTML=(r.tid?'<div class="mute">Tournament match · '+(/^\d+$/.test(String(r.mid))?'Round '+esc(r.round):esc(r.round))+'</div>':O.code.length>5?'<div class="mute">Friend game · '+on+'</div>'+series:'<div class="mute">Room code</div><div style="font-size:30px;font-weight:800;letter-spacing:6px">'+esc(O.code)+'</div>'+series)+'<div style="margin-top:8px;font-weight:600;font-size:14px">'+msg+'</div>';
     $("olu").innerHTML=list("You → "+on,mine,"u",S.n);
     $("ola").innerHTML=list(on+" → you",theirs,"a",S.n);
     var show=(r.status==="secrets"&&!O.locked)||(r.status==="playing"&&r.turn===O.role&&!!O.secret);
@@ -802,16 +928,16 @@ button{min-height:46px;line-height:1.2}
       opts($("odig"),[3,4,5].map(function(d){return{label:d+"",v:d}}),function(i){return i.v===cd},function(i){window.botCloud.room.update(O.code,r.status==="lobby"?{n:i.v}:{nextN:i.v}).catch(oerr)});
       opts($("ofmt"),[{n:"Free play",need:0}].concat(FORMATS).map(function(x){return{label:x.n,v:x.need}}),function(i){return i.v===need},function(i){window.botCloud.room.update(O.code,{need:i.v}).catch(oerr)});
     }
-    $("opin").textContent=isPinned(O.code)?"📌 Pinned · tap to unpin":"📌 Pin to home screen";
-    $("opin").classList.toggle("hide",!!r.tid);$("oinvite").classList.toggle("hide",!(r.status==="lobby"&&!r.tid));$("oleave").textContent=r.tid?"Back to tournament":"Leave room";
+    var isF=!!o&&isFriend(o.uid);$("opin").textContent=isF?"✓ Friends":"➕ Add friend";$("opin").disabled=isF;$("opin").classList.toggle("hide",!o);
+    $("oinvite").classList.toggle("hide",!(r.status==="lobby"&&!r.tid));$("oleave").textContent=r.tid?"Back to tournament":"Leave room";
     play.classList.toggle("hide",!show);
     if(show){
       var sl=$("oslots");sl.innerHTML="";
       for(var i=0;i<S.n;i++){var d2=document.createElement("div");d2.className="slot"+(i===O.cur.length?" on":"");d2.textContent=O.cur[i]||"";sl.appendChild(d2)}
       $("ogo").textContent=r.status==="secrets"?"Lock in":"Guess";
-      $("ogo").disabled=!valid(O.cur);mkNotes("onotes",ON);
+      $("ogo").disabled=!valid(O.cur);
     }
-    renderChat(r);
+    renderChat(r);renderShare(r);
   }
   // ===== Chat with the player in this room (works in friend games and tournament matches) =====
   function renderChat(r){
@@ -825,15 +951,16 @@ button{min-height:46px;line-height:1.2}
     $("ochatBox").classList.toggle("hide",!O.chatOpen);
     if(!O.chatOpen)return;
     var L=$("ochatL"),stick=L.scrollTop+L.clientHeight>=L.scrollHeight-40;
-    L.innerHTML=ks.length?ks.slice(-60).map(function(k){var m=msgs[k];return'<div class="cm '+(m.by===O.role?"me":"th")+'">'+esc(m.x||"")+'<small class="cn">'+esc((r[m.by]&&r[m.by].name)||"")+'</small></div>'}).join(""):'<div class="mute" style="text-align:center;padding:6px 0">No messages yet. Say hi 👋</div>';
+    L.innerHTML=ks.length?ks.slice(-60).map(function(k){var m=msgs[k];return'<div class="cm '+(m.by===O.role?"me":"th")+(EMO.test(m.x||"")?" em":"")+'">'+esc(m.x||"")+'<small class="cn">'+esc((r[m.by]&&r[m.by].name)||"")+'</small></div>'}).join(""):'<div class="mute" style="text-align:center;padding:6px 0">No messages yet. Say hi 👋</div>';
     if(stick)L.scrollTop=L.scrollHeight;
   }
-  function sendChat(){
-    var inp=$("ochatI"),t=inp.value.trim().slice(0,200);
+  var EMO=/^(?:[\u2190-\u2BFF\u{1F000}-\u{1FFFF}\uFE0F\u200D]\s*){1,6}$/u,REACT=["👍","😂","😮","🔥","👏","😢","🤔","🎉"],lastRx=0;
+  REACT.forEach(function(e){var b=document.createElement("button");b.textContent=e;b.setAttribute("aria-label","React "+e);b.onclick=function(){if(Date.now()-lastRx<500)return;lastRx=Date.now();postChat(e)};$("ochatR").appendChild(b)});
+  function sendChat(){var inp=$("ochatI"),t=inp.value.trim().slice(0,200);if(!t)return;inp.value="";postChat(t)}
+  function postChat(t){
     if(!t||!O.room||!window.botCloud)return;
     if(Object.keys(O.room.chat||{}).length>=300){alert("The chat in this room is full.");return}
     var p={};p["chat."+Date.now()+"_"+O.role]={by:O.role,x:t};
-    inp.value="";
     window.botCloud.room.update(O.code,p).catch(oerr);
   }
   $("ochatT").onclick=function(){
@@ -852,7 +979,8 @@ button{min-height:46px;line-height:1.2}
       O.secret=O.cur;try{localStorage.setItem("bot-sec-"+O.code,O.secret)}catch(e){}O.locked=true;O.cur="";p["ready."+O.role]=true;cl.update(O.code,p).catch(oerr);renderOnline();return;
     }
     if(r.status==="playing"&&r.turn===O.role){
-      var idx=Object.keys(r.guesses||{}).length;
+      var gsx=r.guesses||{},idx=Object.keys(gsx).length;
+      if(Object.keys(gsx).some(function(i){return gsx[i].by===O.role&&gsx[i].g===O.cur})){toast("You already tried "+O.cur);O.cur="";renderOnline();return}
       p["guesses."+idx]={by:O.role,g:O.cur,k:null};
       p.turn=O.role==="host"?"guest":"host";p.turnAt=Date.now();
       O.cur="";cl.update(O.code,p).catch(oerr);renderOnline();
@@ -860,7 +988,7 @@ button{min-height:46px;line-height:1.2}
   }
   var opd=$("opad");
   for(var q=1;q<=9;q++){(function(q){var b=document.createElement("button");b.textContent=q;b.onclick=function(){opress(String(q))};opd.appendChild(b)})(q)}
-  var obk=document.createElement("button");obk.textContent="⌫";obk.onclick=oback;opd.appendChild(obk);
+  var obk=document.createElement("button");obk.textContent="⌫";holdBtn(obk,oback,function(){O.cur="";renderOnline()});opd.appendChild(obk);
   var oz=document.createElement("button");oz.textContent="0";oz.onclick=function(){opress("0")};opd.appendChild(oz);
   var ogb=document.createElement("button");ogb.id="ogo";ogb.textContent="Guess";ogb.onclick=ogoFn;opd.appendChild(ogb);
   // ===== Multi-player tournament (round robin). Each match is a normal online room. =====
@@ -1002,7 +1130,7 @@ button{min-height:46px;line-height:1.2}
     }
     render();
   }
-  function leaveTour(){if(T.unsub)T.unsub();T.unsub=null;T.id="";S.phase="home";render()}
+  function leaveTour(){watchStop();if(T.unsub)T.unsub();T.unsub=null;T.id="";S.phase="home";render()}
   function renderTour(){
     var d=T.data,info=$("tinfo"),body=$("tbody");
     var show=function(id,v){$(id).classList.toggle("hide",!v)};
@@ -1020,6 +1148,7 @@ button{min-height:46px;line-height:1.2}
       else if(!isOrg)h+='<p class="mute" style="margin:12px 0 0">Waiting for the host…</p>';
     }else{
       ov=overall(d);ld=leagueDone(d);sg=stagesOf(d);
+      if(d.status==="running")h+=liveHtml(d,me,hd,nmOf);
       var rowHtml=function(r,medal,cls,pts){
         var u=r.uid,x=r.x,ps=playerStatus(d,u,sg,ld,ov);
         var right=pts!==null?'<span style="color:var(--'+(pts>=0?'bull':'cow')+')">'+(pts>=0?'+':'−')+Math.abs(pts)+' pts</span>':x.w+'W – '+x.l+'L';
@@ -1065,7 +1194,7 @@ button{min-height:46px;line-height:1.2}
     }
     T.next=nx;
     show("tstart",d.status==="lobby"&&isOrg&&P>=3);
-    show("tplay",!!nx);show("tinvite",d.status==="lobby");show("tagain",d.status==="done"&&isOrg);$("tpin").textContent=isPinned(T.id,"tour")?"📌 Pinned · tap to unpin":"📌 Pin to home screen";show("tshare",d.status==="done");show("tquit",d.status==="lobby"&&!isOrg);
+    show("tplay",!!nx);show("tinvite",d.status==="lobby");show("tagain",d.status==="done"&&isOrg);show("tshare",d.status==="done");show("tquit",d.status==="lobby"&&!isOrg);
     if(nx)$("tplay").textContent="Play vs "+(d.players[nx.a===me?nx.b:nx.a]||{}).name+" · "+nx.label;
     if(d.status==="running"&&!nx){
       var mine2=ov.length?playerStatus(d,me,sg,ld,ov):{out:false};
@@ -1112,13 +1241,88 @@ button{min-height:46px;line-height:1.2}
     Promise.all(ps).then(function(){return window.botCloud.db.update("tournaments",T.id,upd)}).catch(oerr);
   };
   $("tplay").onclick=function(){var x=T.next;if(!x)return;if(x.stage&&T.data)ensureRoom(T.data,x.stage).then(function(){joinRoom(x.room)}).catch(oerr);else joinRoom(x.room)};
+  // ===== Watch live: others in the tournament can follow a match once BOTH of its players allow it =====
+  var W={code:"",room:null,unsub:null,joined:false};
+  function shared(r){return !!(r&&r.wa&&r.wa.host===true&&r.wa.guest===true)}
+  function liveMatches(d,me){
+    var L=d.live||{},out=[],many=groupsOf(d).length>1;
+    Object.keys(d.m||{}).forEach(function(k){var m=d.m[k];if(L[k]===true&&!m.winner&&m.a!==me&&m.b!==me)out.push({key:k,a:m.a,b:m.b,room:m.room,label:"Round "+m.round+(many?" · "+gname(m.g):"")})});
+    stagesOf(d).forEach(function(x){if(L[x.key]===true&&!x.winner&&x.a&&x.b&&x.a!==me&&x.b!==me)out.push({key:x.key,a:x.a,b:x.b,room:x.room,label:x.label})});
+    return out;
+  }
+  function liveHtml(d,me,hd,nmOf){
+    var lv=liveMatches(d,me);if(!lv.length)return"";
+    return'<div style="margin-bottom:18px">'+hd+'👀 Watch live</div>'+lv.map(function(x){return'<div class="row"><span>'+nmOf(x.a)+' vs '+nmOf(x.b)+'<small class="mute" style="display:block">'+x.label+'</small></span><button class="pill" data-watch="'+x.key+'" style="min-height:34px;padding:6px 14px;font-size:13px">Watch</button></div>'}).join("")+'</div>';
+  }
+  function setWa(v){if(!O.room||!O.code||!window.botCloud)return;var p={};p["wa."+O.role]=v;window.botCloud.room.update(O.code,p).catch(oerr)}
+  function renderShare(r){
+    var rq=$("spreq"),card=$("ospec"),side=O.role,opp=side==="host"?"guest":"host",wa=r.wa||{},mine=wa[side],theirs=wa[opp],
+        on=!!r.tid&&r.status!=="done"&&r.status!=="lobby",oname=esc((r[opp]||{}).name||"your opponent");
+    rq.classList.toggle("hide",!(on&&mine==null));card.classList.toggle("hide",!on);
+    if(!on)return;
+    $("spreqP").textContent="Everyone else in the tournament could follow this match live and see both players’ guesses and results, never your secret number. It only turns on if "+((r[opp]||{}).name||"your opponent")+" agrees too.";
+    var st=shared(r)?'<b style="color:var(--bull)">On</b> · both of you agreed':mine===true?(theirs===false?'Off · '+oname+' said no':'Waiting for '+oname+' to agree'):'Off',
+        vw=Object.keys(r.viewers||{}).map(function(u){return esc(r.viewers[u])});
+    card.innerHTML='<div class="trow"><div><b>👀 Let others watch</b><div class="mute" style="margin-top:2px">'+st+'</div></div><button class="pill" id="spTog">'+(mine===true?"Stop sharing":"Share match")+'</button></div>'+(shared(r)&&vw.length?'<div class="mute" style="margin-top:8px">Watching now: '+vw.join(", ")+'</div>':'');
+    $("spTog").onclick=function(){setWa(mine!==true)};
+  }
+  $("spOk").onclick=function(){setWa(true)};$("spNo").onclick=function(){setWa(false)};
+  function watchOpen(x){
+    if(needIn())return;
+    var me=S.user.uid;if(x.a===me||x.b===me)return;
+    watchStop();
+    W={code:x.room,room:null,unsub:null,joined:false};
+    S.phase="watch";
+    W.unsub=window.botCloud.room.watch(x.room,onWatch);
+    render();
+  }
+  function watchStop(){
+    var me=S.user&&S.user.uid;
+    if(W.unsub)W.unsub();W.unsub=null;
+    if(W.joined&&me&&W.code&&window.botCloud)window.botCloud.db.del("rooms",W.code,"viewers."+me).catch(function(){});
+    W.joined=false;W.room=null;W.code="";
+  }
+  function watchLeave(){watchStop();S.phase=T.id?"tour":"home";render()}
+  function onWatch(r){
+    if(!r){toast("That match is no longer available");watchLeave();return}
+    W.room=r;
+    if(shared(r)&&!W.joined&&S.user){W.joined=true;var p={};p["viewers."+S.user.uid]=nm();window.botCloud.room.update(W.code,p).catch(function(){})}
+    render();
+  }
+  function renderWatch(){
+    var r=W.room,info=$("winfo"),logs=$("wlogs"),tm=$("wtimer");
+    if(!r){info.innerHTML='<div class="mute">Connecting…</div>';logs.classList.add("hide");tm.classList.add("hide");return}
+    var hn=esc((r.host||{}).name||"?"),gn=esc((r.guest||{}).name||"?"),wa=r.wa||{},
+        head='<div class="mute">Live match · '+(/^\d+$/.test(String(r.mid))?"Round "+esc(r.round):esc(r.round))+' · '+r.n+' digits</div><div style="font-size:20px;font-weight:800;margin-top:4px">'+hn+' <span class="mute">vs</span> '+gn+'</div>',msg;
+    if(!shared(r)){
+      msg=r.status==="done"?"This match wasn’t shared.":(wa.host===false||wa.guest===false)?"A player has turned watching off for this match.":"Waiting for both players to allow watching…";
+      info.innerHTML=head+'<div style="margin-top:8px;font-weight:600;font-size:14px">'+msg+'</div>';
+      logs.classList.add("hide");tm.classList.add("hide");return;
+    }
+    var gs=r.guesses||{},H=[],G=[];
+    Object.keys(gs).map(Number).sort(function(a,b){return a-b}).forEach(function(i){var x=gs[i];(x.by==="host"?H:G).push({g:x.g,k:x.k==null?null:x.k})});
+    if(r.status==="secrets")msg="Players are choosing their secret numbers…";
+    else if(r.status==="playing"){var th=r.turn==="host";msg=(th?hn:gn)+" is guessing "+(th?gn:hn)+"’s number…"}
+    else if(r.winner){var wn=r.winner==="host"?hn:gn,ln=r.winner==="host"?gn:hn;msg=r.gaveUp?"🏳️ "+ln+" ran out of time or gave up. "+wn+" wins!":"🏆 "+wn+" cracked "+ln+"’s number!"}
+    else msg="Waiting to start…";
+    var nv=Object.keys(r.viewers||{}).length;
+    info.innerHTML=head+'<div style="margin-top:8px;font-weight:600;font-size:14px">'+msg+'</div>'+(nv?'<div class="mute" style="margin-top:6px">👀 '+nv+' watching</div>':'');
+    logs.classList.remove("hide");
+    $("wlu").innerHTML=list(hn+" → "+gn,H,"u",r.n);
+    $("wla").innerHTML=list(gn+" → "+hn,G,"a",r.n);
+  }
+  $("wleave").onclick=watchLeave;
+  setInterval(function(){
+    var r=W.room,t=$("wtimer");
+    if(S.phase!=="watch"||!r||!shared(r)||r.status!=="playing"||!r.turnAt){t.classList.add("hide");return}
+    t.textContent="⏱ "+Math.max(0,Math.ceil((r.turnAt+TURN_MS-Date.now())/1000))+"s left for this guess";t.classList.remove("hide");
+  },1000);
   var askCb=null;
   function ask(t,p,ok,cb){$("askT").textContent=t;$("askP").textContent=p;$("askOk").textContent=ok;askCb=cb;$("ask").classList.remove("hide")}
   $("askNo").onclick=function(){askCb=null;$("ask").classList.add("hide")};
   $("ask").onclick=function(e){if(e.target===this)$("askNo").onclick()};
   $("askOk").onclick=function(){var f=askCb;askCb=null;$("ask").classList.add("hide");if(f)f()};
-  var SN=[],ON=[],TURN_MS=60000,NT=["","x","k"];
-  function mkNotes(id,arr){var el=$(id);el.innerHTML="";for(var i=0;i<10;i++)(function(i){var b=document.createElement("button");b.className="nt "+(arr[i]||"");b.textContent=i;b.onclick=function(){arr[i]=NT[(NT.indexOf(arr[i]||"")+1)%3];mkNotes(id,arr)};el.appendChild(b)})(i)}
+  var TURN_MS=60000;
   function statsHtml(){
     if(!S.hist.length)return"";
     var h=S.hist.filter(function(g){return g.mode!=="solo"}),w=h.filter(function(g){return g.res==="u"}),run=0,best=0,cur=0,i;
@@ -1191,27 +1395,37 @@ button{min-height:46px;line-height:1.2}
   $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
-  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Use the 0-9 notes row: tap once to strike a digit out, twice to mark it likely.","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","Daily: one shared puzzle per day. Fewest guesses tops the board."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
   $("howto").onclick=openHow;
   setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
   function dky(){return new Date().toISOString().slice(0,10)}
-  function dailySecret(){var h=0,k=S.daily+"c",i,c="";for(i=0;i<k.length;i++)h=Math.imul(h^k.charCodeAt(i),2654435761)>>>0;for(i=0;i<S.n;i++){h=Math.imul(h^h>>>15,2246822519)>>>0;h=(h^h>>>13)>>>0;c+=h%10}return c}
-  function dailyMark(g){save("bot-daily",{d:S.daily,g:g})}
+  function dailySecret(){var t=S.dt||0,n=S.n,h=0,k=S.daily+"t"+t+"n"+n,i,c=[];for(i=0;i<k.length;i++)h=Math.imul(h^k.charCodeAt(i),2654435761)>>>0;for(i=0;i<n;i++){h=Math.imul(h^h>>>15,2246822519)>>>0;h=(h^h>>>13)>>>0;c.push(h%10)}
+    if(t<=1){var u={};for(i=0;i<n;i++){while(u[c[i]])c[i]=(c[i]+1)%10;u[c[i]]=1}}
+    else if(t===2||t===3){if(new Set(c).size===n)c[n-1]=c[0]}
+    else{c[n-1]=c[0];c[n-2]=c[1]}
+    return c.join("")}
+  function dailyMark(g){save("bot-daily",{d:S.daily,g:g,n:S.n,t:S.dt})}
   function dailyDone(){var g=S.uT.length;dailyMark(g);
-    if(window.botCloud&&window.botCloud.db&&S.user)window.botCloud.db.set("daily",S.daily+"_"+S.user.uid,{date:S.daily,uid:S.user.uid,name:nm(),g:g,t:Date.now()}).catch(function(){});
-    setTimeout(function(){openBoard(S.daily)},1200)}
-  function openBoard(d){
-    $("infoT").textContent="Daily · "+d;$("infoBody").innerHTML='<div class="mute">Loading…</div>';$("info").classList.remove("hide");
+    if(window.botCloud&&window.botCloud.db&&S.user)window.botCloud.db.set("daily",S.daily+"_"+S.user.uid,{date:S.daily+"-t"+S.dt,uid:S.user.uid,name:nm(),g:g,t:Date.now()}).catch(function(){});
+    setTimeout(function(){openBoard(S.daily,S.dt)},1200)}
+  function openBoard(d,t){var m0=load("bot-daily",{});if(t==null)t=m0.t!=null?m0.t:dailyT(levelOf(S.pts));var n=DT_N[t],dd=d+"-t"+t;
+    $("infoT").textContent="Daily · "+DT_NAME[t]+" · "+n+" digits";$("infoBody").innerHTML='<div class="mute">Loading…</div>';$("info").classList.remove("hide");
     var mine=load("bot-daily",{}),done=function(rows){rows.sort(function(a,b){return a.g-b.g||a.t-b.t});
       $("infoBody").innerHTML=(mine.d===d&&mine.g?'<p class="mute">You solved it in <b>'+mine.g+'</b> guesses. Come back tomorrow!</p>':'')+(rows.length?rows.slice(0,10).map(function(x,i){return'<div class="lb'+(S.user&&x.uid===S.user.uid?' me':'')+'"><span class="rk'+(i<3?' p'+(i+1):'')+'">'+(i+1)+'</span><span class="nm">'+esc(x.name||"?")+'</span><span class="st">'+x.g+' guesses</span></div>'}).join(""):'<p class="mute">No scores yet.</p>')};
-    if(window.botCloud&&window.botCloud.db&&window.botCloud.db.top&&S.user)window.botCloud.db.top(d).then(done).catch(function(){done([])});else done([])}
-  $("daily").onclick=function(){if(needIn())return;var k=dky(),m=load("bot-daily",{});if(m.d===k){openBoard(k);return}
-    S.daily=k;S.mode="solo";S.n=4;S.score={u:0,a:0};S.round=1;S.starter="u";startRound()};
+    if(window.botCloud&&window.botCloud.db&&window.botCloud.db.top&&S.user)window.botCloud.db.top(dd).then(done).catch(function(){done([])});else done([])}
+  $("daily").onclick=function(){if(needIn())return;var k=dky(),m=load("bot-daily",{});if(m.d===k){openBoard(k,m.t);return}
+    S.daily=k;S.mode="solo";S.timed=0;S.dt=dailyT(levelOf(S.pts));S.n=DT_N[S.dt];S.score={u:0,a:0};S.round=1;S.starter="u";startRound()};
+  function shareGame(){
+    var n=S.n,last=S.uT[S.uT.length-1],won=last&&Math.floor(last.k/(n+1))===n,
+        rows=S.uT.map(function(t){var b=Math.floor(t.k/(n+1)),c=t.k%(n+1);return"🟩".repeat(b)+"🟨".repeat(c)+"⬜".repeat(Math.max(0,n-b-c))});
+    shareOut("Cipher"+(S.daily?" Daily "+S.daily:"")+" · "+n+" digits · "+(won?"cracked in "+S.uT.length+" guess"+(S.uT.length===1?"":"es"):"didn’t crack it")+"\n"+rows.join("\n"));
+  }
+  $("share").onclick=shareGame;
   function shareOut(t){function cp(){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(function(){toast("Results copied")}).catch(function(){prompt("Copy:",t)})}
     if(navigator.share)navigator.share({title:"Cipher",text:t}).catch(function(e){if(!e||e.name!=="AbortError")cp()});else cp()}
   $("tshare").onclick=function(){var d=T.data;if(!d)return;var m=["🥇","🥈","🥉"];shareOut("Cipher tournament "+T.id+" results:\n"+finalOrder(d).map(function(u,i){return(m[i]||(i+1)+".")+" "+((d.players[u]||{}).name||"?")}).join("\n"))};
   $("tquit").onclick=function(){if(!T.data||!S.user)return;var id=T.id,u=S.user.uid;leaveTour();window.botCloud.db.del("tournaments",id,"players."+u).catch(oerr)};
-  $("tbody").onclick=function(e){var u=e.target.getAttribute&&e.target.getAttribute("data-rm");if(u&&T.id)window.botCloud.db.del("tournaments",T.id,"players."+u).catch(oerr)};
+  $("tbody").onclick=function(e){var t=e.target,u=t.getAttribute&&t.getAttribute("data-rm"),w=t.getAttribute&&t.getAttribute("data-watch");if(u&&T.id)window.botCloud.db.del("tournaments",T.id,"players."+u).catch(oerr);if(w&&T.data&&S.user){var x=liveMatches(T.data,S.user.uid).filter(function(y){return String(y.key)===w})[0];if(x)watchOpen(x)}};
   if("serviceWorker"in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
   function toast(t){var e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(function(){e.classList.remove("show")},2400)}
   function invite(k,c){
@@ -1246,22 +1460,16 @@ button{min-height:46px;line-height:1.2}
   function isPinned(c,k){return S.pins.some(function(x){return x.code===c&&(x.kind||"room")===(k||"room")})}
   function tourLabel(d){var me=S.user&&S.user.uid,o=Object.keys(d.players).filter(function(u){return u!==me}).map(function(u){return d.players[u].name});return o.length?"Tournament · "+o.slice(0,2).join(", ")+(o.length>2?" +"+(o.length-2):""):"Tournament"}
   function tourPinSync(d){var ch=false,lb=tourLabel(d);S.pins.forEach(function(q){if(q.kind==="tour"&&q.code===T.id&&q.label!==lb){q.label=lb;ch=true}});if(ch)save("bot-pins",S.pins)}
-  $("tpin").onclick=function(){
-    if(!T.id)return;
-    if(isPinned(T.id,"tour"))S.pins=S.pins.filter(function(x){return!(x.code===T.id&&x.kind==="tour")});
-    else S.pins.push({code:T.id,kind:"tour",label:T.data?tourLabel(T.data):"Tournament"});
-    save("bot-pins",S.pins);renderTour();
-  };
+  
   $("tagain").onclick=function(){
     var d=T.data;if(!d||d.status!=="done"||d.org!==(S.user&&S.user.uid))return;
     ask("Play again?","Everyone in the tournament stays in. The table is cleared and you can start a fresh round.","Reset",function(){
-      window.botCloud.db.update("tournaments",T.id,{status:"lobby",m:{},p:{},order:null,groups:null,run:(d.run||0)+1}).catch(oerr)});
+      window.botCloud.db.update("tournaments",T.id,{status:"lobby",m:{},p:{},live:{},order:null,groups:null,run:(d.run||0)+1}).catch(oerr)});
   };
   $("opin").onclick=function(){
-    if(!O.code)return;
-    if(isPinned(O.code))S.pins=S.pins.filter(function(x){return!(x.code===O.code&&(x.kind||"room")==="room")});
-    else{var r=O.room,o=r&&r[O.role==="host"?"guest":"host"];S.pins.push({code:O.code,label:o?o.name:"Friend"})}
-    save("bot-pins",S.pins);renderOnline();
+    var r=O.room;if(!r||!window.botCloud)return;
+    var o=r[O.role==="host"?"guest":"host"];if(!o||isFriend(o.uid))return;
+    addFriend(o.uid,o.name);var p={};p["fr."+O.role]=true;window.botCloud.room.update(O.code,p).catch(oerr);renderOnline();
   };
   $("ogive").onclick=function(){
     var r=O.room;if(!r||r.status!=="playing")return;
@@ -1280,16 +1488,16 @@ button{min-height:46px;line-height:1.2}
   };
   function renderPins(){
     var el=$("pins");el.innerHTML="";
-    if(!S.pins.length)return;
-    var h=document.createElement("div");h.className="mute";h.textContent="Pinned";h.style.margin="0 0 8px";el.appendChild(h);
-    S.pins.forEach(function(p){
+    var h=document.createElement("div");h.className="mute";h.style.margin="0 0 8px";
+    h.textContent=S.friends.length?"Friends":"No friends yet. Tap “➕ Add friend” inside an online game. They’ll show up here and you can play without codes.";
+    el.appendChild(h);
+    S.friends.forEach(function(f){
       var row=document.createElement("div");row.className="pinrow";
       var b=document.createElement("button");b.className="pinbtn";
-      var tr=p.kind==="tour";
-      b.innerHTML='<span>'+(tr?"🏆":"📌")+' <b>'+esc(p.label||"Friend")+'</b><small>'+esc(p.code)+'</small></span><span class="pj">Join</span>';
-      b.onclick=function(){if(tr){$("tcode").value=p.code;$("tjoin").onclick()}else joinRoom(p.code)};
+      b.innerHTML='<span>👤 <b>'+esc(f.name)+'</b></span><span class="pj">Play</span>';
+      b.onclick=function(){friendPlay(f)};
       var x=document.createElement("button");x.className="pinx";x.textContent="✕";x.setAttribute("aria-label","Remove");
-      x.onclick=function(){S.pins=S.pins.filter(function(q){return q!==p});save("bot-pins",S.pins);renderPins()};
+      x.onclick=function(){S.friends=S.friends.filter(function(q){return q!==f});save("bot-friends",S.friends);renderPins()};
       row.appendChild(b);row.appendChild(x);el.appendChild(row);
     });
     var sp=document.createElement("div");sp.style.height="12px";el.appendChild(sp);
@@ -1328,6 +1536,134 @@ button{min-height:46px;line-height:1.2}
       exitT=Date.now();toast("Press back again to exit");
     });
   })();
+
+  /* ===== Day streak, achievements, daily reminder ===== */
+  var ACH=(function(){
+    var a=load("bot-ach",{}),d={streak:0,best:0,last:"",days:[],rounds:0,wins:0,run:0,bestRun:0,badges:{},rem:{on:false,t:"19:00",last:""}},k;
+    for(k in d)if(a[k]==null)a[k]=d[k];
+    if(!a.rem||typeof a.rem!=="object")a.rem=d.rem;
+    if(!a.rem.t)a.rem.t="19:00";
+    return a;
+  })();
+  function saveA(){save("bot-ach",ACH)}
+  function lp(n){return n<10?"0"+n:""+n}
+  function lk(d){d=d||new Date();return d.getFullYear()+"-"+lp(d.getMonth()+1)+"-"+lp(d.getDate())}
+  function ago(n){var d=new Date();d.setDate(d.getDate()-n);return lk(d)}
+  function streakNow(){return(ACH.last===lk()||ACH.last===ago(1))?ACH.streak:0}
+  var BQ=[],bqOn=false;
+  function flushBQ(){
+    if(bqOn||!BQ.length)return;bqOn=true;
+    (function nx(){var m=BQ.shift();if(!m){bqOn=false;return}toast(m);setTimeout(nx,2900)})();
+  }
+  function bump(){
+    var t=lk();if(ACH.last===t)return;
+    ACH.streak=(ACH.last===ago(1)?ACH.streak:0)+1;
+    if(ACH.streak>ACH.best)ACH.best=ACH.streak;
+    ACH.last=t;ACH.days.push(t);if(ACH.days.length>30)ACH.days=ACH.days.slice(-30);
+    if(ACH.streak>1)BQ.push("🔥 "+ACH.streak+"-day streak!");
+  }
+  var BADGES=[
+    {id:"first",e:"🎯",n:"First win",d:"Win your first game",t:function(A){return A.wins>=1}},
+    {id:"sharp",e:"🏹",n:"Sharpshooter",d:"Crack a code in 3 guesses or fewer",t:function(A,o){return o.won&&o.g>0&&o.g<=3}},
+    {id:"lucky",e:"🍀",n:"Lucky strike",d:"Crack a code on your very first guess",t:function(A,o){return o.won&&o.g===1}},
+    {id:"mind",e:"🧠",n:"Mind reader",d:"Crack a 5-digit code in 6 guesses or fewer",t:function(A,o){return o.won&&o.n===5&&o.g>0&&o.g<=6}},
+    {id:"run3",e:"🔥",n:"Hat-trick",d:"Win 3 games in a row",m:3,p:function(A){return A.bestRun},t:function(A){return A.bestRun>=3}},
+    {id:"run5",e:"🚀",n:"On a roll",d:"Win 5 games in a row",m:5,p:function(A){return A.bestRun},t:function(A){return A.bestRun>=5}},
+    {id:"run10",e:"⚡",n:"Unstoppable",d:"Win 10 games in a row",m:10,p:function(A){return A.bestRun},t:function(A){return A.bestRun>=10}},
+    {id:"master",e:"👑",n:"Master slayer",d:"Beat a BOT at Master level or higher in a duel",t:function(A,o){return o.mode==="duel"&&o.ended&&o.won&&o.lvl>=7}},
+    {id:"legend",e:"🐉",n:"Legend slayer",d:"Beat a Legend-level BOT in a duel",t:function(A,o){return o.mode==="duel"&&o.ended&&o.won&&o.lvl>=9}},
+    {id:"daily",e:"📅",n:"Daily cracker",d:"Solve a daily challenge",t:function(A,o){return !!o.daily&&o.won}},
+    {id:"online",e:"🤝",n:"Head to head",d:"Beat a friend in an online game",t:function(A,o){return o.mode==="online"&&o.ended&&o.won}},
+    {id:"five",e:"🔢",n:"Five alive",d:"Win a game with 5 digits",t:function(A,o){return o.n===5&&o.ended&&o.won}},
+    {id:"s3",e:"🗓️",n:"Getting hooked",d:"Play 3 days in a row",m:3,p:function(A){return A.best},t:function(A){return A.best>=3}},
+    {id:"s7",e:"🛡️",n:"Week warrior",d:"Play 7 days in a row",m:7,p:function(A){return A.best},t:function(A){return A.best>=7}},
+    {id:"s30",e:"💎",n:"Unbreakable",d:"Play 30 days in a row",m:30,p:function(A){return A.best},t:function(A){return A.best>=30}},
+    {id:"w25",e:"🎖️",n:"Veteran",d:"Win 25 games",m:25,p:function(A){return A.wins},t:function(A){return A.wins>=25}},
+    {id:"w100",e:"🏛️",n:"Centurion",d:"Win 100 games",m:100,p:function(A){return A.wins},t:function(A){return A.wins>=100}},
+    {id:"expert",e:"🎓",n:"Expert",d:"Reach Expert level",t:function(){return levelOf(S.pts)>=5}},
+    {id:"top",e:"🏆",n:"Living legend",d:"Reach Legend level",t:function(){return levelOf(S.pts)>=9}}
+  ];
+  function track(o){
+    var A=ACH;
+    bump();A.rounds++;
+    if(o.ended){if(o.won){A.wins++;A.run++;if(A.run>A.bestRun)A.bestRun=A.run}else A.run=0}
+    BADGES.forEach(function(b){
+      if(!A.badges[b.id]&&b.t(A,o)){A.badges[b.id]=Date.now();BQ.push("🏅 Badge unlocked: "+b.n)}
+    });
+    saveA();setTimeout(flushBQ,900);
+    if(S.phase==="home")renderStreak();
+  }
+  function renderStreak(){
+    var el=$("streak");if(!el||!ACH)return;
+    var n=streakNow(),t=lk(),today=ACH.last===t,nb=Object.keys(ACH.badges).length,sub,warn=false,dots="",i,d;
+    if(today)sub="Played today ✓";
+    else if(n){sub="Play today to keep it alive";warn=true}
+    else sub="Play a game to start a streak";
+    if(ACH.best>n)sub+=" · Best "+ACH.best;
+    for(i=6;i>=0;i--){d=new Date();d.setDate(d.getDate()-i);
+      dots+='<div class="dd'+(ACH.days.indexOf(lk(d))>=0?' on':'')+(i===0?' td':'')+'"><i></i>'+"SMTWTFS".charAt(d.getDay())+'</div>'}
+    el.innerHTML='<div class="stk"><div class="fl'+(n?'':' off')+'">🔥</div><div class="sm">'+n+' day streak<small'+(warn?' class="warn"':'')+'>'+sub+'</small></div><button class="pill" id="achBtn">🏅 '+nb+'/'+BADGES.length+'</button></div><div class="days">'+dots+'</div>';
+    $("achBtn").onclick=openAch;
+  }
+  function openAch(){
+    var A=ACH,got=Object.keys(A.badges).length,h='<p class="mute" style="margin:0 0 8px">'+got+' of '+BADGES.length+' unlocked · Best streak '+A.best+' · Best win run '+A.bestRun+'</p>',
+        list=BADGES.slice().sort(function(a,b){var x=A.badges[a.id]||0,y=A.badges[b.id]||0;return(y?1:0)-(x?1:0)||y-x});
+    list.forEach(function(b){
+      var u=A.badges[b.id],side=u?new Date(u).toLocaleDateString(undefined,{month:"short",day:"numeric"}):(b.p?Math.min(b.p(A),b.m)+" / "+b.m:"");
+      h+='<div class="bdg'+(u?'':' lock')+'"><div class="bi">'+b.e+'</div><div class="bt"><b>'+b.n+'</b><small>'+b.d+'</small></div><div class="bs">'+side+'</div></div>';
+    });
+    $("infoT").textContent="Achievements";$("infoBody").innerHTML=h;$("info").classList.remove("hide");
+  }
+  function pushNote(t,b){
+    var o={body:b,tag:"cipher-daily",icon:"apple-touch-icon.png"};
+    function viaSW(){
+      if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)
+        navigator.serviceWorker.getRegistration().then(function(r){if(r&&r.showNotification)r.showNotification(t,o)}).catch(function(){});
+    }
+    try{var n=new Notification(t,o);n.onclick=function(){window.focus();n.close()}}catch(e){viaSW()}
+  }
+  function checkRem(){
+    var R=ACH&&ACH.rem;
+    if(!R||!R.on||!("Notification"in window)||Notification.permission!=="granted")return;
+    var t=lk(),p=(R.t||"19:00").split(":"),due=new Date();due.setHours(+p[0]||0,+p[1]||0,0,0);
+    if(R.last===t||ACH.last===t||new Date()<due)return;
+    R.last=t;saveA();
+    var n=streakNow(),title=n?"🔥 Keep your "+n+"-day streak":"Cipher is waiting",
+        body=n?"Play one game today to keep it going.":"Crack a code today and start a streak.";
+    if(load("bot-daily",{}).d!==dky())body+=" Today’s daily challenge is ready.";
+    if(document.hidden)pushNote(title,body);else toast(title);
+  }
+  setInterval(checkRem,30000);
+  document.addEventListener("visibilitychange",checkRem);
+  setTimeout(checkRem,2500);
+  function openRem(){
+    var R=ACH.rem,sup="Notification"in window,perm=sup?Notification.permission:"unsupported",on=R.on&&perm==="granted",note;
+    if(!sup)note="This browser can’t show notifications. On iPhone, add Cipher to your Home Screen first, then open it from there.";
+    else if(perm==="denied")note="Notifications are blocked for this site. Turn them on in your browser or phone settings, then come back.";
+    else if(on)note="You’ll get a nudge at "+R.t+" on days you haven’t played yet. Reminders arrive while Cipher is open or running in the background.";
+    else note="Get a nudge each day so you never lose your streak.";
+    $("infoT").textContent="Daily reminder";
+    $("infoBody").innerHTML='<p class="howto" style="margin:0 0 10px">'+note+'</p>'
+      +'<button class="wide" id="remTog" style="margin-top:0">'+(on?"Turn reminder off":"Turn reminder on")+'</button>'
+      +'<input type="time" class="tin" id="remTime" value="'+R.t+'">'
+      +'<div class="remrow"><button class="pill" id="remTest">Send a test</button></div>';
+    $("info").classList.remove("hide");
+    $("remTime").onchange=function(){if(this.value){R.t=this.value;R.last="";saveA();openRem()}};
+    $("remTest").onclick=function(){
+      if(sup&&Notification.permission==="granted")pushNote("🔥 Cipher reminder","This is how your daily reminder will look.");
+      else toast("Turn the reminder on first");
+    };
+    $("remTog").onclick=function(){
+      if(on){R.on=false;saveA();openRem();return}
+      if(!sup){openRem();return}
+      var fin=function(p){if(p==="granted"){R.on=true;R.last="";saveA()}openRem()};
+      if(Notification.permission==="granted")fin("granted");
+      else if(Notification.permission==="denied")openRem();
+      else try{Notification.requestPermission().then(fin)}catch(e){openRem()}
+    };
+  }
+  $("achmenu").onclick=openAch;
+  $("remmenu").onclick=openRem;
   updateAcct();
   render();
 })();
@@ -1347,7 +1683,7 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
   const V="10.14.1",B="https://www.gstatic.com/firebasejs/"+V+"/";
   const {initializeApp}=await import(B+"firebase-app.js");
   const {getAuth,GoogleAuthProvider,signInWithPopup,signInAnonymously,updateProfile,signOut,onAuthStateChanged}=await import(B+"firebase-auth.js");
-  const {getFirestore,doc,getDoc,setDoc,updateDoc,onSnapshot,deleteField,collection,query,where,limit,getDocs}=await import(B+"firebase-firestore.js");
+  const {getFirestore,doc,getDoc,setDoc,updateDoc,onSnapshot,deleteField,collection,query,where,limit,getDocs,orderBy}=await import(B+"firebase-firestore.js");
   const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
   let user=null;
   window.botCloud={
@@ -1358,7 +1694,7 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
       try{const c=await signInAnonymously(auth);await updateProfile(c.user,{displayName:name});window.botAuth&&window.botAuth(auth.currentUser)}
       catch(e){alert(e.code==="auth/operation-not-allowed"?"Guest play isn’t switched on yet. In Firebase, enable Anonymous under Authentication > Sign-in method.":"Couldn’t start guest mode: "+e.code)}
     },
-    save:(pts,hist,pins,nick)=>{if(user)setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],...(nick?{nick:nick}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
+    save:(pts,hist,pins,nick,friends)=>{if(!user)return;setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],friends:friends||[],...(nick?{nick:nick}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e));setDoc(doc(db,"leaders",user.uid),{uid:user.uid,name:nick||user.displayName||"Player",pts:pts,updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
   };
   window.botCloud.db={
     get:async(c,i)=>{const s=await getDoc(doc(db,c,i));return s.exists()?s.data():null},
@@ -1366,6 +1702,7 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
     update:(c,i,p)=>updateDoc(doc(db,c,i),p),
     del:(c,i,f)=>updateDoc(doc(db,c,i),{[f]:deleteField()}),
     top:async(d)=>{const q=await getDocs(query(collection(db,"daily"),where("date","==",d),limit(50)));return q.docs.map(x=>x.data())},
+    leaders:async()=>{const q=await getDocs(query(collection(db,"leaders"),orderBy("pts","desc"),limit(50)));return q.docs.map(x=>x.data())},
     watch:(c,i,cb)=>onSnapshot(doc(db,c,i),s=>cb(s.exists()?s.data():null))
   };
   window.botCloud.room={
