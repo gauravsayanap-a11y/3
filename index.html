@@ -193,13 +193,32 @@ button{min-height:46px;line-height:1.2}
 .nt.x{text-decoration:line-through;opacity:.35}.nt.k{background:var(--bull);color:#06281a;font-weight:700}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
 .stats div{text-align:center;min-width:0}.stats b{display:block;font-size:18px}.stats span{font-size:11px}
+
+/* ===== hamburger menu + no header boxes ===== */
+.hd{background:transparent!important;position:static!important}
+.burger{flex:none;width:44px;min-height:44px;padding:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:transparent}
+.burger i{display:block;width:20px;height:2px;border-radius:2px;background:var(--ink)}
+#menuwrap{position:fixed;inset:0;z-index:40}
+#menuback{position:absolute;inset:0;background:rgba(6,8,14,.45)}
+#menu{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:16px;width:min(280px,calc(100vw - 32px));background:var(--hdbg,#12172a);border:1px solid var(--line);border-radius:18px;padding:8px;display:flex;flex-direction:column;gap:4px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#menu button{background:transparent;text-align:left;padding:12px 14px;border-radius:12px;font-size:15px}
+#menu button:active{background:var(--key)}
+
+/* ===== brick-style wrapping for option buttons ===== */
+.opts{display:flex!important;flex-wrap:wrap;justify-content:center;gap:8px}
+.opts .opt{flex:0 0 auto!important;width:104px;min-width:0}
+#dig .opt,.rep .opt,#odig .opt{width:56px}
+#fmt .opt,#ofmt .opt{width:150px}
+
+#hintrow{display:flex;justify-content:flex-end;margin-bottom:-4px}
+#hint{min-height:32px;padding:6px 14px;font-size:13px;border-radius:999px;background:transparent;border:1px solid var(--line);color:var(--mute)}
 </style>
 </head>
 <body>
 <main>
 
   <section id="home">
-    <div class="card" id="acct"><div class="av" id="av">?</div><div class="at" id="acctText"></div><button class="pill go" id="acctBtn">Sign in</button></div>
+    <div class="card" id="acct"><button id="burger" class="burger" aria-label="Menu" aria-expanded="false"><i></i><i></i><i></i></button><div class="av" id="av">?</div><div class="at" id="acctText"></div><button class="pill go" id="acctBtn">Sign in</button></div>
     <div class="card" id="pts"></div>
     <div class="card">
       <div class="mute">Mode</div>
@@ -217,10 +236,15 @@ button{min-height:46px;line-height:1.2}
       <div class="joinrow"><input id="tcode" placeholder="Tournament code" maxlength="5"><button id="tjoin">Join</button></div></div>
       <button class="wide" id="start">Start match</button>
     </div>
-    <button class="wide ghost" id="openhist">History of games</button>
-    <button class="wide ghost" id="daily">📅 Daily challenge</button>
-    <button class="wide ghost" id="howto">❓ How to play</button>
-    <button class="wide ghost" id="sndbtn"></button>
+    <div id="menuwrap" class="hide">
+      <div id="menuback"></div>
+      <div id="menu">
+        <button id="openhist">📜 History of games</button>
+        <button id="daily">📅 Daily challenge</button>
+        <button id="howto">❓ How to play</button>
+        <button id="sndbtn"></button>
+      </div>
+    </div>
   </section>
 
   <section id="hist" class="hide">
@@ -230,6 +254,7 @@ button{min-height:46px;line-height:1.2}
   </section>
 
   <section id="game" class="hide">
+    <div id="hintrow"><button id="hint">💡 Riddle hint</button></div>
     <div id="score"></div>
     <div id="logs">
       <div class="card box" id="lu"></div>
@@ -246,7 +271,7 @@ button{min-height:46px;line-height:1.2}
     </div>
     <div id="play" class="hide">
       <div id="slots"></div>
-      <div class="mute" id="hintline" style="text-align:center;margin-bottom:8px"></div><div class="notes" id="notes"></div><button class="ghost" id="hint" style="width:100%;margin-bottom:12px;min-height:40px">💡 Hint · −3 pts</button><div id="pad"></div>
+      <div class="notes" id="notes"></div><div id="pad"></div>
     </div>
     <button class="wide hide" id="next">Next round</button>
     <button class="wide ghost hide" id="home2">Back to home</button>
@@ -534,6 +559,7 @@ button{min-height:46px;line-height:1.2}
     $("report").classList.toggle("hide",h!=="report");
     $("play").classList.toggle("hide",h!=="guess");
     $("next").classList.toggle("hide",h!=="between");
+    $("hintrow").classList.toggle("hide",!!S.daily||h==="between"||h==="over");
     $("home2").classList.toggle("hide",h!=="between"&&h!=="over");
     $("quit").classList.toggle("hide",h==="between"||h==="over");
     if(h==="report"){
@@ -546,7 +572,7 @@ button{min-height:46px;line-height:1.2}
     if(h==="guess"){
       var sl=$("slots");sl.innerHTML="";
       for(var i=0;i<S.n;i++){var d=document.createElement("div");d.className="slot"+(i===S.cur.length?" on":"");d.textContent=S.cur[i]||"";sl.appendChild(d)}
-      $("go").disabled=!valid(S.cur);mkNotes("notes",SN);$("hint").classList.toggle("hide",!!S.daily||HINT.length>=S.n);hintTxt();
+      $("go").disabled=!valid(S.cur);mkNotes("notes",SN);
     }
   }
 
@@ -1112,11 +1138,55 @@ button{min-height:46px;line-height:1.2}
   },1000);
   var HINT=[],SND=load("bot-snd",1);
   function sfx(k){if(!SND)return;try{if(navigator.vibrate)navigator.vibrate(k==="win"?[60,40,90]:200);var a=sfx.c||(sfx.c=new(window.AudioContext||window.webkitAudioContext)()),t=a.currentTime;(k==="win"?[523,659,784]:[330,262]).forEach(function(f,i){var o=a.createOscillator(),g=a.createGain();o.frequency.value=f;g.gain.setValueAtTime(.15,t+i*.14);g.gain.exponentialRampToValueAtTime(.001,t+i*.14+.25);o.connect(g);g.connect(a.destination);o.start(t+i*.14);o.stop(t+i*.14+.26)})}catch(e){}}
+
+  (function(){var w=$("menuwrap"),b=$("burger");
+    function set(o){w.classList.toggle("hide",!o);b.setAttribute("aria-expanded",o?"true":"false")}
+    b.onclick=function(e){e.stopPropagation();set(w.classList.contains("hide"))};
+    $("menuback").onclick=function(){set(false)};
+    $("menu").addEventListener("click",function(e){var t=e.target.closest("button");if(t&&t.id!=="sndbtn")set(false)});
+  })();
+  var RN=["zero","one","two","three","four","five","six","seven","eight","nine"],
+  RT=[["the number of sides on a circle",0],["the number of suns in our sky",1],["the number of legs on a bird",2],["the number of sides on a triangle",3],["the number of legs on a table",4],["the number of fingers on one hand",5],["the number of faces on a die",6],["the number of days in a week",7],["the number of legs on a spider",8],["the number of lives a proverbial cat has",9]],
+  RF=[0,1,2,3,5,8];
+  function rpc(x){return x.toString(2).replace(/0/g,"").length}
+  function rclues(d,pos,sec){
+    var o=[],P=pos+1,L=RN[d].length,k=[3,7,9][Math.floor(Math.random()*3)],r=(d*k)%10,q=(d*d)%10,pp=rpc(d),m=(d+P)%3,i,j;
+    o.push(d%2?{t:"Try to split me into two equal piles of whole things: a stray one is always left over.",ok:function(x){return x%2===1}}:{t:"I can be halved cleanly, with nothing left over.",ok:function(x){return x%2===0}});
+    o.push({t:"Spell me out in English words: the word runs to exactly "+L+" letters.",ok:function(x){return RN[x].length===L}});
+    o.push({t:"Multiply me by "+k+" and keep only the last digit of the answer: it is "+r+".",ok:function(x){return (x*k)%10===r}});
+    o.push({t:"Multiply me by myself and look at the last digit of the product: it is "+q+".",ok:function(x){return (x*x)%10===q}});
+    var ns=[12,18,20,24,30,36].filter(function(n){return d>0&&n%d===0});
+    if(ns.length){var N=ns[Math.floor(Math.random()*ns.length)];o.push({t:"I am among the whole numbers that divide "+N+" evenly.",ok:function(x){return x>0&&N%x===0}})}
+    o.push(RF.indexOf(d)>=0?{t:"I belong to the family that starts 0, 1, 1, 2, 3, 5, 8 where every member is the sum of the two before it.",ok:function(x){return RF.indexOf(x)>=0}}:{t:"I am an outsider to the family that runs 0, 1, 1, 2, 3, 5, 8.",ok:function(x){return RF.indexOf(x)<0}});
+    o.push({t:"Write me in base two: exactly "+pp+" of the symbols are ones.",ok:function(x){return rpc(x)===pp}});
+    o.push({t:"Add my value to my place number counted from the left, then divide by 3: the remainder is "+m+".",ok:function(x){return (x+P)%3===m}});
+    var others=[];for(i=0;i<sec.length;i++)if(i!==pos)others.push(i);
+    if(others.length){j=others[Math.floor(Math.random()*others.length)];var v=+sec[j],J=j+1;
+      o.push(d>v?{t:"I outrank the digit standing in place "+J+".",ok:function(x){return x>v}}:d<v?{t:"I fall short of the digit standing in place "+J+".",ok:function(x){return x<v}}:{t:"I am an exact twin of the digit standing in place "+J+".",ok:function(x){return x===v}})}
+    var lo=RT.filter(function(a){return a[1]<d}),hi=RT.filter(function(a){return a[1]>d}),a=lo.length?lo[Math.floor(Math.random()*lo.length)]:null,b=hi.length?hi[Math.floor(Math.random()*hi.length)]:null;
+    if(a&&b)o.push({t:"I outnumber "+a[0]+", yet I fall short of "+b[0]+".",ok:function(x){return x>a[1]&&x<b[1]}});
+    else if(a)o.push({t:"I outnumber "+a[0]+".",ok:function(x){return x>a[1]}});
+    else if(b)o.push({t:"I fall short of "+b[0]+".",ok:function(x){return x<b[1]}});
+    return o}
+  function mkRiddle(pos){
+    var sec=S.aSecret,d=+sec[pos],cl=rclues(d,pos,sec),C=[0,1,2,3,4,5,6,7,8,9],use=[],i;
+    cl.sort(function(){return Math.random()-.5});
+    for(i=0;i<cl.length&&C.length>1&&use.length<4;i++){var nc=C.filter(cl[i].ok);if(nc.length<C.length){use.push(cl[i]);C=nc}}
+    if(C.length>1){var r7=(d*7)%10;use.push({t:"Multiply me by 7 and keep only the last digit of the answer: it is "+r7+".",ok:function(x){return (x*7)%10===r7}})}
+    return {pos:pos,lines:use.map(function(c){return c.t})}}
+  function showRiddles(){
+    var b="";
+    if(!HINT.length)b='<p class="mute" style="line-height:1.6">Each riddle describes one digit of BOT’s number without ever naming it. Solve it yourself. Every new riddle costs 3 pts.</p>';
+    HINT.forEach(function(r,n){b+="<h3>Riddle "+(n+1)+" · the digit in place "+(r.pos+1)+" from the left</h3><ul>"+r.lines.map(function(t){return"<li>"+t+"</li>"}).join("")+"</ul>"});
+    if(HINT.length<S.n)b+='<button class="wide" id="rmore" style="margin-top:16px">'+(HINT.length?"Another riddle":"Get a riddle")+' · −3 pts</button>';
+    $("infoT").textContent="Riddle hint";$("infoBody").innerHTML=b;$("info").classList.remove("hide");
+    if($("rmore"))$("rmore").onclick=function(){
+      var free=[],i;for(i=0;i<S.n;i++)if(!HINT.some(function(r){return r.pos===i}))free.push(i);
+      if(!free.length)return;HINT.push(mkRiddle(free[Math.floor(Math.random()*free.length)]));awardPts(-3);showRiddles();render()}}
+  $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
-  function hintTxt(){$("hintline").textContent=HINT.map(function(i){return"Digit "+(i+1)+" = "+S.aSecret[i]}).join("  ·  ")}
-  $("hint").onclick=function(){if(S.phase!=="guess"||S.daily)return;var f=[];for(var i=0;i<S.n;i++)if(HINT.indexOf(i)<0)f.push(i);if(!f.length)return;HINT.push(rnd(f));awardPts(-3);render()};
-  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Use the 0-9 notes row: tap once to strike a digit out, twice to mark it likely.","Crack their number first to win points. A hint costs 3 pts (not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","Daily: one shared puzzle per day. Fewest guesses tops the board."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Use the 0-9 notes row: tap once to strike a digit out, twice to mark it likely.","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","Daily: one shared puzzle per day. Fewest guesses tops the board."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
   $("howto").onclick=openHow;
   setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
   function dky(){return new Date().toISOString().slice(0,10)}
