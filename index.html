@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b0e17">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png">
 <title>Cipher</title>
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--ink:#16181d;--mute:#7a7f89;--line:#eceef2;--key:#eef0f3;--acc:#2563eb;--bull:#1f7a5a;--cow:#d98a1e;--ai:#7c4dff;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);
@@ -154,6 +155,44 @@ button{transition:transform .12s,background .2s}
 /* large screens: smaller, tidier */
 @media (min-width:700px){main{max-width:380px;zoom:.85;padding-top:20px}.sheetbox{zoom:.88}}
 @media (min-width:1100px){main{zoom:.78}.sheetbox{zoom:.82}}
+/* ===== clean layout pass ===== */
+.hide{display:none!important}
+main>section:not(.hide){display:flex;flex-direction:column;gap:12px}
+main .card,#logs{margin-bottom:0}
+main .wide{margin-top:0}
+.card .wide{margin-top:10px}.card .wide:first-child{margin-top:0}
+button{min-height:46px;line-height:1.2}
+.wide{min-height:52px}
+.pill{min-height:40px;flex:none}
+.sx{min-height:0;flex:none}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;margin:8px 0 16px}
+#dig,.rep .opts{grid-template-columns:repeat(auto-fit,minmax(48px,1fr))}
+#fmt,#ofmt{grid-template-columns:repeat(2,1fr)}
+#fmt .opt:first-child:nth-last-child(5),#ofmt .opt:first-child:nth-last-child(5){grid-column:1/-1}
+.opt{min-width:0;padding:12px 6px}
+.joinrow{display:flex;gap:8px;margin-top:10px}
+.joinrow input{flex:1;min-width:0;min-height:46px}
+.joinrow button{flex:none;width:92px;padding:0}
+#onlinebox{margin-top:16px}
+#onlinebox .mute+.wide{margin-top:8px}
+.sect{margin:20px 0 8px;padding-top:16px;border-top:1px solid var(--line)}
+#pad button,#opad button{min-height:56px;padding:0}
+#score{gap:10px}#score .mute{flex:1;min-width:0;text-align:center}
+.gh{gap:12px}
+#info h2{padding-right:40px}
+.pinx{min-height:0}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);max-width:90vw;background:var(--hdbg,#12172a);border:1px solid var(--line);color:var(--ink);padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:80;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#ask{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,8,14,.66);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#ask .joinrow{margin-top:20px}#ask .joinrow button{flex:1;width:auto}
+#askOk{background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;font-weight:600}
+.gh{cursor:default}
+.cn{display:block;font-size:10px;opacity:.7;margin-top:2px}
+.notes{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:0 0 12px}
+.nt{min-height:34px;padding:0;font-size:13px;border-radius:10px;background:var(--key);border:1px solid var(--line)}
+.nt.x{text-decoration:line-through;opacity:.35}.nt.k{background:var(--bull);color:#06281a;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
+.stats div{text-align:center;min-width:0}.stats b{display:block;font-size:18px}.stats span{font-size:11px}
 </style>
 </head>
 <body>
@@ -167,15 +206,21 @@ button{transition:transform .12s,background .2s}
       <div class="opts" id="mode"></div>
       <div class="mute">Number of digits</div>
       <div class="opts" id="dig"></div>
-      <div id="fmtwrap"><div class="mute">Tournament</div>
+      <div id="fmtwrap"><div class="mute">Match format</div>
       <div class="opts" id="fmt"></div></div>
-      <div id="onlinebox" class="hide" style="margin-top:12px"><div id="pins"></div><button class="wide" id="ocreate">Create room</button><div style="display:flex;gap:8px;margin-top:10px"><input id="ocode" placeholder="Room code" maxlength="5" style="flex:1"><button id="ojoin" style="padding:0 20px">Join</button></div>
-    <div class="mute" style="margin:18px 0 8px">Tournament</div>
-    <button class="wide ghost" id="tcreate" style="margin-top:0">Create tournament</button>
-    <div style="display:flex;gap:8px;margin-top:10px"><input id="tcode" placeholder="Tournament code" maxlength="5" style="flex:1"><button id="tjoin" style="padding:0 20px">Join</button></div></div>
+      <div id="onlinebox" class="hide"><div id="pins"></div>
+      <div class="mute">Friend duel</div>
+      <button class="wide" id="ocreate">Create room</button>
+      <div class="joinrow"><input id="ocode" placeholder="Room code" maxlength="5"><button id="ojoin">Join</button></div>
+      <div class="mute sect">Tournament</div>
+      <button class="wide ghost" id="tcreate">Create tournament</button>
+      <div class="joinrow"><input id="tcode" placeholder="Tournament code" maxlength="5"><button id="tjoin">Join</button></div></div>
       <button class="wide" id="start">Start match</button>
     </div>
     <button class="wide ghost" id="openhist">History of games</button>
+    <button class="wide ghost" id="daily">📅 Daily challenge</button>
+    <button class="wide ghost" id="howto">❓ How to play</button>
+    <button class="wide ghost" id="sndbtn"></button>
   </section>
 
   <section id="hist" class="hide">
@@ -201,7 +246,7 @@ button{transition:transform .12s,background .2s}
     </div>
     <div id="play" class="hide">
       <div id="slots"></div>
-      <div id="pad"></div>
+      <div class="mute" id="hintline" style="text-align:center;margin-bottom:8px"></div><div class="notes" id="notes"></div><button class="ghost" id="hint" style="width:100%;margin-bottom:12px;min-height:40px">💡 Hint · −3 pts</button><div id="pad"></div>
     </div>
     <button class="wide hide" id="next">Next round</button>
     <button class="wide ghost hide" id="home2">Back to home</button>
@@ -211,20 +256,24 @@ button{transition:transform .12s,background .2s}
   <section id="tour" class="hide">
     <div class="card" id="tinfo"></div>
     <div class="card" id="tbody"></div>
+    <button class="wide ghost hide" id="tinvite">📨 Invite players</button>
     <button class="wide hide" id="tstart">Start tournament</button>
     <button class="wide hide" id="tplay">Play my next match</button>
+    <button class="wide hide" id="tshare">📤 Share results</button>
+    <button class="wide ghost hide" id="tquit">Leave tournament</button>
     <button class="wide ghost" id="tleave">Back to home</button>
   </section>
 
   <section id="online" class="hide">
     <div class="card" id="oinfo"></div>
+    <div class="mute hide" id="otimer" style="text-align:center"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px">
       <div class="card box" id="olu"></div><div class="card box" id="ola"></div>
     </div>
     <div class="card hide" id="oset"><div class="mute">Digits (next game)</div><div class="opts" id="odig"></div><div class="mute">Tournament</div><div class="opts" id="ofmt" style="margin-bottom:0"></div></div>
     <div id="oplay" class="hide">
       <div id="oslots" style="display:flex;gap:10px;justify-content:center;margin:8px 0 16px"></div>
-      <div id="opad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+      <div class="notes" id="onotes"></div><div id="opad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
     </div>
     <div class="card" id="ochat">
       <button class="pill" id="ochatT" style="width:100%;display:flex;justify-content:space-between;align-items:center;border-radius:12px">
@@ -240,10 +289,20 @@ button{transition:transform .12s,background .2s}
     </div>
     <button class="wide ghost hide" id="onew">New game in this room</button>
     <button class="wide ghost hide" id="ogive">🏳️ Give up this game</button>
+    <button class="wide hide" id="oinvite">📨 Invite a friend</button>
     <button class="wide ghost" id="opin">📌 Pin to home screen</button>
     <button class="wide ghost" id="oleave">Leave room</button>
   </section>
 </main>
+<div id="toast" role="status"></div>
+<div id="ask" class="hide">
+  <div class="sheetbox">
+    <div class="logo">🏳️</div>
+    <h2 id="askT"></h2>
+    <p class="mute" id="askP" style="line-height:1.55;font-size:14px"></p>
+    <div class="joinrow"><button class="ghost" id="askNo">Cancel</button><button id="askOk">Give up</button></div>
+  </div>
+</div>
 <div id="pop" class="hide">
   <div class="sheetbox">
     <div class="logo" id="popEm">🎉</div>
@@ -255,7 +314,7 @@ button{transition:transform .12s,background .2s}
 <div id="info" class="hide">
   <div class="sheetbox" style="text-align:left;max-height:86vh;overflow-y:auto">
     <button class="sx" id="infoX" aria-label="Close">✕</button>
-    <h2 style="margin-bottom:10px">Points &amp; levels</h2>
+    <h2 id="infoT" style="margin-bottom:10px">Points &amp; levels</h2>
     <div id="infoBody"></div>
   </div>
 </div>
@@ -427,7 +486,7 @@ button{transition:transform .12s,background .2s}
       +'<li>Playoffs, IPL style: Qualifier 1 (#1 v #2) sends its winner to the Final. Eliminator (#3 v #4). Qualifier 2 is the Qualifier 1 loser v the Eliminator winner.</li>'
       +'<li>Two groups: top 2 of each group qualify. Four groups: group winners qualify. With 3 players, #1 waits in the Final while #2 v #3 play the Eliminator.</li></ul>';
     h+='<p class="howto">BOT plays harder with every level. From Master it picks trickier numbers, and from Grandmaster it also moves first.</p>';
-    $("infoBody").innerHTML=h;$("info").classList.remove("hide");
+    $("infoT").textContent="Points & levels";$("infoBody").innerHTML=h;$("info").classList.remove("hide");
   }
   $("infoX").onclick=function(){$("info").classList.add("hide")};
   $("info").onclick=function(e){if(e.target===$("info"))$("info").classList.add("hide")};
@@ -443,7 +502,7 @@ button{transition:transform .12s,background .2s}
   function renderHome(){
     var l=levelOf(S.pts),cur=LEVELS[l],nx=LEVELS[l+1];
     var pct=nx?Math.round((S.pts-cur.at)/(nx.at-cur.at)*100):100;
-    $("pts").innerHTML='<div id="lvl"><span class="mute">Level '+(l+1)+'</span><span class="mute">'+S.pts+' pts</span></div><b style="font-size:22px">'+cur.n+'</b><div class="bar"><i style="width:'+pct+'%"></i></div><div class="mute">'+(nx?(nx.at-S.pts)+' pts to '+nx.n:'Top level')+'</div><button class="pill" id="infoBtn" style="margin-top:12px;padding:7px 14px;font-size:12px">ⓘ Points &amp; levels</button>';
+    $("pts").innerHTML='<div id="lvl"><span class="mute">Level '+(l+1)+'</span><span class="mute">'+S.pts+' pts</span></div><b style="font-size:22px">'+cur.n+'</b><div class="bar"><i style="width:'+pct+'%"></i></div><div class="mute">'+(nx?(nx.at-S.pts)+' pts to '+nx.n:'Top level')+'</div><button class="pill" id="infoBtn" style="margin-top:12px;min-height:0;padding:7px 14px;font-size:12px">ⓘ Points &amp; levels</button>';
     $("infoBtn").onclick=openInfo;
     opts($("mode"),[{label:"Duel with BOT",v:"duel"},{label:"Solo (just guess)",v:"solo"},{label:"Online (friend)",v:"online"}],function(i){return i.v===S.mode},function(i){S.mode=i.v;if(i.v!=="online"&&S.need<1)S.need=1;render()});
     $("fmtwrap").classList.toggle("hide",S.mode==="solo");$("start").classList.toggle("hide",S.mode==="online");$("onlinebox").classList.toggle("hide",S.mode!=="online");
@@ -452,18 +511,15 @@ button{transition:transform .12s,background .2s}
     opts($("fmt"),(S.mode==="online"?[{n:"Free play",need:0}].concat(FORMATS):FORMATS).map(function(x){return{label:x.n,v:x.need}}),function(i){return i.v===S.need},function(i){S.need=i.v;render()});
   }
   function renderHist(){
-    var el=$("hlist");el.innerHTML="";
+    var el=$("hlist");el.innerHTML=statsHtml();
     $("clear").classList.toggle("hide",!S.hist.length);
     if(!S.hist.length){el.innerHTML='<div class="card mute">No games yet. Finished rounds show up here.</div>';return}
     S.hist.slice().reverse().forEach(function(g,ri){
-      var i=S.hist.length-1-ri,open=S.open===i;
-      var b=document.createElement("button");b.className="gh";
-      if(open)b.style.borderRadius="14px 14px 0 0";
-      var d=new Date(g.t).toLocaleDateString(undefined,{month:"short",day:"numeric"});
-      b.innerHTML='<span><b>Game '+(i+1)+'</b> · '+g.n+' digits'+(g.mode==="solo"?' · Solo':'')+'<small>'+d+' · BOT: '+(g.ln||LEVELS[g.lvl].n)+' · BOT’s number '+g.bot+'</small></span><b class="'+(g.res==="u"?"u":"a")+'">'+(g.res==="u"?"You won":"BOT won")+'</b>';
-      b.onclick=function(){S.open=open?-1:i;renderHist()};
+      var i=S.hist.length-1-ri,dt=new Date(g.t),
+          d=dt.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})+" · "+dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+      var b=document.createElement("div");b.className="gh";
+      b.innerHTML='<span><b>Game '+(i+1)+'</b> · '+g.n+' digits'+(g.mode==="solo"?' · Solo':'')+'<small>'+d+'</small><small>'+(g.opp?(g.mode==="tour"?"Tournament":"Online")+' · vs '+esc(g.opp):'BOT: '+(g.ln||LEVELS[g.lvl].n)+' · BOT’s number '+g.bot)+'</small></span><b class="'+(g.res==="u"?"u":"a")+'">'+(g.res==="u"?"You won":g.opp?"You lost":"BOT won")+'</b>';
       el.appendChild(b);
-      if(open){var dd=document.createElement("div");dd.className="gd";dd.innerHTML='<div>'+list("Your guesses",g.u,"u",g.n)+'</div><div>'+list("BOT’s guesses",g.a,"a",g.n)+'</div>';el.appendChild(dd)}
     });
   }
   function renderGame(){
@@ -490,7 +546,7 @@ button{transition:transform .12s,background .2s}
     if(h==="guess"){
       var sl=$("slots");sl.innerHTML="";
       for(var i=0;i<S.n;i++){var d=document.createElement("div");d.className="slot"+(i===S.cur.length?" on":"");d.textContent=S.cur[i]||"";sl.appendChild(d)}
-      $("go").disabled=!valid(S.cur);
+      $("go").disabled=!valid(S.cur);mkNotes("notes",SN);$("hint").classList.toggle("hide",!!S.daily||HINT.length>=S.n);hintTxt();
     }
   }
 
@@ -499,11 +555,11 @@ button{transition:transform .12s,background .2s}
     if(Math.random()<pr)for(var i=0;i<80;i++){var c=rnd(all);if(new Set(c.split("")).size<c.length)return c}
     return rnd(all);
   }
-  function startMatch(){S.score={u:0,a:0};S.round=1;S.starter=(S.mode==="duel"&&levelOf(S.pts)>=FIRST_LVL)?"a":"u";startRound()}
+  function startMatch(){S.daily="";S.score={u:0,a:0};S.round=1;S.starter=(S.mode==="duel"&&levelOf(S.pts)>=FIRST_LVL)?"a":"u";startRound()}
   function startRound(){
     var all=allCodes();
     S.gid++;S.lvl=levelOf(S.pts);
-    S.aSecret=pickSecret(all);S.cands=all;S.uT=[];S.aT=[];S.mem=[];S.cur="";S.rb=-1;S.rc=-1;S.next=S.mode==="solo"?"u":S.starter;S.busy=false;
+    SN=[];HINT=[];S.aSecret=S.daily?dailySecret():pickSecret(all);S.cands=all;S.uT=[];S.aT=[];S.mem=[];S.cur="";S.rb=-1;S.rc=-1;S.next=S.mode==="solo"?"u":S.starter;S.busy=false;
     say("");goNext();
   }
   function goNext(){
@@ -535,7 +591,7 @@ button{transition:transform .12s,background .2s}
     S.next="u";say("");goNext();
   }
   function endRound(w,gaveUp){
-    S.score[w]++;
+    sfx(w==="u"?"win":"lose");if(S.daily&&w==="u")dailyDone();S.score[w]++;
     S.hist.push({t:Date.now(),mode:S.mode,n:S.n,res:w,bot:S.aSecret,lvl:S.lvl,ln:LEVELS[S.lvl].n,u:S.uT.slice(),a:S.aT.slice()});
     if(S.hist.length>40)S.hist.shift();
     save("bot-hist",S.hist);
@@ -561,7 +617,8 @@ button{transition:transform .12s,background .2s}
   function giveUp(){
     if(S.phase==="between"||S.phase==="over"||S.phase==="home")return;
     var pen=10*(S.n-2);
-    if(!confirm("Give up this round? You’ll lose "+pen+" points and BOT’s number will be revealed."))return;
+    ask("Give up this round?","You’ll lose "+pen+" points and BOT’s number will be revealed.","Give up",function(){giveUp2(pen)});}
+  function giveUp2(pen){if(S.daily)dailyMark(0);
     S.gid++;S.busy=false;
     if(S.mode==="solo"){
       awardPts(-pen);S.phase="between";
@@ -612,13 +669,13 @@ button{transition:transform .12s,background .2s}
     if(v.length<2){alert("Pick a name with at least 2 characters.");return}
     if(v.indexOf("@")>=0){alert("Your name can’t be an email.");return}
     S.nick=v;save("bot-nick",S.nick);
-    $("nsheet").classList.add("hide");updateAcct();
+    $("nsheet").classList.add("hide");updateAcct();tryInvite();
   };
   $("acctBtn").onclick=function(){
     if(!window.botCloud){alert("Firebase isn’t set up yet. Paste your firebaseConfig into the file first.");return}
     if(S.user)window.botCloud.signOut();else $("sheet").classList.remove("hide");
   };
-  window.botAuth=function(u){S.user=u;if(u)$("sheet").classList.add("hide");updateAcct()};
+  window.botAuth=function(u){S.user=u;if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide")};
   window.botLoaded=function(d){
     if(d.nick&&!S.nick){S.nick=d.nick;try{localStorage.setItem("bot-nick",JSON.stringify(S.nick))}catch(e){}}
     if(typeof d.pts==="number"&&d.pts>S.pts)S.pts=d.pts;
@@ -632,7 +689,7 @@ button{transition:transform .12s,background .2s}
     try{localStorage.setItem("bot-pins",JSON.stringify(S.pins))}catch(e){}
     if(window.botCloud)window.botCloud.save(S.pts,S.hist,S.pins,S.nick);
     if(!S.nick)openName();
-    render();
+    render();tryInvite();
   };
   // ===== Online play: rooms live in Firestore; each player's secret stays on their own device =====
   var O={code:"",role:"",room:null,secret:"",cur:"",locked:false,unsub:null,done:false,ans:{}};
@@ -642,7 +699,7 @@ button{transition:transform .12s,background .2s}
   function oerr(e){alert(((e&&e.message)||"Something went wrong.")+"\n\n[code: "+((e&&e.code)||"n/a")+" | project: "+((window.botCloud&&window.botCloud.pid)||"?")+" | signed in: "+(S.user?"yes ("+String(S.user.uid).slice(0,6)+")":"no")+"]")}
   function enterRoom(code,role){
     O={code:code,role:role,room:null,secret:"",cur:"",locked:false,unsub:null,done:false,ans:{},chatOpen:false,seen:0};
-    S.phase="online";
+    S.phase="online";ON=[];
     O.unsub=window.botCloud.room.watch(code,onRoom);
     render();
   }
@@ -653,7 +710,8 @@ button{transition:transform .12s,background .2s}
     var wasPlaying=O.prev==="playing";O.prev=r.status;
     if(r.status==="secrets"&&O.locked&&!(r.ready&&r.ready[O.role])){O.locked=false;O.secret="";O.cur="";O.ans={};O.done=false}
     var cl=window.botCloud.room,gs=r.guesses||{};
-    if(O.role==="host"&&r.status==="secrets"&&r.ready&&r.ready.host&&r.ready.guest)cl.update(O.code,{status:"playing",turn:r.starter||"host"}).catch(oerr);
+    if(!O.secret&&r.status!=="lobby"&&r.status!=="done"&&r.ready&&r.ready[O.role]){try{var sv=localStorage.getItem("bot-sec-"+O.code);if(sv&&sv.length===r.n){O.secret=sv;O.locked=true}}catch(e){}}
+    if(O.role==="host"&&r.status==="secrets"&&r.ready&&r.ready.host&&r.ready.guest)cl.update(O.code,{status:"playing",turn:r.starter||"host",turnAt:Date.now()}).catch(oerr);
     if(r.status!=="lobby"&&O.secret){
       Object.keys(gs).forEach(function(i){
         var x=gs[i];
@@ -675,7 +733,8 @@ button{transition:transform .12s,background .2s}
       window.botCloud.db.update("tournaments",r.tid,rp).catch(oerr);
     }
     if(r.status==="done"&&!O.done){
-      O.done=true;
+      O.done=true;sfx(r.winner===O.role?"win":"lose");
+      if(wasPlaying){var og=r[O.role==="host"?"guest":"host"];S.hist.push({t:Date.now(),mode:r.tid?"tour":"online",n:S.n,res:r.winner===O.role?"u":"a",opp:og?og.name:"Friend",u:Object.keys(r.guesses||{}).filter(function(i){return r.guesses[i].by===O.role}),a:[]});if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist)}
       if(wasPlaying&&!r.tid){
         var dp=r.winner===O.role?10*(S.n-2):-(r.gaveUp===O.role?10:5)*(S.n-2);
         var nd=r.need||0,ww=r.wins||{};
@@ -707,7 +766,7 @@ button{transition:transform .12s,background .2s}
     var show=(r.status==="secrets"&&!O.locked)||(r.status==="playing"&&r.turn===O.role&&!!O.secret);
     $("onew").classList.toggle("hide",!(r.status==="done"||(r.status==="playing"&&!O.secret))||!!r.tid);
     $("ogive").classList.toggle("hide",r.status!=="playing");
-    $("onew").textContent=over?"New tournament":"New game in this room";
+    $("onew").textContent=over?"New tournament":"Rematch";
     var ho=O.role==="host"&&(r.status==="lobby"||r.status==="done")&&!r.tid;
     $("oset").classList.toggle("hide",!ho);
     if(ho){
@@ -716,13 +775,13 @@ button{transition:transform .12s,background .2s}
       opts($("ofmt"),[{n:"Free play",need:0}].concat(FORMATS).map(function(x){return{label:x.n,v:x.need}}),function(i){return i.v===need},function(i){window.botCloud.room.update(O.code,{need:i.v}).catch(oerr)});
     }
     $("opin").textContent=isPinned(O.code)?"📌 Pinned · tap to unpin":"📌 Pin to home screen";
-    $("opin").classList.toggle("hide",!!r.tid);$("oleave").textContent=r.tid?"Back to tournament":"Leave room";
+    $("opin").classList.toggle("hide",!!r.tid);$("oinvite").classList.toggle("hide",!(r.status==="lobby"&&!r.tid));$("oleave").textContent=r.tid?"Back to tournament":"Leave room";
     play.classList.toggle("hide",!show);
     if(show){
       var sl=$("oslots");sl.innerHTML="";
       for(var i=0;i<S.n;i++){var d2=document.createElement("div");d2.className="slot"+(i===O.cur.length?" on":"");d2.textContent=O.cur[i]||"";sl.appendChild(d2)}
       $("ogo").textContent=r.status==="secrets"?"Lock in":"Guess";
-      $("ogo").disabled=!valid(O.cur);
+      $("ogo").disabled=!valid(O.cur);mkNotes("onotes",ON);
     }
     renderChat(r);
   }
@@ -732,13 +791,13 @@ button{transition:transform .12s,background .2s}
     var opp=r[O.role==="host"?"guest":"host"];
     $("ochatN").textContent=opp?opp.name:"your opponent";
     var theirs=ks.filter(function(k){return msgs[k].by!==O.role}).length;
-    if(O.chatOpen)O.seen=theirs;
+    if(O.chatOpen||theirs<(O.seen||0))O.seen=theirs;
     var unread=Math.max(0,theirs-(O.seen||0)),b=$("ochatB");
     b.style.display=unread?"inline-block":"none";b.textContent=unread;
     $("ochatBox").classList.toggle("hide",!O.chatOpen);
     if(!O.chatOpen)return;
     var L=$("ochatL"),stick=L.scrollTop+L.clientHeight>=L.scrollHeight-40;
-    L.innerHTML=ks.length?ks.slice(-60).map(function(k){var m=msgs[k];return'<div class="cm '+(m.by===O.role?"me":"th")+'">'+esc(m.x||"")+'</div>'}).join(""):'<div class="mute" style="text-align:center;padding:6px 0">No messages yet. Say hi 👋</div>';
+    L.innerHTML=ks.length?ks.slice(-60).map(function(k){var m=msgs[k];return'<div class="cm '+(m.by===O.role?"me":"th")+'">'+esc(m.x||"")+'<small class="cn">'+esc((r[m.by]&&r[m.by].name)||"")+'</small></div>'}).join(""):'<div class="mute" style="text-align:center;padding:6px 0">No messages yet. Say hi 👋</div>';
     if(stick)L.scrollTop=L.scrollHeight;
   }
   function sendChat(){
@@ -762,12 +821,12 @@ button{transition:transform .12s,background .2s}
     var r=O.room;if(!r||!valid(O.cur))return;
     var cl=window.botCloud.room,p={};
     if(r.status==="secrets"&&!O.locked){
-      O.secret=O.cur;O.locked=true;O.cur="";p["ready."+O.role]=true;cl.update(O.code,p).catch(oerr);renderOnline();return;
+      O.secret=O.cur;try{localStorage.setItem("bot-sec-"+O.code,O.secret)}catch(e){}O.locked=true;O.cur="";p["ready."+O.role]=true;cl.update(O.code,p).catch(oerr);renderOnline();return;
     }
     if(r.status==="playing"&&r.turn===O.role){
       var idx=Object.keys(r.guesses||{}).length;
       p["guesses."+idx]={by:O.role,g:O.cur,k:null};
-      p.turn=O.role==="host"?"guest":"host";
+      p.turn=O.role==="host"?"guest":"host";p.turnAt=Date.now();
       O.cur="";cl.update(O.code,p).catch(oerr);renderOnline();
     }
   }
@@ -889,6 +948,7 @@ button{transition:transform .12s,background .2s}
   }
   function onTour(d){
     if(!d){alert("That tournament no longer exists.");leaveTour();return}
+    if(S.user&&d.players&&!d.players[S.user.uid]){alert("You are no longer in this tournament.");leaveTour();return}
     T.prev=d.status;T.data=d;
     var me=S.user&&S.user.uid;
     if(d.status==="running"){
@@ -915,7 +975,7 @@ button{transition:transform .12s,background .2s}
   function renderTour(){
     var d=T.data,info=$("tinfo"),body=$("tbody");
     var show=function(id,v){$(id).classList.toggle("hide",!v)};
-    if(!d){info.innerHTML='<div class="mute">Connecting…</div>';body.innerHTML="";show("tstart",false);show("tplay",false);return}
+    if(!d){info.innerHTML='<div class="mute">Connecting…</div>';body.innerHTML="";show("tstart",false);show("tplay",false);show("tinvite",false);show("tshare",false);show("tquit",false);return}
     var me=S.user.uid,ids=Object.keys(d.players),isOrg=d.org===me,P=ids.length,ipl=d.fmt==="ipl",gs=groupsOf(d),many=gs.length>1;
     var nmOf=function(u){return esc((d.players[u]||{}).name||"?")};
     info.innerHTML='<div class="mute">Tournament code</div><div style="font-size:30px;font-weight:800;letter-spacing:6px">'+esc(T.id)+'</div><div class="mute" style="margin-top:6px">'+d.n+' digits · '+P+' player'+(P===1?"":"s")+(many?' · '+gs.length+' groups':'')+'</div>';
@@ -924,7 +984,7 @@ button{transition:transform .12s,background .2s}
     var ov=[],ld=false,sg=[],done=d.status==="done";
     if(d.status==="lobby"){
       h+=hd+'Players ('+P+'/'+MAXP+')</div>';
-      ids.forEach(function(u){h+='<div class="row"><span>'+nmOf(u)+(u===d.org?' · host':'')+'</span></div>'});
+      ids.forEach(function(u){h+='<div class="row"><span>'+nmOf(u)+(u===d.org?' · host':'')+'</span>'+(isOrg&&u!==d.org?'<button class="pill" data-rm="'+u+'" style="min-height:32px;padding:4px 12px;font-size:12px">Remove</button>':'')+'</div>'});
       if(isOrg&&P<3)h+='<p class="mute" style="margin:12px 0 0">Need at least 3 players.</p>';
       else if(!isOrg)h+='<p class="mute" style="margin:12px 0 0">Waiting for the host…</p>';
     }else{
@@ -974,7 +1034,7 @@ button{transition:transform .12s,background .2s}
     }
     T.next=nx;
     show("tstart",d.status==="lobby"&&isOrg&&P>=3);
-    show("tplay",!!nx);
+    show("tplay",!!nx);show("tinvite",d.status==="lobby");show("tshare",d.status==="done");show("tquit",d.status==="lobby"&&!isOrg);
     if(nx)$("tplay").textContent="Play vs "+(d.players[nx.a===me?nx.b:nx.a]||{}).name+" · "+nx.label;
     if(d.status==="running"&&!nx){
       var mine2=ov.length?playerStatus(d,me,sg,ld,ov):{out:false};
@@ -1021,6 +1081,80 @@ button{transition:transform .12s,background .2s}
     Promise.all(ps).then(function(){return window.botCloud.db.update("tournaments",T.id,upd)}).catch(oerr);
   };
   $("tplay").onclick=function(){var x=T.next;if(!x)return;if(x.stage&&T.data)ensureRoom(T.data,x.stage).then(function(){joinRoom(x.room)}).catch(oerr);else joinRoom(x.room)};
+  var askCb=null;
+  function ask(t,p,ok,cb){$("askT").textContent=t;$("askP").textContent=p;$("askOk").textContent=ok;askCb=cb;$("ask").classList.remove("hide")}
+  $("askNo").onclick=function(){askCb=null;$("ask").classList.add("hide")};
+  $("ask").onclick=function(e){if(e.target===this)$("askNo").onclick()};
+  $("askOk").onclick=function(){var f=askCb;askCb=null;$("ask").classList.add("hide");if(f)f()};
+  var SN=[],ON=[],TURN_MS=60000,NT=["","x","k"];
+  function mkNotes(id,arr){var el=$(id);el.innerHTML="";for(var i=0;i<10;i++)(function(i){var b=document.createElement("button");b.className="nt "+(arr[i]||"");b.textContent=i;b.onclick=function(){arr[i]=NT[(NT.indexOf(arr[i]||"")+1)%3];mkNotes(id,arr)};el.appendChild(b)})(i)}
+  function statsHtml(){
+    if(!S.hist.length)return"";
+    var h=S.hist.filter(function(g){return g.mode!=="solo"}),w=h.filter(function(g){return g.res==="u"}),run=0,best=0,cur=0,i;
+    h.forEach(function(g){if(g.res==="u"){run++;best=Math.max(best,run)}else run=0});
+    for(i=h.length-1;i>=0&&h[i].res==="u";i--)cur++;
+    var gl=w.filter(function(g){return g.u&&g.u.length}).map(function(g){return g.u.length}),
+        so=S.hist.filter(function(g){return g.mode==="solo"&&g.u&&g.u.length}).map(function(g){return g.u.length}),
+        t=function(v,l){return'<div><b>'+v+'</b><span class="mute">'+l+'</span></div>'};
+    return'<div class="card stats">'+t(h.length?Math.round(w.length/h.length*100)+"%":"–","Win rate")+t(cur+" / "+best,"Streak / best")+t(gl.length?(gl.reduce(function(a,b){return a+b},0)/gl.length).toFixed(1):"–","Avg guesses")+t(so.length?Math.min.apply(null,so):"–","Best solo")+'</div>';
+  }
+  setInterval(function(){
+    var r=O.room,t=$("otimer");
+    if(S.phase!=="online"||!r||!window.botCloud){t.classList.add("hide");return}
+    var opp=O.role==="host"?"guest":"host",o=r[opp],now=Date.now(),seen=(r.seen||{})[opp]||0,txt=o?(now-seen<45000?"🟢 ":"⚪ ")+o.name:"";
+    if(!O.hb||now-O.hb>20000){O.hb=now;var p={};p["seen."+O.role]=now;window.botCloud.room.update(O.code,p).catch(function(){})}
+    if(r.status!=="playing")O.ff=0;
+    else if(r.turnAt){
+      var left=Math.ceil((r.turnAt+TURN_MS-now)/1000);txt+=" · ⏱ "+Math.max(0,left)+"s"+(r.turn===O.role?" to guess":"");
+      if(left<-5&&r.turn!==O.role&&!O.ff){O.ff=1;var q={status:"done",winner:O.role,gaveUp:opp};q["wins."+O.role]=((r.wins&&r.wins[O.role])||0)+1;window.botCloud.room.update(O.code,q).catch(oerr)}
+    }
+    t.textContent=txt;t.classList.toggle("hide",!txt);
+  },1000);
+  var HINT=[],SND=load("bot-snd",1);
+  function sfx(k){if(!SND)return;try{if(navigator.vibrate)navigator.vibrate(k==="win"?[60,40,90]:200);var a=sfx.c||(sfx.c=new(window.AudioContext||window.webkitAudioContext)()),t=a.currentTime;(k==="win"?[523,659,784]:[330,262]).forEach(function(f,i){var o=a.createOscillator(),g=a.createGain();o.frequency.value=f;g.gain.setValueAtTime(.15,t+i*.14);g.gain.exponentialRampToValueAtTime(.001,t+i*.14+.25);o.connect(g);g.connect(a.destination);o.start(t+i*.14);o.stop(t+i*.14+.26)})}catch(e){}}
+  function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
+  $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
+  function hintTxt(){$("hintline").textContent=HINT.map(function(i){return"Digit "+(i+1)+" = "+S.aSecret[i]}).join("  ·  ")}
+  $("hint").onclick=function(){if(S.phase!=="guess"||S.daily)return;var f=[];for(var i=0;i<S.n;i++)if(HINT.indexOf(i)<0)f.push(i);if(!f.length)return;HINT.push(rnd(f));awardPts(-3);render()};
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Use the 0-9 notes row: tap once to strike a digit out, twice to mark it likely.","Crack their number first to win points. A hint costs 3 pts (not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","Daily: one shared puzzle per day. Fewest guesses tops the board."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  $("howto").onclick=openHow;
+  setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
+  function dky(){return new Date().toISOString().slice(0,10)}
+  function dailySecret(){var h=0,k=S.daily+"c",i,c="";for(i=0;i<k.length;i++)h=Math.imul(h^k.charCodeAt(i),2654435761)>>>0;for(i=0;i<S.n;i++){h=Math.imul(h^h>>>15,2246822519)>>>0;h=(h^h>>>13)>>>0;c+=h%10}return c}
+  function dailyMark(g){save("bot-daily",{d:S.daily,g:g})}
+  function dailyDone(){var g=S.uT.length;dailyMark(g);
+    if(window.botCloud&&window.botCloud.db&&S.user)window.botCloud.db.set("daily",S.daily+"_"+S.user.uid,{date:S.daily,uid:S.user.uid,name:nm(),g:g,t:Date.now()}).catch(function(){});
+    setTimeout(function(){openBoard(S.daily)},1200)}
+  function openBoard(d){
+    $("infoT").textContent="Daily · "+d;$("infoBody").innerHTML='<div class="mute">Loading…</div>';$("info").classList.remove("hide");
+    var mine=load("bot-daily",{}),done=function(rows){rows.sort(function(a,b){return a.g-b.g||a.t-b.t});
+      $("infoBody").innerHTML=(mine.d===d&&mine.g?'<p class="mute">You solved it in <b>'+mine.g+'</b> guesses. Come back tomorrow!</p>':'')+(rows.length?rows.slice(0,10).map(function(x,i){return'<div class="lb'+(S.user&&x.uid===S.user.uid?' me':'')+'"><span class="rk'+(i<3?' p'+(i+1):'')+'">'+(i+1)+'</span><span class="nm">'+esc(x.name||"?")+'</span><span class="st">'+x.g+' guesses</span></div>'}).join(""):'<p class="mute">No scores yet.</p>')};
+    if(window.botCloud&&window.botCloud.db&&window.botCloud.db.top&&S.user)window.botCloud.db.top(d).then(done).catch(function(){done([])});else done([])}
+  $("daily").onclick=function(){if(needIn())return;var k=dky(),m=load("bot-daily",{});if(m.d===k){openBoard(k);return}
+    S.daily=k;S.mode="solo";S.n=4;S.score={u:0,a:0};S.round=1;S.starter="u";startRound()};
+  function shareOut(t){function cp(){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(function(){toast("Results copied")}).catch(function(){prompt("Copy:",t)})}
+    if(navigator.share)navigator.share({title:"Cipher",text:t}).catch(function(e){if(!e||e.name!=="AbortError")cp()});else cp()}
+  $("tshare").onclick=function(){var d=T.data;if(!d)return;var m=["🥇","🥈","🥉"];shareOut("Cipher tournament "+T.id+" results:\n"+finalOrder(d).map(function(u,i){return(m[i]||(i+1)+".")+" "+((d.players[u]||{}).name||"?")}).join("\n"))};
+  $("tquit").onclick=function(){if(!T.data||!S.user)return;var id=T.id,u=S.user.uid;leaveTour();window.botCloud.db.del("tournaments",id,"players."+u).catch(oerr)};
+  $("tbody").onclick=function(e){var u=e.target.getAttribute&&e.target.getAttribute("data-rm");if(u&&T.id)window.botCloud.db.del("tournaments",T.id,"players."+u).catch(oerr)};
+  if("serviceWorker"in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+  function toast(t){var e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(function(){e.classList.remove("show")},2400)}
+  function invite(k,c){
+    var url=location.href.split(/[?#]/)[0]+"?"+k+"="+c,
+        txt=nm()+" invited you to a Cipher "+(k==="tour"?"tournament":"duel")+". Join with code "+c+":";
+    function copy(){var m=txt+" "+url;
+      (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(m):Promise.reject()).then(function(){toast("Invite copied. Paste it to your friends")}).catch(function(){prompt("Copy this invite:",m)})}
+    if(navigator.share)navigator.share({title:"Cipher",text:txt,url:url}).catch(function(e){if(!e||e.name!=="AbortError")copy()});else copy();
+  }
+  $("oinvite").onclick=function(){if(O.code)invite("room",O.code)};
+  $("tinvite").onclick=function(){if(T.id)invite("tour",T.id)};
+  function tryInvite(){
+    var v=S.inv;if(!v||!window.botCloud||!window.botCloud.room)return;
+    if(!S.user){$("sheet").classList.remove("hide");return}
+    if(!S.nick){openName();return}
+    S.inv=null;$("nsheet").classList.add("hide");
+    if(v.k==="tour"){$("tcode").value=v.c;$("tjoin").onclick()}else{$("ocode").value=v.c;joinRoom(v.c)}
+  }
   $("tleave").onclick=leaveTour;
   $("oleave").onclick=leave;
   $("ocreate").onclick=function(){
@@ -1031,7 +1165,7 @@ button{transition:transform .12s,background .2s}
   };
   function joinRoom(code){
     if(needIn())return;
-    window.botCloud.room.join(code,{uid:S.user.uid,name:nm()}).then(function(d){S.n=d.n;enterRoom(code,d.host.uid===S.user.uid?"host":"guest")}).catch(oerr);
+    window.botCloud.room.join(code,{uid:S.user.uid,name:nm()}).then(function(d){S.n=d.n;if(d.status==="done"&&!d.tid)window.botCloud.room.update(code,{chat:{}}).catch(function(){});enterRoom(code,d.host.uid===S.user.uid?"host":"guest")}).catch(oerr);
   }
   $("ojoin").onclick=function(){var c=$("ocode").value.trim().toUpperCase();if(c)joinRoom(c)};
   function isPinned(c){return S.pins.some(function(x){return x.code===c})}
@@ -1044,15 +1178,15 @@ button{transition:transform .12s,background .2s}
   $("ogive").onclick=function(){
     var r=O.room;if(!r||r.status!=="playing")return;
     var pen=10*(S.n-2);
-    if(!confirm("Give up this game? You’ll lose "+pen+" points and your friend wins."))return;
+    ask("Give up this game?","You’ll lose "+pen+" points and your friend wins.","Give up",function(){r=O.room;if(!r||r.status!=="playing")return;
     var opp=O.role==="host"?"guest":"host",p={status:"done",winner:opp,gaveUp:O.role};
     p["wins."+opp]=((r.wins&&r.wins[opp])||0)+1;
-    window.botCloud.room.update(O.code,p).catch(oerr);
+    window.botCloud.room.update(O.code,p).catch(oerr);});
   };
   $("onew").onclick=function(){
     var r=O.room;if(!r)return;
     var nd=r.need||0,ww=r.wins||{},ov=nd>0&&((ww.host||0)>=nd||(ww.guest||0)>=nd);
-    var patch={status:"secrets",ready:{host:false,guest:false},guesses:{},winner:null,gaveUp:null,n:r.nextN||r.n,nextN:null,starter:(r.starter||"host")==="host"?"guest":"host"};
+    var patch={status:"secrets",ready:{host:false,guest:false},guesses:{},winner:null,gaveUp:null,chat:{},n:r.nextN||r.n,nextN:null,starter:(r.starter||"host")==="host"?"guest":"host"};
     if(ov)patch.wins={host:0,guest:0};
     window.botCloud.room.update(O.code,patch).catch(oerr);
   };
@@ -1081,6 +1215,8 @@ button{transition:transform .12s,background .2s}
     S.nick=n.slice(0,16);save("bot-nick",S.nick);
     window.botCloud.guest(n);
   };
+  (function(){var p=new URLSearchParams(location.search),f=function(k){return(p.get(k)||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)},t=f("tour"),r=f("room");
+    if(t||r){S.inv={k:t?"tour":"room",c:t||r};S.mode="online";try{history.replaceState(null,"",location.pathname)}catch(e){}}})();
   updateAcct();
   render();
 })();
@@ -1100,7 +1236,7 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
   const V="10.14.1",B="https://www.gstatic.com/firebasejs/"+V+"/";
   const {initializeApp}=await import(B+"firebase-app.js");
   const {getAuth,GoogleAuthProvider,signInWithPopup,signInAnonymously,updateProfile,signOut,onAuthStateChanged}=await import(B+"firebase-auth.js");
-  const {getFirestore,doc,getDoc,setDoc,updateDoc,onSnapshot}=await import(B+"firebase-firestore.js");
+  const {getFirestore,doc,getDoc,setDoc,updateDoc,onSnapshot,deleteField,collection,query,where,limit,getDocs}=await import(B+"firebase-firestore.js");
   const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
   let user=null;
   window.botCloud={
@@ -1117,6 +1253,8 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
     get:async(c,i)=>{const s=await getDoc(doc(db,c,i));return s.exists()?s.data():null},
     set:(c,i,d)=>setDoc(doc(db,c,i),d),
     update:(c,i,p)=>updateDoc(doc(db,c,i),p),
+    del:(c,i,f)=>updateDoc(doc(db,c,i),{[f]:deleteField()}),
+    top:async(d)=>{const q=await getDocs(query(collection(db,"daily"),where("date","==",d),limit(50)));return q.docs.map(x=>x.data())},
     watch:(c,i,cb)=>onSnapshot(doc(db,c,i),s=>cb(s.exists()?s.data():null))
   };
   window.botCloud.room={
