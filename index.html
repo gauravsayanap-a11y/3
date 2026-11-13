@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b0e17">
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Cipher</title>
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--ink:#16181d;--mute:#7a7f89;--line:#eceef2;--key:#eef0f3;--acc:#2563eb;--bull:#1f7a5a;--cow:#d98a1e;--ai:#7c4dff;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);
@@ -205,10 +205,10 @@ button{min-height:46px;line-height:1.2}
 #menu button:active{background:var(--key)}
 
 /* ===== brick-style wrapping for option buttons ===== */
-.opts{display:flex!important;flex-wrap:wrap;justify-content:center;gap:8px}
-.opts .opt{flex:0 0 auto!important;width:104px;min-width:0}
-#dig .opt,.rep .opt,#odig .opt{width:56px}
-#fmt .opt,#ofmt .opt{width:150px}
+.opts{display:flex!important;flex-wrap:wrap;justify-content:stretch;gap:8px}
+.opts .opt{flex:1 1 104px!important;width:auto;min-width:0}
+#dig .opt,.rep .opt,#odig .opt{flex:1 1 56px!important}
+#fmt .opt,#ofmt .opt{flex:1 1 100px!important}
 
 #hintrow{display:flex;justify-content:flex-end;margin-bottom:-4px}
 #hint{min-height:32px;padding:6px 14px;font-size:13px;border-radius:999px;background:transparent;border:1px solid var(--line);color:var(--mute)}
@@ -282,6 +282,8 @@ button{min-height:46px;line-height:1.2}
     <div class="card" id="tinfo"></div>
     <div class="card" id="tbody"></div>
     <button class="wide ghost hide" id="tinvite">📨 Invite players</button>
+    <button class="wide hide" id="tagain">🔁 Play again with same players</button>
+    <button class="wide ghost" id="tpin">📌 Pin to home screen</button>
     <button class="wide hide" id="tstart">Start tournament</button>
     <button class="wide hide" id="tplay">Play my next match</button>
     <button class="wide hide" id="tshare">📤 Share results</button>
@@ -710,8 +712,8 @@ button{min-height:46px;line-height:1.2}
     S.hist.sort(function(a,b){return a.t-b.t});
     if(S.hist.length>40)S.hist=S.hist.slice(-40);
     try{localStorage.setItem("bot-pts",JSON.stringify(S.pts));localStorage.setItem("bot-hist",JSON.stringify(S.hist))}catch(e){}
-    var ps={};S.pins.forEach(function(x){ps[x.code]=1});
-    (d.pins||[]).forEach(function(x){if(!ps[x.code])S.pins.push(x)});
+    var ps={};S.pins.forEach(function(x){ps[(x.kind||"room")+x.code]=1});
+    (d.pins||[]).forEach(function(x){if(!ps[(x.kind||"room")+x.code])S.pins.push(x)});
     try{localStorage.setItem("bot-pins",JSON.stringify(S.pins))}catch(e){}
     if(window.botCloud)window.botCloud.save(S.pts,S.hist,S.pins,S.nick);
     if(!S.nick)openName();
@@ -777,7 +779,7 @@ button{min-height:46px;line-height:1.2}
     Object.keys(gs).map(Number).sort(function(a,b){return a-b}).forEach(function(i){var x=gs[i];(x.by===O.role?mine:theirs).push({g:x.g,k:x.k==null?null:x.k})});
     var o=r[O.role==="host"?"guest":"host"],on=esc(o?o.name:"your friend"),msg;
     var w=r.wins||{},mw=w[O.role]||0,ow=w[O.role==="host"?"guest":"host"]||0,need=r.need||0,over=need>0&&(mw>=need||ow>=need),series=(mw+ow||need)?'<div class="mute" style="margin-top:4px">'+(need?'Best of '+(need*2-1)+' · ':'')+r.n+' digits · You '+mw+' – '+ow+' '+on+'</div>':'';
-    S.pins.forEach(function(q){if(q.code===O.code&&o&&q.label!==o.name){q.label=o.name;save("bot-pins",S.pins)}});
+    S.pins.forEach(function(q){if(q.kind!=="tour"&&q.code===O.code&&o&&q.label!==o.name){q.label=o.name;save("bot-pins",S.pins)}});
     if(r.status==="lobby")msg="Share this code with your friend and wait for them to join…";
     else if(r.status==="secrets")msg=O.locked?"Waiting for "+on+" to pick a number…":"Pick your secret number ("+S.n+" digits). Your friend can’t see it.";
     else if(r.status==="playing")msg=r.turn===O.role?"Your turn: guess "+on+"’s number.":"Waiting for "+on+" to guess…";
@@ -919,10 +921,11 @@ button{min-height:46px;line-height:1.2}
   // IPL-style playoffs. 4+ seeds: Qualifier 1 (#1 v #2), Eliminator (#3 v #4),
   // Qualifier 2 (Q1 loser v Eliminator winner), Final (Q1 winner v Q2 winner).
   // 3 players: Eliminator (#2 v #3), Final (#1 v Eliminator winner).
+  function rb(d){return T.id+(d&&d.run?"r"+d.run:"")}
   function stagesOf(d){
     if(d.fmt!=="ipl")return[];
     var P=Object.keys(d.players).length,st=leagueDone(d)?seedsOf(d):[],p=d.p||{};
-    function mk(key,label,round,desc,a,b){return{key:key,label:label,round:round,desc:desc,a:a||null,b:b||null,winner:(p[key]||{}).winner||null,room:T.id+"-"+key}}
+    function mk(key,label,round,desc,a,b){return{key:key,label:label,round:round,desc:desc,a:a||null,b:b||null,winner:(p[key]||{}).winner||null,room:rb(d)+"-"+key}}
     if(P<4){
       var el=mk("EL","Eliminator",1,"#2 vs #3",st[1],st[2]);
       return[el,mk("F","Final",2,"#1 vs Eliminator winner",st[0],el.winner)];
@@ -967,7 +970,7 @@ button{min-height:46px;line-height:1.2}
   function rankPts(rank,P,n){return Math.round((40-(rank-1)*50/(P-1))*((n-1)/2))}
   function enterTour(id){
     if(T.unsub)T.unsub();
-    T.id=id;T.data=null;T.prev="";T.made={};
+    T.id=id;T.data=null;T.prev="";T.made={};T.run=0;
     S.phase="tour";
     T.unsub=window.botCloud.db.watch("tournaments",id,onTour);
     render();
@@ -975,7 +978,9 @@ button{min-height:46px;line-height:1.2}
   function onTour(d){
     if(!d){alert("That tournament no longer exists.");leaveTour();return}
     if(S.user&&d.players&&!d.players[S.user.uid]){alert("You are no longer in this tournament.");leaveTour();return}
+    if((d.run||0)!==(T.run||0)){T.made={};T.run=d.run||0}
     T.prev=d.status;T.data=d;
+    tourPinSync(d);
     var me=S.user&&S.user.uid;
     if(d.status==="running"){
       if(d.fmt==="ipl"){
@@ -988,11 +993,11 @@ button{min-height:46px;line-height:1.2}
         if(fin&&fin.winner)window.botCloud.db.update("tournaments",T.id,{status:"done"}).catch(oerr);
       }else if(leagueDone(d))window.botCloud.db.update("tournaments",T.id,{status:"done"}).catch(oerr);
     }
-    if(d.status==="done"&&me&&d.players[me]&&!T.paid[T.id]){
+    if(d.status==="done"&&me&&d.players[me]&&!T.paid[T.id+(d.run?"#"+d.run:"")]){
       var rank=finalOrder(d).indexOf(me)+1;
       if(rank>0){
         awardPts(rankPts(rank,Object.keys(d.players).length,d.n));
-        T.paid[T.id]=1;save("bot-tpaid",T.paid);
+        T.paid[T.id+(d.run?"#"+d.run:"")]=1;save("bot-tpaid",T.paid);
       }
     }
     render();
@@ -1060,7 +1065,7 @@ button{min-height:46px;line-height:1.2}
     }
     T.next=nx;
     show("tstart",d.status==="lobby"&&isOrg&&P>=3);
-    show("tplay",!!nx);show("tinvite",d.status==="lobby");show("tshare",d.status==="done");show("tquit",d.status==="lobby"&&!isOrg);
+    show("tplay",!!nx);show("tinvite",d.status==="lobby");show("tagain",d.status==="done"&&isOrg);$("tpin").textContent=isPinned(T.id,"tour")?"📌 Pinned · tap to unpin":"📌 Pin to home screen";show("tshare",d.status==="done");show("tquit",d.status==="lobby"&&!isOrg);
     if(nx)$("tplay").textContent="Play vs "+(d.players[nx.a===me?nx.b:nx.a]||{}).name+" · "+nx.label;
     if(d.status==="running"&&!nx){
       var mine2=ov.length?playerStatus(d,me,sg,ld,ov):{out:false};
@@ -1097,7 +1102,7 @@ button{min-height:46px;line-height:1.2}
     var m={},ps=[],idx=0;
     Object.keys(groups).forEach(function(gk){
       schedule(groups[gk]).forEach(function(rd,ri){rd.forEach(function(pr){
-        var room=T.id+"-"+idx;
+        var room=rb(d)+"-"+idx;
         m[idx]={a:pr[0],b:pr[1],room:room,round:ri+1,g:Number(gk),winner:null};
         ps.push(window.botCloud.db.set("rooms",room,{n:d.n,need:0,nextN:null,tid:T.id,mid:String(idx),round:ri+1,host:{uid:pr[0],name:d.players[pr[0]].name},guest:{uid:pr[1],name:d.players[pr[1]].name},status:"secrets",ready:{host:false,guest:false},turn:"host",starter:"host",wins:{host:0,guest:0},guesses:{},winner:null,created:Date.now()}));
         idx++;
@@ -1238,10 +1243,23 @@ button{min-height:46px;line-height:1.2}
     window.botCloud.room.join(code,{uid:S.user.uid,name:nm()}).then(function(d){S.n=d.n;if(d.status==="done"&&!d.tid)window.botCloud.room.update(code,{chat:{}}).catch(function(){});enterRoom(code,d.host.uid===S.user.uid?"host":"guest")}).catch(oerr);
   }
   $("ojoin").onclick=function(){var c=$("ocode").value.trim().toUpperCase();if(c)joinRoom(c)};
-  function isPinned(c){return S.pins.some(function(x){return x.code===c})}
+  function isPinned(c,k){return S.pins.some(function(x){return x.code===c&&(x.kind||"room")===(k||"room")})}
+  function tourLabel(d){var me=S.user&&S.user.uid,o=Object.keys(d.players).filter(function(u){return u!==me}).map(function(u){return d.players[u].name});return o.length?"Tournament · "+o.slice(0,2).join(", ")+(o.length>2?" +"+(o.length-2):""):"Tournament"}
+  function tourPinSync(d){var ch=false,lb=tourLabel(d);S.pins.forEach(function(q){if(q.kind==="tour"&&q.code===T.id&&q.label!==lb){q.label=lb;ch=true}});if(ch)save("bot-pins",S.pins)}
+  $("tpin").onclick=function(){
+    if(!T.id)return;
+    if(isPinned(T.id,"tour"))S.pins=S.pins.filter(function(x){return!(x.code===T.id&&x.kind==="tour")});
+    else S.pins.push({code:T.id,kind:"tour",label:T.data?tourLabel(T.data):"Tournament"});
+    save("bot-pins",S.pins);renderTour();
+  };
+  $("tagain").onclick=function(){
+    var d=T.data;if(!d||d.status!=="done"||d.org!==(S.user&&S.user.uid))return;
+    ask("Play again?","Everyone in the tournament stays in. The table is cleared and you can start a fresh round.","Reset",function(){
+      window.botCloud.db.update("tournaments",T.id,{status:"lobby",m:{},p:{},order:null,groups:null,run:(d.run||0)+1}).catch(oerr)});
+  };
   $("opin").onclick=function(){
     if(!O.code)return;
-    if(isPinned(O.code))S.pins=S.pins.filter(function(x){return x.code!==O.code});
+    if(isPinned(O.code))S.pins=S.pins.filter(function(x){return!(x.code===O.code&&(x.kind||"room")==="room")});
     else{var r=O.room,o=r&&r[O.role==="host"?"guest":"host"];S.pins.push({code:O.code,label:o?o.name:"Friend"})}
     save("bot-pins",S.pins);renderOnline();
   };
@@ -1263,14 +1281,15 @@ button{min-height:46px;line-height:1.2}
   function renderPins(){
     var el=$("pins");el.innerHTML="";
     if(!S.pins.length)return;
-    var h=document.createElement("div");h.className="mute";h.textContent="Pinned rooms";h.style.margin="0 0 8px";el.appendChild(h);
+    var h=document.createElement("div");h.className="mute";h.textContent="Pinned";h.style.margin="0 0 8px";el.appendChild(h);
     S.pins.forEach(function(p){
       var row=document.createElement("div");row.className="pinrow";
       var b=document.createElement("button");b.className="pinbtn";
-      b.innerHTML='<span>📌 <b>'+esc(p.label||"Friend")+'</b><small>'+esc(p.code)+'</small></span><span class="pj">Join</span>';
-      b.onclick=function(){joinRoom(p.code)};
+      var tr=p.kind==="tour";
+      b.innerHTML='<span>'+(tr?"🏆":"📌")+' <b>'+esc(p.label||"Friend")+'</b><small>'+esc(p.code)+'</small></span><span class="pj">Join</span>';
+      b.onclick=function(){if(tr){$("tcode").value=p.code;$("tjoin").onclick()}else joinRoom(p.code)};
       var x=document.createElement("button");x.className="pinx";x.textContent="✕";x.setAttribute("aria-label","Remove");
-      x.onclick=function(){S.pins=S.pins.filter(function(q){return q.code!==p.code});save("bot-pins",S.pins);renderPins()};
+      x.onclick=function(){S.pins=S.pins.filter(function(q){return q!==p});save("bot-pins",S.pins);renderPins()};
       row.appendChild(b);row.appendChild(x);el.appendChild(row);
     });
     var sp=document.createElement("div");sp.style.height="12px";el.appendChild(sp);
@@ -1287,6 +1306,28 @@ button{min-height:46px;line-height:1.2}
   };
   (function(){var p=new URLSearchParams(location.search),f=function(k){return(p.get(k)||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)},t=f("tour"),r=f("room");
     if(t||r){S.inv={k:t?"tour":"room",c:t||r};S.mode="online";try{history.replaceState(null,"",location.pathname)}catch(e){}}})();
+  /* ===== Back button / swipe: go back inside the app instead of closing it ===== */
+  (function(){
+    var armed=true,exitT=0;
+    try{history.replaceState({cph:0},"");history.pushState({cph:1},"")}catch(e){return}
+    function open(id){var e=$(id);return e&&!e.classList.contains("hide")}
+    window.addEventListener("popstate",function(){
+      if(!armed)return;
+      try{history.pushState({cph:1},"")}catch(e){}
+      if(open("ask")){$("askNo").click();return}
+      var ov=["pop","info","sheet","nsheet"];
+      for(var i=0;i<ov.length;i++)if(open(ov[i])){$(ov[i]).classList.add("hide");return}
+      if($("burger").getAttribute("aria-expanded")==="true"){$("burger").click();return}
+      var h=S.phase;
+      if(h==="hist"||h==="between"||h==="over"){goHome();return}
+      if(h==="online"){$("oleave").click();return}
+      if(h==="tour"){$("tleave").click();return}
+      if(h!=="home"){giveUp();return}
+      /* on home: press back twice quickly to leave */
+      if(Date.now()-exitT<2000){armed=false;history.go(-3);return}
+      exitT=Date.now();toast("Press back again to exit");
+    });
+  })();
   updateAcct();
   render();
 })();
