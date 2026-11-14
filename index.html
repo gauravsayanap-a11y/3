@@ -1437,7 +1437,7 @@ button{min-height:46px;line-height:1.2}
   $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
-  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot ruled-out, maybe and sure digits. Pass & play: two players, one phone. Secret digits stay hidden.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place. Pass & play: two players, one phone. Secret digits stay hidden.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
   $("howto").onclick=openHow;
   setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
   function dky(){return new Date().toISOString().slice(0,10)}
@@ -1708,25 +1708,43 @@ button{min-height:46px;line-height:1.2}
   $("achmenu").onclick=openAch;
   $("remmenu").onclick=openRem;
 
-  // ===== Notes =====
-  var NT={},NL=["","✕","?","✓"];
-  function ntReset(){NT={}}
+  // ===== Notes: per-place digit notes (might be / will be / should not be) =====
+  var NT={},NP=0,NL=["","?","✓","✕"];
+  function ntReset(){NT={};NP=0}
+  function ntGet(p,d){return (NT[p]&&NT[p][d])||0}
   function openNotes(){
     $("infoT").textContent="📝 Notes";
-    $("infoBody").innerHTML='<p class="mute" style="margin:0 0 12px;line-height:1.5">Tap a digit to cycle: <b>✕</b> ruled out, <b>?</b> maybe, <b style="color:var(--bull)">✓</b> sure, then blank again. Only you can see these notes.</p><div id="ntg" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div><button class="wide ghost" id="ntr" style="margin-top:14px">Clear notes</button>';
+    $("infoBody").innerHTML='<p class="mute" style="margin:0 0 12px;line-height:1.5">Pick a place, then tap a digit to cycle: <b style="color:var(--cow)">?</b> might be here, <b style="color:var(--bull)">✓</b> will be here, <b>✕</b> should not be here, then blank again. Only you can see these notes.</p><div id="ntp" style="display:flex;gap:8px;margin-bottom:12px"></div><div id="ntg" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div><div id="nts" style="margin-top:14px"></div><button class="wide ghost" id="ntr" style="margin-top:14px">Clear notes</button>';
     drawNotes();
     $("ntr").onclick=function(){ntReset();drawNotes()};
     $("info").classList.remove("hide");
   }
   function drawNotes(){
-    var g=$("ntg");if(!g)return;g.innerHTML="";
+    var g=$("ntg"),pb=$("ntp"),sm=$("nts");if(!g)return;
+    var n=S.n;if(NP>=n)NP=0;
+    pb.innerHTML="";g.innerHTML="";
+    for(var p=0;p<n;p++)(function(p){
+      var t=document.createElement("button"),on=p===NP;
+      t.className="opt"+(on?" sel":"");t.style.cssText="flex:1;min-height:44px;padding:6px 0;font-size:14px";
+      t.innerHTML="Place "+(p+1);
+      t.onclick=function(){NP=p;drawNotes()};
+      pb.appendChild(t);
+    })(p);
     for(var d=0;d<10;d++)(function(d){
-      var st=NT[d]||0,b=document.createElement("button");b.className="opt";
-      b.style.cssText="flex:none;min-height:64px;font-size:22px;padding:6px 0"+(st===1?";opacity:.45":st===2?";background:var(--cow);color:#2b1a00":st===3?";background:var(--bull);color:#06281a":"");
-      b.innerHTML='<span'+(st===1?' style="text-decoration:line-through"':'')+'>'+d+'</span><small style="display:block;font-size:12px">'+(NL[st]||"&nbsp;")+'</small>';
-      b.onclick=function(){NT[d]=((NT[d]||0)+1)%4;drawNotes()};
+      var st=ntGet(NP,d),b=document.createElement("button");b.className="opt";
+      b.style.cssText="flex:none;min-height:64px;font-size:22px;padding:6px 0"+(st===1?";background:var(--cow);color:#2b1a00":st===2?";background:var(--bull);color:#06281a":st===3?";opacity:.45":"");
+      b.innerHTML='<span'+(st===3?' style="text-decoration:line-through"':'')+'>'+d+'</span><small style="display:block;font-size:12px">'+(NL[st]||"&nbsp;")+'</small>';
+      b.onclick=function(){(NT[NP]=NT[NP]||{})[d]=(ntGet(NP,d)+1)%4;drawNotes()};
       g.appendChild(b);
     })(d);
+    var h='<div class="mute" style="margin-bottom:6px">Summary</div>';
+    for(var p=0;p<n;p++){
+      var m=[],w=[],x=[];
+      for(var d=0;d<10;d++){var s2=ntGet(p,d);if(s2===1)m.push(d);else if(s2===2)w.push(d);else if(s2===3)x.push(d)}
+      h+='<div class="row" style="display:block;font-size:13px;line-height:1.5"><b>Place '+(p+1)+'</b> '
+        +'<span style="color:var(--bull)">✓ '+(w.join(" ")||"–")+'</span> · <span style="color:var(--cow)">? '+(m.join(" ")||"–")+'</span> · <span class="mute">✕ '+(x.join(" ")||"–")+'</span></div>';
+    }
+    sm.innerHTML=h;
   }
   $("notes").onclick=openNotes;$("onotes").onclick=openNotes;
 
