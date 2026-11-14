@@ -230,6 +230,14 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
 @media (prefers-reduced-motion:reduce){#menu,#menuback,#menu button,#menuwrap.open #menu button{transition-duration:.01s!important;transition-delay:0s!important}}
 #menu button{background:transparent;text-align:left;padding:12px 14px;border-radius:12px;font-size:15px}
 #menu button:active{background:var(--key)}
+.cc-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--key);margin:6px 0;font-size:14px;text-align:right}
+.cc-row b{font-size:20px;letter-spacing:.14em;text-align:left;flex:none}
+.cc-row.ok{box-shadow:inset 0 0 0 2px var(--bull)}
+.cc-row.bad{box-shadow:inset 0 0 0 2px var(--cow)}
+.cc-big{font-size:32px;font-weight:800;letter-spacing:.2em;text-align:center;margin:14px 0 12px}
+.cc-fb{border-radius:12px;padding:10px 12px;margin:10px 0;line-height:1.5;font-size:14px}
+.cc-fb.ok{background:rgba(95,191,143,.18)}
+.cc-fb.no{background:rgba(233,169,74,.2)}
 
 /* ===== brick-style wrapping for option buttons ===== */
 .opts{display:flex!important;flex-wrap:wrap;justify-content:stretch;gap:8px}
@@ -243,7 +251,7 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
 @media (max-width:360px){#chopt .opt{font-size:14px;padding:12px 4px}}
 
 #hintrow{display:flex;justify-content:flex-end;gap:8px;margin-bottom:-4px}
-#hint,#notes,#coach{min-height:32px;padding:6px 14px;font-size:13px;border-radius:999px;background:transparent;border:1px solid var(--line);color:var(--mute)}
+#hint,#notes{min-height:32px;padding:6px 14px;font-size:13px;border-radius:999px;background:transparent;border:1px solid var(--line);color:var(--mute)}
 
 /* ===== streak, badges, reminder ===== */
 #streak{padding:14px 16px}
@@ -313,6 +321,7 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
         <button id="frmenu">👥 Friends</button>
         <button id="chmenu">🔗 Challenge a friend</button>
         <button id="pzmenu">🧩 Daily puzzle</button>
+        <button id="coachmenu">🎓 Coach</button>
         <button id="goalmenu">🎯 Weekly goals</button>
         <button id="thmenu">🏆 Tournament history</button>
         <button id="achmenu">🏅 Achievements</button>
@@ -330,7 +339,7 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
   </section>
 
   <section id="game" class="hide">
-    <div id="hintrow"><button id="notes">📝 Notes</button><button id="hint">💡 Riddle hint</button><button id="coach">🎓 Coach</button></div>
+    <div id="hintrow"><button id="notes">📝 Notes</button><button id="hint">💡 Riddle hint</button></div>
     <div id="score"></div>
     <div id="logs">
       <div class="card box" id="lu"></div>
@@ -654,18 +663,26 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
       var b=document.createElement("div");b.className="gh";
       b.innerHTML='<span><b>Game '+(i+1)+'</b> · '+g.n+' digits'+(g.mode==="solo"?' · Solo':'')+(g.hard?' · 🧠 Hard':'')+(g.spd?' · ⚡ Speed':'')+'<small>'+d+'</small><small>'+(g.opp?(g.mode==="tour"?"Tournament":"Online")+' · vs '+esc(g.opp):'BOT: '+(g.ln||LEVELS[g.lvl].n)+' · BOT’s number '+g.bot)+'</small></span><b class="'+(g.res==="u"?"u":"a")+'">'+(g.res==="u"?"You won":g.opp?"You lost":"BOT won")+'</b>';
       el.appendChild(b);
-      var rp=!g.opp&&((g.u&&g.u.length)||(g.a&&g.a.length));
+      var rp=g.opp?true:((g.u&&g.u.length)||(g.a&&g.a.length));
       if(rp){
         b.style.cursor="pointer";b.setAttribute("role","button");
         b.onclick=function(){S.open=S.open===i?-1:i;render()};
         if(S.open===i){
           b.style.borderRadius="14px 14px 0 0";
           var d=document.createElement("div");d.className="gd";
-          d.innerHTML='<div>'+list("You",g.u||[],"u",g.n)+'</div>'+(g.mode==="solo"?'':'<div>'+list("BOT",g.a||[],"a",g.n)+'</div>');
-          if(g.mode==="solo")d.style.gridTemplateColumns="1fr";
+          var okU=g.u&&g.u.length&&typeof g.u[0]==="object";
+          if(g.opp&&!okU){d.innerHTML='<div class="mute" style="grid-column:1/-1">No replies were saved for this game, so there is nothing to review.</div>';d.style.gridTemplateColumns="1fr"}
+          else{
+            d.innerHTML='<div>'+list("You",g.u||[],"u",g.n)+'</div>'+(g.mode==="solo"?'':'<div>'+list(g.opp?esc(g.opp):"BOT",g.a||[],"a",g.n)+'</div>');
+            if(g.mode==="solo")d.style.gridTemplateColumns="1fr";
+          }
           el.appendChild(d);
-          if(g.bot&&g.u&&g.u.length){var rv=document.createElement("div");rv.className="card";rv.style.marginTop="10px";rv.innerHTML='<div class="hd">Post-game review</div><div class="mute">Analysing…</div>';el.appendChild(rv);
-            setTimeout(function(){RVC[g.t]=RVC[g.t]||reviewHtml(analyze(g.n,g.bot,g.u,g.a));rv.innerHTML='<div class="hd">Post-game review</div>'+RVC[g.t]},30)}
+          if(okU){var rv=document.createElement("div");rv.className="card";rv.style.marginTop="10px";rv.innerHTML='<div class="hd">Post-game review</div><div class="mute">Analysing…</div>';el.appendChild(rv);
+            setTimeout(function(){
+              var sec=g.osec||g.bot||"",lt=g.u[g.u.length-1];
+              if(!sec&&lt&&lt.k===g.n*(g.n+1))sec=lt.g;
+              RVC[g.t]=RVC[g.t]||reviewHtml(analyze(g.n,sec,g.u,g.opp?[]:g.a));
+              rv.innerHTML='<div class="hd">Post-game review</div>'+RVC[g.t]},30)}
         }
       }
     });
@@ -682,7 +699,7 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
     $("report").classList.toggle("hide",h!=="report");
     $("play").classList.toggle("hide",h!=="guess");
     $("next").classList.toggle("hide",h!=="between");
-    $("hintrow").classList.toggle("hide",h==="between"||h==="over");$("hint").classList.toggle("hide",!!S.daily);$("coach").classList.toggle("hide",!!S.daily||!!S.chal);
+    $("hintrow").classList.toggle("hide",h==="between"||h==="over");$("hint").classList.toggle("hide",!!S.daily);
     $("home2").classList.toggle("hide",h!=="between"&&h!=="over");
     $("share").classList.toggle("hide",(h!=="between"&&h!=="over")||!S.uT.length);
     $("quit").classList.toggle("hide",h==="between"||h==="over");
@@ -986,7 +1003,7 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
       ask("Spectator request",wn+" would like to watch your match live. They will see both players’ guesses and results, never your secret number. It starts only if both players allow it.","Allow",function(){setWa(true)});
     })}
     var wasPlaying=O.prev==="playing";O.prev=r.status;
-    if(r.status==="secrets"&&O.locked&&!(r.ready&&r.ready[O.role])){O.locked=false;O.secret="";O.cur="";O.ans={};O.done=false;O.rvSent=0;ntReset()}
+    if(r.status==="secrets"&&O.locked&&!(r.ready&&r.ready[O.role])){O.locked=false;O.secret="";O.cur="";O.ans={};O.done=false;O.rvSent=0;O.href=null;ntReset()}
     var cl=window.botCloud.room,gs=r.guesses||{};
     if(!O.secret&&r.status!=="lobby"&&r.status!=="done"&&r.ready&&r.ready[O.role]){try{var sv=localStorage.getItem("bot-sec-"+O.code);if(sv&&sv.length===r.n){O.secret=sv;O.locked=true}}catch(e){}}
     if(O.role==="host"&&r.status==="secrets"&&r.ready&&r.ready.host&&r.ready.guest)cl.update(O.code,{status:"playing",turn:r.starter||"host",turnAt:Date.now()}).catch(oerr);
@@ -1011,9 +1028,15 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
       window.botCloud.db.update("tournaments",r.tid,rp).catch(oerr);
     }
     if(r.status==="done"&&O.secret&&!O.rvSent&&!(r.rv&&r.rv[O.role])){O.rvSent=1;var rp2={};rp2["rv."+O.role]=O.secret;cl.update(O.code,rp2).catch(function(){})}
+    if(r.status==="done"&&O.href&&!O.href.osec){var hos=(r.rv||{})[O.role==="host"?"guest":"host"];if(hos){O.href.osec=hos;save("bot-hist",S.hist)}}
     if(r.status==="done"&&!O.done){
       O.done=true;sfx(r.winner===O.role?"win":"lose");
-      if(wasPlaying){var og=r[O.role==="host"?"guest":"host"];S.hist.push({t:Date.now(),mode:r.tid?"tour":"online",n:S.n,res:r.winner===O.role?"u":"a",opp:og?og.name:"Friend",u:Object.keys(r.guesses||{}).filter(function(i){return r.guesses[i].by===O.role}),a:[]});if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist)}
+      O.href=null;
+      if(wasPlaying){var og=r[O.role==="host"?"guest":"host"],hoi=O.role==="host"?"guest":"host",hgk=r.guesses||{},hgm=[],hgt=[];
+        Object.keys(hgk).map(Number).sort(function(a,b){return a-b}).forEach(function(i){var x=hgk[i];if(!x||x.k==null)return;(x.by===O.role?hgm:hgt).push({g:x.g,k:x.k})});
+        var hH={t:Date.now(),mode:r.tid?"tour":"online",n:S.n,res:r.winner===O.role?"u":"a",opp:og?og.name:"Friend",u:hgm,a:hgt};
+        if(r.rv&&r.rv[hoi])hH.osec=r.rv[hoi];
+        S.hist.push(hH);O.href=hH;if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist)}
       if(wasPlaying&&!r.tid){
         var dp=r.winner===O.role?10*(S.n-2):-(r.gaveUp===O.role?10:5)*(S.n-2);
         var nd=r.need||0,ww=r.wins||{};
@@ -1552,7 +1575,7 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
   $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
-  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (costs rise with each hint: 3, 6, 10, 15 pts. Not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place, and cancel a digit from the whole number. Pass & play: two players, one phone. Secret digits stay hidden.","Challenge (BOT duels, Hard also in solo): 🧠 Hard means each guess must fit all your earlier clues, or you lose 2 pts per slip, and a clean win earns a bonus. ⚡ Speed gives each guess a short timer (a skipped turn costs 1 pt) and fast guesses add bonus points to a win.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry.","Reloading or closing the page during a game counts as a give up. Pressing F5 or Ctrl/Cmd+R shows a warning first."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (costs rise with each hint: 3, 6, 10, 15 pts. Not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place, and cancel a digit from the whole number. Pass & play: two players, one phone. Secret digits stay hidden.","🎓 Coach (in the menu): drills and game reviews that train your skills away from the match. It never helps during a game and costs or earns no points.","Challenge (BOT duels, Hard also in solo): 🧠 Hard means each guess must fit all your earlier clues, or you lose 2 pts per slip, and a clean win earns a bonus. ⚡ Speed gives each guess a short timer (a skipped turn costs 1 pt) and fast guesses add bonus points to a win.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry.","Reloading or closing the page during a game counts as a give up. Pressing F5 or Ctrl/Cmd+R shows a warning first."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
   $("howto").onclick=openHow;
   setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
   function dky(){return new Date().toISOString().slice(0,10)}
@@ -1933,16 +1956,195 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
       BAD.push({s:pm,r:i+1});save("bot-badges",BAD);applyFrame();
       $("infoT").textContent="🏅 Season "+pm+" result";$("infoBody").innerHTML='<div class="card" style="text-align:center"><div style="font-size:44px">'+(i===0?"🥇":i===1?"🥈":"🥉")+'</div><div style="margin-top:6px;line-height:1.5">You finished #'+(i+1)+' of '+l.length+'. Your avatar now has a glowing frame.</div></div>';$("info").classList.remove("hide")})}
   applyFrame();
-  // ===== Coach =====
-  function coach(){if(S.phase!=="guess"||S.daily||S.chal)return;
-    var n=S.n,all=allCodes(),cs=all.filter(function(x){return S.uT.every(function(t){return score(x,t.g)===t.k})}),N=cs.length,h;
-    if(N<=1)h='<p>'+(N?'Only one number fits all your clues: <b class="g">'+cs[0]+'</b>.':'No number fits your clues. Re-check the counts you were given.')+'</p>';
-    else{awardPts(-2);
-      var sm=sample(cs,350),pool=N<=250?cs.concat(sample(all,100)):sample(cs,130).concat(sample(all,130));if(!S.uT.length&&n>=4)pool.push("0123456789".slice(0,n));
-      var bg=pool[0],be=1e9;pool.forEach(function(g){var c={},e=0,k;sm.forEach(function(x){k=score(x,g);c[k]=(c[k]||0)+1});for(k in c)e+=c[k]*c[k];e=e/sm.length/sm.length*N;if(e<be||(e===be&&cs.indexOf(g)>=0)){be=e;bg=g}});
-      h='<p><b>'+N+'</b> numbers still fit your clues.</p><p>Best next guess: <b class="g" style="font-size:22px;color:var(--acc)">'+bg+'</b><br><span class="mute">It should leave about '+Math.max(1,Math.round(be))+' possibilities on average.</span></p><p class="mute">Coach costs 2 pts per use.</p>'}
-    $("infoT").textContent="🎓 Coach";$("infoBody").innerHTML=h;$("info").classList.remove("hide");render()}
-  $("coach").onclick=coach;
+  // ===== Coach: train your skills away from the match =====
+  var CC={cache:{},n:4,drill:"",q:null,tl:{r:0,t:0,s:0}};
+  function ccTrain(){var s=load("bot-coach",null);if(!s||typeof s!=="object")s={};s.d=s.d||{};["fit","find","best"].forEach(function(k){if(!s.d[k])s.d[k]=[0,0]});s.streak=s.streak||0;s.last=s.last||"";s.best=s.best||0;return s}
+  function ccDay(o){var d=new Date();d.setDate(d.getDate()+(o||0));return d.toISOString().slice(0,10)}
+  function ccNote(k,ok){var s=ccTrain(),t=ccDay();s.d[k][1]++;if(ok)s.d[k][0]++;if(s.last!==t){s.streak=(s.last===ccDay(-1))?s.streak+1:1;s.last=t}if(s.streak>s.best)s.best=s.streak;save("bot-coach",s)}
+  function ccScoreIt(k,ok){var t=CC.tl;t.t++;if(ok){t.r++;t.s++}else t.s=0;ccNote(k,ok)}
+  function ccCodes(n){if(CC.cache[n])return CC.cache[n];var r=[],t=Math.pow(10,n),i,s;for(i=0;i<t;i++){s=String(i);while(s.length<n)s="0"+s;r.push(s)}return CC.cache[n]=r}
+  function ccScore(a,g,n){var b=0,ca=[0,0,0,0,0,0,0,0,0,0],cg=[0,0,0,0,0,0,0,0,0,0],t=0,i,x,y;for(i=0;i<n;i++){x=a.charCodeAt(i)-48;y=g.charCodeAt(i)-48;if(x===y)b++;ca[x]++;cg[y]++}for(i=0;i<10;i++)t+=ca[i]<cg[i]?ca[i]:cg[i];return b*(n+1)+(t-b)}
+  function ccReply(k,n){var b=Math.floor(k/(n+1)),c=k%(n+1);return b+(b===1?" bull":" bulls")+", "+c+(c===1?" cow":" cows")}
+  function ccFits(x,clues,n){for(var i=0;i<clues.length;i++)if(ccScore(x,clues[i].g,n)!==clues[i].k)return false;return true}
+  function ccBreakAt(x,clues,n){for(var i=0;i<clues.length;i++)if(ccScore(x,clues[i].g,n)!==clues[i].k)return i;return -1}
+  function ccShuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+  function ccPuzzle(n,m,lo,hi){
+    var all=ccCodes(n),best=null,last=null,mid=(lo+hi)/2,tr,sec,clues,cands,g,k,nc,tries;
+    for(tr=0;tr<30;tr++){
+      sec=rnd(all);clues=[];cands=all;tries=0;
+      while(clues.length<m&&tries<80){
+        tries++;g=rnd(all);
+        if(clues.some(function(c){return c.g===g}))continue;
+        k=ccScore(sec,g,n);
+        nc=cands.filter(function(x){return ccScore(x,g,n)===k});
+        if(nc.length>=cands.length)continue;
+        clues.push({g:g,k:k});cands=nc;
+      }
+      last={sec:sec,clues:clues,cands:cands};
+      if(clues.length===m){
+        if(cands.length>=lo&&cands.length<=hi)return last;
+        if(!best||Math.abs(cands.length-mid)<Math.abs(best.cands.length-mid))best=last;
+      }
+    }
+    return best||last;
+  }
+  function ccEval(pool,cands,n){var seen={},out=[];pool.forEach(function(g){if(seen[g])return;seen[g]=1;var c={},k,e=0,mx=0,r=0;cands.forEach(function(x){k=ccScore(x,g,n);c[k]=(c[k]||0)+1});for(k in c){e+=c[k]*c[k];r++;if(c[k]>mx)mx=c[k]}out.push({g:g,e:e/cands.length,r:r,mx:mx,inC:cands.indexOf(g)>=0})});return out}
+  function ccClueHtml(clues,n){return clues.map(function(c){return'<div class="cc-row"><b>'+c.g+'</b><span>'+ccReply(c.k,n)+'</span></div>'}).join("")}
+  function ccCheckRows(x,clues,n){return clues.map(function(c){var k=ccScore(x,c.g,n),ok=k===c.k;return'<div class="cc-row '+(ok?'ok':'bad')+'"><b>'+c.g+'</b><span>'+(ok?'matches: '+ccReply(c.k,n):'gives '+ccReply(k,n)+'<br>clue says '+ccReply(c.k,n))+'</span></div>'}).join("")}
+  function ccTally(){var t=CC.tl;return t.t?'<div class="mute" style="margin:14px 0 0;font-size:13px">This session: '+t.r+'/'+t.t+' right'+(t.s>1?' · streak '+t.s:'')+'</div>':''}
+  function ccShell(inner,back){
+    $("infoT").textContent="Coach";
+    $("infoBody").innerHTML='<div class="cc" id="ccbox">'+(back?'<button class="pill" data-a="home" style="margin-bottom:10px">← Coach</button>':'')+inner+'</div>';
+    $("ccbox").onclick=ccClick;
+    $("info").classList.remove("hide");
+  }
+  function ccClick(e){
+    var t=e.target.closest?e.target.closest("[data-a]"):null;if(!t)return;
+    var a=t.getAttribute("data-a"),v=t.getAttribute("data-v");
+    if(a==="home")ccHome();
+    else if(a==="n"){CC.n=+v;ccHome()}
+    else if(a==="drill")ccStart(v);
+    else if(a==="next")ccNext();
+    else if(a==="yes"||a==="no")ccAnswerFit(a==="yes");
+    else if(a==="check")ccCheckFind();
+    else if(a==="show")ccShowFind();
+    else if(a==="pick")ccAnswerBest(+v);
+    else if(a==="revlist")ccReviewList();
+    else if(a==="review")ccReview(+v);
+    else if(a==="book")ccBook();
+  }
+  function ccBtn(a,v,title,sub){return'<button class="wide ghost" data-a="'+a+'"'+(v!=null?' data-v="'+v+'"':'')+' style="text-align:left;margin-top:8px"><b>'+title+'</b><br><span class="mute" style="font-size:13px">'+sub+'</span></button>'}
+  function ccHome(){
+    var s=ccTrain(),rv=ccReviewable(),acc=function(k){var d=s.d[k];return d[1]?Math.round(d[0]/d[1]*100)+'% right · '+d[1]+' answered':'Not tried yet'};
+    var h='<p class="mute" style="line-height:1.5;margin:0 0 10px">Train here, away from the match. Drills and reviews cost and earn no points, and nothing here is available during a game.</p>';
+    if(s.streak)h+='<div class="mute" style="margin:0 0 10px">Practice streak: <b>'+s.streak+'</b> day'+(s.streak>1?'s':'')+(s.best>s.streak?' · best '+s.best:'')+'</div>';
+    h+='<div class="mute">Digits for drills</div><div class="opts" style="margin-bottom:6px">'+[3,4].map(function(d){return'<button class="opt'+(CC.n===d?' sel':'')+'" data-a="n" data-v="'+d+'">'+d+'</button>'}).join("")+'</div>';
+    h+=ccBtn("revlist",null,"Review a finished game",rv.length?'See how each guess narrowed the field':'Finish a game first, then review it here');
+    h+=ccBtn("drill","fit","Fits or not?",acc("fit"));
+    h+=ccBtn("drill","find","Find a number that fits",acc("find"));
+    h+=ccBtn("drill","best","Pick the best guess",acc("best"));
+    h+=ccBtn("book",null,"Playbook","Five short lessons on reading replies and choosing guesses");
+    ccShell(h,false);
+  }
+  function ccStart(d){CC.drill=d;CC.tl={r:0,t:0,s:0};ccNext()}
+  function ccNext(){if(CC.drill==="fit")ccFitQ();else if(CC.drill==="find")ccFindQ();else ccBestQ()}
+
+  // --- drill 1: does this number fit every clue? ---
+  function ccFitQ(){
+    var n=CC.n,p=ccPuzzle(n,n===3?2:3,1,60),all=ccCodes(n),x=null,i,c,mis;
+    if(Math.random()<.5)x=rnd(p.cands);
+    else{
+      for(i=0;i<500;i++){c=rnd(all);mis=0;p.clues.forEach(function(cl){if(ccScore(c,cl.g,n)!==cl.k)mis++});
+        if(mis===1){x=c;break}
+        if(mis>0&&!x)x=c}
+      if(!x)x=rnd(p.cands);
+    }
+    CC.q={p:p,x:x,fit:ccFits(x,p.clues,n),done:false,fb:""};
+    ccDrawFit();
+  }
+  function ccDrawFit(){
+    var q=CC.q,n=CC.n,h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Fits or not?</div><p class="mute" style="margin:0 0 8px;line-height:1.5">These guesses got these replies. Could the number below be the secret?</p>'+ccClueHtml(q.p.clues,n)+'<div class="cc-big">'+q.x+'</div>';
+    if(!q.done)h+='<div style="display:flex;gap:8px"><button class="wide" data-a="yes" style="margin:0">Fits every clue</button><button class="wide ghost" data-a="no" style="margin:0">Breaks a clue</button></div>';
+    else h+=q.fb+'<button class="wide" data-a="next">Next</button>';
+    ccShell(h+ccTally(),true);
+  }
+  function ccAnswerFit(say){
+    var q=CC.q,n=CC.n;if(!q||q.done)return;q.done=true;
+    var ok=say===q.fit;ccScoreIt("fit",ok);
+    q.fb='<div class="cc-fb '+(ok?'ok':'no')+'"><b>'+(ok?'Correct.':'Not quite.')+'</b> '+(q.fit?q.x+' gives exactly the reply shown for every clue.':q.x+' breaks at least one clue.')+'</div>'+ccCheckRows(q.x,q.p.clues,n)+(q.fit?'':'<p class="mute" style="font-size:13px;margin:8px 0 0">Tip: compare bulls first (right digit, right place), then cows.</p>');
+    ccDrawFit();
+  }
+
+  // --- drill 2: type a number that fits ---
+  function ccFindQ(){var n=CC.n;CC.q={p:ccPuzzle(n,n===3?2:3,1,40),done:false,fb:"",shown:false};ccDrawFind()}
+  function ccDrawFind(){
+    var q=CC.q,n=CC.n,h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Find a number that fits</div><p class="mute" style="margin:0 0 8px;line-height:1.5">Type any number that matches every reply. There may be several.</p>'+ccClueHtml(q.p.clues,n);
+    if(!q.done)h+='<input id="ccin" inputmode="numeric" pattern="[0-9]*" maxlength="'+n+'" autocomplete="off" placeholder="'+new Array(n+1).join("0")+'" style="width:100%;margin-top:12px;font-size:26px;letter-spacing:.3em;text-align:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)"><button class="wide" data-a="check">Check</button>';
+    else h+=q.fb+(q.ok||q.shown?'':'<button class="wide ghost" data-a="show">Show a number that fits</button>')+'<button class="wide" data-a="next">Next</button>';
+    ccShell(h+ccTally(),true);
+    var i=$("ccin");if(i){i.onkeydown=function(e){if(e.key==="Enter")ccCheckFind()};setTimeout(function(){i.focus()},60)}
+  }
+  function ccCheckFind(){
+    var q=CC.q,n=CC.n,i=$("ccin");if(!q||q.done||!i)return;
+    var v=i.value.trim();if(!/^[0-9]+$/.test(v)||v.length!==n){toast("Enter "+n+" digits");return}
+    q.done=true;q.ok=ccFits(v,q.p.clues,n);ccScoreIt("find",q.ok);
+    var cnt=q.p.cands.length;
+    q.fb='<div class="cc-fb '+(q.ok?'ok':'no')+'"><b>'+(q.ok?'Correct.':'Not quite.')+'</b> '+(q.ok?(cnt===1?v+' was the only number that fits.':v+' fits. '+cnt+' numbers fit these clues in total.'):v+' breaks at least one clue.')+'</div>'+ccCheckRows(v,q.p.clues,n);
+    ccDrawFind();
+  }
+  function ccShowFind(){var q=CC.q;if(!q||!q.done||q.shown)return;q.shown=true;q.fb+='<div class="cc-fb ok">One that fits: <b style="letter-spacing:.14em">'+rnd(q.p.cands)+'</b></div>';ccDrawFind()}
+
+  // --- drill 3: which guess splits the possibilities best? ---
+  function ccBestQ(){
+    var n=CC.n,all=ccCodes(n),q=null,last=null,t,p,pool,ev,lo,hi,mid;
+    for(t=0;t<25&&!q;t++){
+      p=ccPuzzle(n,n===3?1:2,12,n===3?150:260);
+      pool=sample(p.cands,40).concat(sample(all,50));
+      ev=ccEval(pool,p.cands,n).sort(function(a,b){return a.e-b.e});
+      if(ev.length<3)continue;
+      lo=ev[0];hi=ev[ev.length-1];mid=ev[Math.floor(ev.length/2)];
+      last={p:p,opts:ccShuffle([lo,mid,hi]),best:lo,done:false,pick:-1};
+      if(hi.e>=lo.e*1.6&&mid.e>lo.e*1.1)q=last;
+    }
+    CC.q=q||last;
+    ccDrawBest();
+  }
+  function ccDrawBest(){
+    var q=CC.q,n=CC.n,N=q.p.cands.length,h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Pick the best guess</div><p class="mute" style="margin:0 0 8px;line-height:1.5">After these replies, <b>'+N+'</b> numbers still fit. Which guess would tell you the most?</p>'+ccClueHtml(q.p.clues,n);
+    if(!q.done)h+=q.opts.map(function(o,i){return'<button class="wide ghost" data-a="pick" data-v="'+i+'"><b style="font-size:22px;letter-spacing:.16em">'+o.g+'</b></button>'}).join("");
+    else h+=q.fb+'<button class="wide" data-a="next">Next</button>';
+    ccShell(h+ccTally(),true);
+  }
+  function ccAnswerBest(i){
+    var q=CC.q,n=CC.n;if(!q||q.done)return;q.done=true;q.pick=i;
+    var o=q.opts[i],ok=o.e<=q.best.e*1.08;ccScoreIt("best",ok);
+    var rows=q.opts.map(function(x,j){var good=x.e<=q.best.e*1.08;return'<div class="cc-row '+(good?'ok':'')+'"><b>'+x.g+'</b><span>about '+Math.max(1,Math.round(x.e))+' left on average<br>'+x.r+' possible replies · worst case '+x.mx+(j===i?'<br><i>your pick</i>':'')+'</span></div>'}).join("");
+    q.fb='<div class="cc-fb '+(ok?'ok':'no')+'"><b>'+(ok?'Good pick.':'Not the sharpest.')+'</b> The best guess spreads the '+q.p.cands.length+' possibilities over the most different replies, so whatever comes back leaves the fewest numbers.'+(q.best.inC?'':' It cannot even be the answer, yet it still teaches the most.')+'</div>'+rows;
+    ccDrawBest();
+  }
+
+  // --- review a finished game ---
+  function ccReviewable(){var out=[];S.hist.forEach(function(g,i){if(g.u&&g.u.length&&typeof g.u[0]==="object"&&g.n>=3&&g.n<=5)out.push(i)});return out}
+  function ccReviewList(){
+    var rv=ccReviewable().slice(-8).reverse(),h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Review a finished game</div>';
+    if(!rv.length)h+='<p class="mute" style="line-height:1.5">No finished games to review yet. Finish one and it shows up here.</p>';
+    else{
+      h+='<p class="mute" style="margin:0 0 6px;line-height:1.5">Pick a game to see how many numbers were still possible after each of your guesses.</p>';
+      rv.forEach(function(i){var g=S.hist[i],dt=new Date(g.t);h+=ccBtn("review",i,'Game '+(i+1)+' · '+g.n+' digits',(g.res==="u"?'Cracked in '+g.u.length+' guesses':(g.opp?'Lost':'BOT won')+' after your '+g.u.length+' guesses')+(g.opp?' · vs '+esc(g.opp):'')+' · '+dt.toLocaleDateString(undefined,{month:"short",day:"numeric"}))});
+    }
+    ccShell(h,true);
+  }
+  function ccReview(i){
+    var g=S.hist[i];if(!g||!g.u||!g.u.length)return;
+    var n=g.n,all=ccCodes(n),cands=all,seen=[],line=[all.length],rows="",wasted=0,wasteAt=0,wasteLeft=0,weak=0,weakAt=0;
+    g.u.forEach(function(t,j){
+      var before=cands.length,fit=cands.indexOf(t.g)>=0,bk=fit?-1:ccBreakAt(t.g,seen,n);
+      var nxt=cands.filter(function(x){return ccScore(x,t.g,n)===t.k}),note="";
+      if(!fit){note='Could not be the answer: '+(bk>=0?'reply '+(bk+1):'an earlier reply')+' had already ruled it out.';if(before<=30){wasted++;if(!wasteAt){wasteAt=j+1;wasteLeft=before}note+=' With this few numbers left, a guess that still fits gives you a chance to win right away.'}}
+      else if(before>30&&nxt.length>before*.6){weak++;if(!weakAt)weakAt=j+1}
+      if(before>1&&before<=2500){
+        var mine=ccEval([t.g],cands,n)[0],pool=sample(cands,40).concat(sample(all,50)),bestE=ccEval(pool,cands,n).sort(function(a,b){return a.e-b.e})[0];
+        if(fit&&before>20&&mine.e>bestE.e*1.4)note+=(note?'<br>':'')+'A sharper guess here leaves about '+Math.max(1,Math.round(bestE.e))+' on average; this one about '+Math.max(1,Math.round(mine.e))+'.';
+      }
+      rows+='<div class="card" style="margin:8px 0;padding:12px"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+(j+1)+'. '+t.g+'</b><span class="mute">'+ccReply(t.k,n)+'</span></div><div class="mute" style="font-size:13px;margin-top:4px">Possible numbers: '+before+' → '+nxt.length+'</div>'+(note?'<div style="font-size:13px;margin-top:4px;line-height:1.5">'+note+'</div>':'')+'</div>';
+      seen.push({g:t.g,k:t.k});cands=nxt;line.push(nxt.length);
+    });
+    var tk=wasted?'Guess '+wasteAt+' came when only '+wasteLeft+' numbers were left, yet it could not be the answer. Once few numbers remain, play one that still fits every reply.':weak?'Guess '+weakAt+' barely narrowed things down. Try guesses that mix new digits with new positions.':'No wasted guesses: each one either could win or narrowed the field well.';
+    var h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Game '+(i+1)+' review</div><p class="mute" style="margin:0 0 6px;line-height:1.5">'+(g.res==="u"?'You cracked it in '+g.u.length+' guesses.':(g.opp?esc(g.opp):'The BOT')+' got there first. After your '+g.u.length+' guesses, '+cands.length+' numbers still fit.')+'</p><div class="mute" style="font-size:13px;margin:0 0 8px;overflow-wrap:anywhere">'+line.join(" → ")+'</div><div class="cc-fb ok"><b>Takeaway:</b> '+tk+'</div>'+rows;
+    ccShell(h,false);
+    $("ccbox").insertAdjacentHTML("afterbegin",'<button class="pill" data-a="revlist" style="margin-bottom:10px">← Games</button>');
+  }
+
+  // --- playbook ---
+  function ccBook(){
+    var L=[["Read the reply","A bull is a right digit in the right place. A cow is a right digit in the wrong place. The reply never says which digits, so write down what each one rules in or out."],
+      ["Open with a spread","Use different digits in your first guesses, such as 1234 then 5678. The totals roughly show how many of the secret's digits come from each group."],
+      ["Check every new guess","Before you play a guess, test it against all earlier replies. If an earlier reply rules it out, it cannot be the answer. This is what Hard mode rewards."],
+      ["Guess to split, not to hope","A guess that cannot be the answer can still be the best one, if it spreads the remaining numbers over many different replies. Practise this in the best-guess drill."],
+      ["Use zeros","0 bulls means none of those digits sits in the place you tried. 0 bulls and 0 cows means none of those digits are in the number at all. Cross them out for good."]];
+    ccShell('<div style="font-size:17px;font-weight:700;margin:2px 0 6px">Playbook</div>'+L.map(function(x,i){return'<div class="card" style="margin:8px 0;padding:12px"><b>'+(i+1)+'. '+x[0]+'</b><div style="margin-top:4px;line-height:1.5;font-size:14px">'+x[1]+'</div></div>'}).join(""),true);
+  }
+  $("coachmenu").onclick=ccHome;
   // ===== Daily puzzle =====
   var PZ=load("bot-pz",{d:"",s:0,b:0});
   function today(){return new Date().toISOString().slice(0,10)}
