@@ -202,6 +202,9 @@ button{min-height:46px;line-height:1.2}
 #menuwrap{position:fixed;inset:0;z-index:40}
 #menuback{position:absolute;inset:0;background:rgba(6,8,14,.45)}
 #menu{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:16px;width:min(280px,calc(100vw - 32px));background:var(--hdbg,#12172a);border:1px solid var(--line);border-radius:18px;padding:8px;display:flex;flex-direction:column;gap:4px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+@keyframes menuR{from{clip-path:inset(0 100% 0 0 round 18px);opacity:.4}to{clip-path:inset(0 0 0 0 round 18px);opacity:1}}
+#menuwrap:not(.hide) #menu{transform-origin:left top;animation:menuR .26s cubic-bezier(.2,.8,.2,1)}
+@media (prefers-reduced-motion:reduce){#menuwrap:not(.hide) #menu{animation:none}}
 #menu button{background:transparent;text-align:left;padding:12px 14px;border-radius:12px;font-size:15px}
 #menu button:active{background:var(--key)}
 
@@ -211,8 +214,8 @@ button{min-height:46px;line-height:1.2}
 #dig .opt,.rep .opt,#odig .opt{flex:1 1 56px!important}
 #fmt .opt,#ofmt .opt{flex:1 1 100px!important}
 
-#hintrow{display:flex;justify-content:flex-end;margin-bottom:-4px}
-#hint{min-height:32px;padding:6px 14px;font-size:13px;border-radius:999px;background:transparent;border:1px solid var(--line);color:var(--mute)}
+#hintrow{display:flex;justify-content:flex-end;gap:8px;margin-bottom:-4px}
+#hint,#notes{min-height:32px;padding:6px 14px;font-size:13px;border-radius:999px;background:transparent;border:1px solid var(--line);color:var(--mute)}
 
 /* ===== streak, badges, reminder ===== */
 #streak{padding:14px 16px}
@@ -243,6 +246,9 @@ button{min-height:46px;line-height:1.2}
 #spreq .sq{display:flex;gap:8px;margin-top:12px}#spreq .sq button{flex:1}
 #spOk{background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;font-weight:600}
 .trow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#pppad button{background:rgba(255,255,255,.06);border:1px solid var(--line);box-shadow:none;border-radius:16px;color:var(--ink);min-height:56px;padding:0;font-size:22px;font-weight:500}
+#pppad #ppgo{background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));border:0;color:#fff;font-size:16px;font-weight:600;box-shadow:0 8px 20px var(--glow,rgba(92,124,255,.28))}
+#pppad button:disabled{background:rgba(255,255,255,.04);box-shadow:none}
 </style>
 </head>
 <body>
@@ -291,7 +297,7 @@ button{min-height:46px;line-height:1.2}
   </section>
 
   <section id="game" class="hide">
-    <div id="hintrow"><button id="hint">💡 Riddle hint</button></div>
+    <div id="hintrow"><button id="notes">📝 Notes</button><button id="hint">💡 Riddle hint</button></div>
     <div id="score"></div>
     <div id="logs">
       <div class="card box" id="lu"></div>
@@ -335,7 +341,9 @@ button{min-height:46px;line-height:1.2}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px">
       <div class="card box" id="olu"></div><div class="card box" id="ola"></div>
     </div>
+    <div class="card hide" id="orev"></div>
     <div class="card hide" id="oset"><div class="mute">Digits (next game)</div><div class="opts" id="odig"></div><div class="mute">Tournament</div><div class="opts" id="ofmt" style="margin-bottom:0"></div></div>
+    <div id="onrow" class="hide" style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="pill" id="onotes">📝 Notes</button></div>
     <div id="oplay" class="hide">
       <div id="oslots" style="display:flex;gap:10px;justify-content:center;margin:8px 0 16px"></div>
       <div id="opad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
@@ -347,6 +355,7 @@ button{min-height:46px;line-height:1.2}
       <div id="ochatBox" class="hide">
         <div id="ochatL"></div>
         <div class="rx" id="ochatR"></div>
+        <div class="rx" id="ochatO" style="margin-top:8px"><button class="pill" id="cMute" style="font-size:12px;min-height:36px"></button><button class="pill" id="cFilt" style="font-size:12px;min-height:36px"></button></div>
         <div style="display:flex;gap:8px;margin-top:10px">
           <input id="ochatI" maxlength="200" placeholder="Type a message…" autocomplete="off">
           <button class="pill go" id="ochatS">Send</button>
@@ -368,6 +377,20 @@ button{min-height:46px;line-height:1.2}
       <div class="card box" id="wlu"></div><div class="card box" id="wla"></div>
     </div>
     <button class="wide ghost" id="wleave">Back to tournament</button>
+  </section>
+
+  <section id="pp" class="hide">
+    <div class="card" id="ppinfo"></div>
+    <div id="pplogs" class="hide" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px">
+      <div class="card box" id="ppl0"></div><div class="card box" id="ppl1"></div>
+    </div>
+    <div id="ppplay" class="hide">
+      <div id="ppslots" style="display:flex;gap:10px;justify-content:center;margin:8px 0 16px"></div>
+      <div id="pppad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+    </div>
+    <button class="wide hide" id="ppgo2"></button>
+    <button class="wide ghost hide" id="pprematch">Rematch (swap who starts)</button>
+    <button class="wide ghost" id="ppleave">Back to home</button>
   </section>
 </main>
 <div id="toast" role="status"></div>
@@ -442,7 +465,7 @@ button{min-height:46px;line-height:1.2}
   // Top levels: BOT also prefers trickier secret numbers (repeated digits) and, from Grandmaster, moves first.
   var TRICKY=[0,0,0,0,0,0,0,0.3,0.5,0.75],FIRST_LVL=8;
   function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"||k==="bot-friends"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends)}
+  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(k==="bot-pts")phNote();if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"||k==="bot-friends"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow())}
   var S={mode:"duel",n:3,need:1,score:{u:0,a:0},round:1,starter:"u",next:"u",aSecret:"",cands:[],uT:[],aT:[],cur:"",phase:"home",busy:false,pending:"",rb:-1,rc:-1,cache:{},gid:0,lvl:0,mem:[],pts:load("bot-pts",0),hist:load("bot-hist",[]),pins:load("bot-pins",[]),nick:load("bot-nick",""),open:-1,friends:load("bot-friends",[]),timed:0,deadline:0,lost:false};
 
   function awardPts(dl){
@@ -573,22 +596,22 @@ button{min-height:46px;line-height:1.2}
     var h=S.phase;
     $("home").classList.toggle("hide",h!=="home");
     $("hist").classList.toggle("hide",h!=="hist");
-    $("game").classList.toggle("hide",h==="home"||h==="hist"||h==="online"||h==="tour"||h==="watch");$("online").classList.toggle("hide",h!=="online");$("watch").classList.toggle("hide",h!=="watch");$("tour").classList.toggle("hide",h!=="tour");
-    if(h==="home")renderHome();else if(h==="hist")renderHist();else if(h==="online")renderOnline();else if(h==="tour")renderTour();else if(h==="watch")renderWatch();else renderGame();if(h!=="online")$("spreq").classList.add("hide");
+    $("game").classList.toggle("hide",h==="home"||h==="hist"||h==="online"||h==="tour"||h==="watch"||h==="pp");$("pp").classList.toggle("hide",h!=="pp");$("online").classList.toggle("hide",h!=="online");$("watch").classList.toggle("hide",h!=="watch");$("tour").classList.toggle("hide",h!=="tour");
+    if(h==="home")renderHome();else if(h==="hist")renderHist();else if(h==="online")renderOnline();else if(h==="tour")renderTour();else if(h==="watch")renderWatch();else if(h==="pp")renderPP();else renderGame();if(h!=="online")$("spreq").classList.add("hide");
   }
   function renderHome(){
     var l=levelOf(S.pts),cur=LEVELS[l],nx=LEVELS[l+1];
     var pct=nx?Math.round((S.pts-cur.at)/(nx.at-cur.at)*100):100;
     $("pts").innerHTML='<div id="lvl"><span class="mute">Level '+(l+1)+'</span><span class="mute">'+S.pts+' pts</span></div><b style="font-size:22px">'+cur.n+'</b><div class="bar"><i style="width:'+pct+'%"></i></div><div class="mute">'+(nx?(nx.at-S.pts)+' pts to '+nx.n:'Top level')+'</div><button class="pill" id="infoBtn" style="margin-top:12px;min-height:0;padding:7px 14px;font-size:12px">ⓘ Points &amp; levels</button>';
     $("infoBtn").onclick=openInfo;renderStreak();
-    opts($("mode"),[{label:"Duel with BOT",v:"duel"},{label:"Solo (just guess)",v:"solo"},{label:"Online (friend)",v:"online"}],function(i){return i.v===S.mode},function(i){S.mode=i.v;if(i.v!=="online"&&S.need<1)S.need=1;render()});
-    $("fmtwrap").classList.toggle("hide",S.mode==="solo");$("timedwrap").classList.toggle("hide",S.mode!=="solo");opts($("timedopt"),[{label:"No clock",v:0},{label:"⏱ Timed",v:1}],function(i){return i.v===S.timed},function(i){S.timed=i.v;render()});$("start").classList.toggle("hide",S.mode==="online");$("onlinebox").classList.toggle("hide",S.mode!=="online");
-    if(S.mode==="online")renderPins();
+    opts($("mode"),[{label:"Duel with BOT",v:"duel"},{label:"Solo (just guess)",v:"solo"},{label:"Online (friend)",v:"online"},{label:"Pass & play",v:"local"}],function(i){return i.v===S.mode},function(i){S.mode=i.v;if(i.v!=="online"&&S.need<1)S.need=1;render()});
+    $("fmtwrap").classList.toggle("hide",S.mode==="solo"||S.mode==="local");$("timedwrap").classList.toggle("hide",S.mode!=="solo");opts($("timedopt"),[{label:"No clock",v:0},{label:"⏱ Timed",v:1}],function(i){return i.v===S.timed},function(i){S.timed=i.v;render()});$("start").classList.toggle("hide",S.mode==="online");$("onlinebox").classList.toggle("hide",S.mode!=="online");
+    if(S.mode==="online"){renderPins();if(Date.now()-lastPres>15000){lastPres=Date.now();refreshPresence()}}
     opts($("dig"),[3,4,5].map(function(d){return{label:d+"",v:d}}),function(i){return i.v===S.n},function(i){S.n=i.v;render()});
     opts($("fmt"),(S.mode==="online"?[{n:"Free play",need:0}].concat(FORMATS):FORMATS).map(function(x){return{label:x.n,v:x.need}}),function(i){return i.v===S.need},function(i){S.need=i.v;render()});
   }
   function renderHist(){
-    var el=$("hlist");el.innerHTML=statsHtml();
+    var el=$("hlist");el.innerHTML=statsHtml()+progressHtml();
     $("clear").classList.toggle("hide",!S.hist.length);
     if(!S.hist.length){el.innerHTML='<div class="card mute">No games yet. Finished rounds show up here.</div>';return}
     S.hist.slice().reverse().forEach(function(g,ri){
@@ -623,7 +646,7 @@ button{min-height:46px;line-height:1.2}
     $("report").classList.toggle("hide",h!=="report");
     $("play").classList.toggle("hide",h!=="guess");
     $("next").classList.toggle("hide",h!=="between");
-    $("hintrow").classList.toggle("hide",!!S.daily||h==="between"||h==="over");
+    $("hintrow").classList.toggle("hide",h==="between"||h==="over");$("hint").classList.toggle("hide",!!S.daily);
     $("home2").classList.toggle("hide",h!=="between"&&h!=="over");
     $("share").classList.toggle("hide",(h!=="between"&&h!=="over")||!S.uT.length);
     $("quit").classList.toggle("hide",h==="between"||h==="over");
@@ -647,11 +670,11 @@ button{min-height:46px;line-height:1.2}
     if(Math.random()<pr)for(var i=0;i<80;i++){var c=rnd(all);if(new Set(c.split("")).size<c.length)return c}
     return rnd(all);
   }
-  function startMatch(){S.daily="";S.score={u:0,a:0};S.round=1;S.starter=(S.mode==="duel"&&levelOf(S.pts)>=FIRST_LVL)?"a":"u";startRound()}
+  function startMatch(){if(S.mode==="local"){startPP(false);return}S.daily="";S.score={u:0,a:0};S.round=1;S.starter=(S.mode==="duel"&&levelOf(S.pts)>=FIRST_LVL)?"a":"u";startRound()}
   function startRound(){
     var all=allCodes();
     S.gid++;S.lvl=levelOf(S.pts);
-    HINT=[];S.aSecret=S.daily?dailySecret():pickSecret(all);S.cands=all;S.uT=[];S.aT=[];S.mem=[];S.cur="";S.rb=-1;S.rc=-1;S.next=S.mode==="solo"?"u":S.starter;S.busy=false;S.lost=false;S.deadline=S.mode==="solo"&&S.timed&&!S.daily?Date.now()+(TLIM[S.n]||120)*1000:0;
+    HINT=[];ntReset();S.aSecret=S.daily?dailySecret():pickSecret(all);S.cands=all;S.uT=[];S.aT=[];S.mem=[];S.cur="";S.rb=-1;S.rc=-1;S.next=S.mode==="solo"?"u":S.starter;S.busy=false;S.lost=false;S.deadline=S.mode==="solo"&&S.timed&&!S.daily?Date.now()+(TLIM[S.n]||120)*1000:0;
     say("");goNext();
   }
   function goNext(){
@@ -755,21 +778,32 @@ button{min-height:46px;line-height:1.2}
   function dailyN(l){return DT_N[dailyT(l)]}
   // Friends: add from an online game, then play any time with no code. Each pair shares one permanent room.
   function isFriend(u){return S.friends.some(function(f){return f.uid===u})}
-  function addFriend(u,n){if(!u||isFriend(u))return;S.friends.push({uid:u,name:n||"Friend"});save("bot-friends",S.friends);toast((n||"Friend")+" added to friends");if(S.phase==="home")renderPins()}
+  function addFriend(u,n){if(!u||isFriend(u))return;S.friends.push({uid:u,name:n||"Friend"});save("bot-friends",S.friends);watchFriends();toast((n||"Friend")+" added to friends");if(S.phase==="home")renderPins()}
   function friendCode(a,b){var s=[a,b].sort().join("|"),h=5381,g=2166136261,i;for(i=0;i<s.length;i++){h=(Math.imul(h,33)^s.charCodeAt(i))>>>0;g=Math.imul(g^s.charCodeAt(i),16777619)>>>0}return"F"+h.toString(36)+g.toString(36)}
   function friendPlay(f){
     if(needIn())return;
     var code=friendCode(S.user.uid,f.uid),dbx=window.botCloud.db;
     dbx.get("rooms",code).then(function(ex){
-      if(ex)return joinRoom(code);
-      return dbx.set("rooms",code,{n:S.n,need:S.need,nextN:null,fr:{},host:{uid:S.user.uid,name:nm()},guest:{uid:f.uid,name:f.name},status:"secrets",ready:{host:false,guest:false},turn:"host",starter:"host",wins:{host:0,guest:0},guesses:{},winner:null,created:Date.now()}).then(function(){enterRoom(code,"host")});
+      var ch={by:S.user.uid,name:nm(),at:Date.now()};if(ex){dbx.update("rooms",code,{chal:ch}).catch(function(){});return joinRoom(code)}
+      return dbx.set("rooms",code,{chal:ch,n:S.n,need:S.need,nextN:null,fr:{},host:{uid:S.user.uid,name:nm()},guest:{uid:f.uid,name:f.name},status:"secrets",ready:{host:false,guest:false},turn:"host",starter:"host",wins:{host:0,guest:0},guesses:{},winner:null,created:Date.now()}).then(function(){enterRoom(code,"host")});
     }).catch(oerr);
   }
-  function openLB(){
-    if(needIn())return;
-    $("infoT").textContent="🌍 Global leaderboard";$("infoBody").innerHTML='<div class="mute">Loading…</div>';$("info").classList.remove("hide");
-    var done=function(rows){$("infoBody").innerHTML=rows.length?rows.map(function(x,i){return'<div class="lb'+(S.user&&x.uid===S.user.uid?' me':'')+'"><span class="rk'+(i<3?' p'+(i+1):'')+'">'+(i+1)+'</span><span class="nm">'+esc(x.name||"?")+'<small>'+LEVELS[levelOf(x.pts||0)].n+'</small></span><span class="st">'+(x.pts||0)+' pts</span></div>'}).join(""):'<p class="mute">No scores yet. Play a game to get on the board.</p>'};
-    if(window.botCloud.db.leaders)window.botCloud.db.leaders().then(done).catch(function(){done([])});else done([]);
+  var LBT="week";
+  function openLB(){if(needIn())return;drawLB()}
+  function drawLB(){
+    $("infoT").textContent="🌍 Global leaderboard";
+    $("infoBody").innerHTML='<div class="remrow" style="margin:0 0 12px"><button class="pill'+(LBT==="week"?' go':'')+'" id="lbW">This week</button><button class="pill'+(LBT==="all"?' go':'')+'" id="lbA">All-time</button></div><div id="lbBody" class="mute">Loading…</div>';
+    $("info").classList.remove("hide");
+    $("lbW").onclick=function(){LBT="week";drawLB()};$("lbA").onclick=function(){LBT="all";drawLB()};
+    var box=$("lbBody"),wk=LBT==="week";
+    var done=function(rows){
+      if($("lbBody")!==box)return;
+      if(wk){rows=rows.filter(function(x){return typeof x.wpts==="number"});rows.sort(function(a,b){return b.wpts-a.wpts})}
+      rows=rows.slice(0,50);box.className="";
+      box.innerHTML=(wk?'<p class="mute" style="margin:0 0 6px">Points gained since Monday. Resets every Monday 00:00 UTC.</p>':'')+(rows.length?rows.map(function(x,i){var v=wk?x.wpts:(x.pts||0);return'<div class="lb'+(S.user&&x.uid===S.user.uid?' me':'')+'"><span class="rk'+(i<3?' p'+(i+1):'')+'">'+(i+1)+'</span><span class="nm">'+esc(x.name||"?")+'<small>'+LEVELS[levelOf(x.pts||0)].n+'</small></span><span class="st">'+(wk?(v>=0?"+":"−")+Math.abs(v):v)+' pts</span></div>'}).join(""):'<p class="mute">'+(wk?"No scores this week yet. Play a game to get on the board.":"No scores yet. Play a game to get on the board.")+'</p>');
+    };
+    if(wk){wkNow();window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,WK);if(window.botCloud.db.weekly)window.botCloud.db.weekly(weekKey()).then(done).catch(function(){done([])});else done([])}
+    else if(window.botCloud.db.leaders)window.botCloud.db.leaders().then(done).catch(function(){done([])});else done([]);
   }
   $("lbmenu").onclick=openLB;
   $("frmenu").onclick=function(){S.mode="online";S.phase="home";render()};
@@ -820,10 +854,10 @@ button{min-height:46px;line-height:1.2}
     if(!window.botCloud){alert("Firebase isn’t set up yet. Paste your firebaseConfig into the file first.");return}
     if(S.user)window.botCloud.signOut();else $("sheet").classList.remove("hide");
   };
-  window.botAuth=function(u){S.user=u;if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide")};
+  window.botAuth=function(u){S.user=u;watchFriends();if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide")};
   window.botLoaded=function(d){
     if(d.nick&&!S.nick){S.nick=d.nick;try{localStorage.setItem("bot-nick",JSON.stringify(S.nick))}catch(e){}}
-    if(typeof d.pts==="number"&&d.pts>S.pts)S.pts=d.pts;
+    var o0=S.pts;if(typeof d.pts==="number"&&d.pts>S.pts)S.pts=d.pts;if(S.pts>o0&&WK.b!=null)WK.b+=S.pts-o0;
     var seen={};S.hist.forEach(function(g){seen[g.t]=1});
     (d.hist||[]).forEach(function(g){if(!seen[g.t])S.hist.push(g)});
     S.hist.sort(function(a,b){return a.t-b.t});
@@ -834,8 +868,9 @@ button{min-height:46px;line-height:1.2}
     try{localStorage.setItem("bot-pins",JSON.stringify(S.pins))}catch(e){}
     var fs={};S.friends.forEach(function(x){fs[x.uid]=1});(d.friends||[]).forEach(function(x){if(!fs[x.uid])S.friends.push(x)});
     try{localStorage.setItem("bot-friends",JSON.stringify(S.friends))}catch(e){}
-    if(window.botCloud)window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends);
+    if(window.botCloud)window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow());
     if(!S.nick)openName();
+    watchFriends();if(window.botCloud&&window.botCloud.beat)window.botCloud.beat();refreshPresence();
     render();tryInvite();
   };
   // ===== Online play: rooms live in Firestore; each player's secret stays on their own device =====
@@ -845,7 +880,7 @@ button{min-height:46px;line-height:1.2}
   function needIn(){if(!window.botCloud||!window.botCloud.room||!S.user){$("sheet").classList.remove("hide");return true}if(!S.nick){openName();return true}return false}
   function oerr(e){alert(((e&&e.message)||"Something went wrong.")+"\n\n[code: "+((e&&e.code)||"n/a")+" | project: "+((window.botCloud&&window.botCloud.pid)||"?")+" | signed in: "+(S.user?"yes ("+String(S.user.uid).slice(0,6)+")":"no")+"]")}
   function enterRoom(code,role){
-    O={code:code,role:role,room:null,secret:"",cur:"",locked:false,unsub:null,done:false,ans:{},chatOpen:false,seen:0};
+    O={code:code,role:role,room:null,secret:"",cur:"",locked:false,unsub:null,done:false,ans:{},chatOpen:false,seen:0};ntReset();
     S.phase="online";
     O.unsub=window.botCloud.room.watch(code,onRoom);
     render();
@@ -858,7 +893,7 @@ button{min-height:46px;line-height:1.2}
     var fo=r[O.role==="host"?"guest":"host"];
     if(fo&&r.fr&&r.fr[O.role==="host"?"guest":"host"]&&!isFriend(fo.uid)&&!O.frAsked){O.frAsked=1;ask("Friend request",fo.name+" added you as a friend. Add them back so you can play without codes?","Add friend",function(){addFriend(fo.uid,fo.name)})}
     var wasPlaying=O.prev==="playing";O.prev=r.status;
-    if(r.status==="secrets"&&O.locked&&!(r.ready&&r.ready[O.role])){O.locked=false;O.secret="";O.cur="";O.ans={};O.done=false}
+    if(r.status==="secrets"&&O.locked&&!(r.ready&&r.ready[O.role])){O.locked=false;O.secret="";O.cur="";O.ans={};O.done=false;O.rvSent=0;ntReset()}
     var cl=window.botCloud.room,gs=r.guesses||{};
     if(!O.secret&&r.status!=="lobby"&&r.status!=="done"&&r.ready&&r.ready[O.role]){try{var sv=localStorage.getItem("bot-sec-"+O.code);if(sv&&sv.length===r.n){O.secret=sv;O.locked=true}}catch(e){}}
     if(O.role==="host"&&r.status==="secrets"&&r.ready&&r.ready.host&&r.ready.guest)cl.update(O.code,{status:"playing",turn:r.starter||"host",turnAt:Date.now()}).catch(oerr);
@@ -882,6 +917,7 @@ button{min-height:46px;line-height:1.2}
       else rp["p."+r.mid+".winner"]=r[r.winner].uid;
       window.botCloud.db.update("tournaments",r.tid,rp).catch(oerr);
     }
+    if(r.status==="done"&&O.secret&&!O.rvSent&&!(r.rv&&r.rv[O.role])){O.rvSent=1;var rp2={};rp2["rv."+O.role]=O.secret;cl.update(O.code,rp2).catch(function(){})}
     if(r.status==="done"&&!O.done){
       O.done=true;sfx(r.winner===O.role?"win":"lose");
       if(wasPlaying){var og=r[O.role==="host"?"guest":"host"];S.hist.push({t:Date.now(),mode:r.tid?"tour":"online",n:S.n,res:r.winner===O.role?"u":"a",opp:og?og.name:"Friend",u:Object.keys(r.guesses||{}).filter(function(i){return r.guesses[i].by===O.role}),a:[]});if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist)}
@@ -937,12 +973,14 @@ button{min-height:46px;line-height:1.2}
       $("ogo").textContent=r.status==="secrets"?"Lock in":"Guess";
       $("ogo").disabled=!valid(O.cur);
     }
-    renderChat(r);renderShare(r);
+    renderChat(r);renderShare(r);renderRev(r);$("onrow").classList.toggle("hide",r.status!=="playing");
   }
   // ===== Chat with the player in this room (works in friend games and tournament matches) =====
   function renderChat(r){
     var msgs=r.chat||{},ks=Object.keys(msgs).sort(function(a,b){return parseInt(a,10)-parseInt(b,10)});
-    var opp=r[O.role==="host"?"guest":"host"];
+    var opp=r[O.role==="host"?"guest":"host"],muted=!!(opp&&MUTED[opp.uid]);
+    if(muted)ks=ks.filter(function(k){return msgs[k].by===O.role});
+    $("cMute").classList.toggle("hide",!opp);$("cMute").textContent=muted?"🔈 Unmute "+opp.name:"🙈 Mute "+(opp?opp.name:"");$("cFilt").textContent="🧼 Filter: "+(CF?"on":"off");
     $("ochatN").textContent=opp?opp.name:"your opponent";
     var theirs=ks.filter(function(k){return msgs[k].by!==O.role}).length;
     if(O.chatOpen||theirs<(O.seen||0))O.seen=theirs;
@@ -951,7 +989,7 @@ button{min-height:46px;line-height:1.2}
     $("ochatBox").classList.toggle("hide",!O.chatOpen);
     if(!O.chatOpen)return;
     var L=$("ochatL"),stick=L.scrollTop+L.clientHeight>=L.scrollHeight-40;
-    L.innerHTML=ks.length?ks.slice(-60).map(function(k){var m=msgs[k];return'<div class="cm '+(m.by===O.role?"me":"th")+(EMO.test(m.x||"")?" em":"")+'">'+esc(m.x||"")+'<small class="cn">'+esc((r[m.by]&&r[m.by].name)||"")+'</small></div>'}).join(""):'<div class="mute" style="text-align:center;padding:6px 0">No messages yet. Say hi 👋</div>';
+    L.innerHTML=ks.length?ks.slice(-60).map(function(k){var m=msgs[k];return'<div class="cm '+(m.by===O.role?"me":"th")+(EMO.test(m.x||"")?" em":"")+'">'+esc(cleanT(m.x||""))+'<small class="cn">'+esc((r[m.by]&&r[m.by].name)||"")+'</small></div>'}).join(""):'<div class="mute" style="text-align:center;padding:6px 0">'+(muted?"🙈 Muted. Their messages are hidden.":"No messages yet. Say hi 👋")+'</div>';
     if(stick)L.scrollTop=L.scrollHeight;
   }
   var EMO=/^(?:[\u2190-\u2BFF\u{1F000}-\u{1FFFF}\uFE0F\u200D]\s*){1,6}$/u,REACT=["👍","😂","😮","🔥","👏","😢","🤔","🎉"],lastRx=0;
@@ -969,6 +1007,10 @@ button{min-height:46px;line-height:1.2}
     if(O.chatOpen){var L=$("ochatL");L.scrollTop=L.scrollHeight;$("ochatI").focus()}
   };
   $("ochatS").onclick=sendChat;
+  var MUTED=load("bot-muted",{}),CF=load("bot-cfilter",0);
+  function cleanT(t){return CF?t.replace(/f+u+c+k\w*|sh[i1]+t\w*|b[i1]tch\w*|a+ss+h[o0]le\w*|bastard\w*|cunt\w*|dick\w*|slut\w*|whore\w*|n[i1]gg\w*|fag+\w*|retard\w*/gi,"***"):t}
+  $("cMute").onclick=function(){var o=O.room&&O.room[O.role==="host"?"guest":"host"];if(!o)return;if(MUTED[o.uid])delete MUTED[o.uid];else MUTED[o.uid]=1;save("bot-muted",MUTED);renderChat(O.room)};
+  $("cFilt").onclick=function(){CF=CF?0:1;save("bot-cfilter",CF);if(O.room)renderChat(O.room)};
   $("ochatI").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();sendChat()}};
   function opress(d){if(O.cur.length<S.n){O.cur+=d;renderOnline()}}
   function oback(){O.cur=O.cur.slice(0,-1);renderOnline()}
@@ -1395,7 +1437,7 @@ button{min-height:46px;line-height:1.2}
   $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
-  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot ruled-out, maybe and sure digits. Pass & play: two players, one phone. Secret digits stay hidden.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
   $("howto").onclick=openHow;
   setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
   function dky(){return new Date().toISOString().slice(0,10)}
@@ -1482,7 +1524,7 @@ button{min-height:46px;line-height:1.2}
   $("onew").onclick=function(){
     var r=O.room;if(!r)return;
     var nd=r.need||0,ww=r.wins||{},ov=nd>0&&((ww.host||0)>=nd||(ww.guest||0)>=nd);
-    var patch={status:"secrets",ready:{host:false,guest:false},guesses:{},winner:null,gaveUp:null,chat:{},n:r.nextN||r.n,nextN:null,starter:(r.starter||"host")==="host"?"guest":"host"};
+    var patch={status:"secrets",ready:{host:false,guest:false},guesses:{},winner:null,gaveUp:null,chat:{},rv:{},n:r.nextN||r.n,nextN:null,starter:(r.starter||"host")==="host"?"guest":"host"};
     if(ov)patch.wins={host:0,guest:0};
     window.botCloud.room.update(O.code,patch).catch(oerr);
   };
@@ -1494,10 +1536,10 @@ button{min-height:46px;line-height:1.2}
     S.friends.forEach(function(f){
       var row=document.createElement("div");row.className="pinrow";
       var b=document.createElement("button");b.className="pinbtn";
-      b.innerHTML='<span>👤 <b>'+esc(f.name)+'</b></span><span class="pj">Play</span>';
+      b.innerHTML='<span>'+(PRES[f.uid]?"🟢":"⚪")+' <b>'+esc(f.name)+'</b></span><span class="pj">Play</span>';
       b.onclick=function(){friendPlay(f)};
       var x=document.createElement("button");x.className="pinx";x.textContent="✕";x.setAttribute("aria-label","Remove");
-      x.onclick=function(){S.friends=S.friends.filter(function(q){return q!==f});save("bot-friends",S.friends);renderPins()};
+      x.onclick=function(){S.friends=S.friends.filter(function(q){return q!==f});save("bot-friends",S.friends);watchFriends();renderPins()};
       row.appendChild(b);row.appendChild(x);el.appendChild(row);
     });
     var sp=document.createElement("div");sp.style.height="12px";el.appendChild(sp);
@@ -1528,6 +1570,7 @@ button{min-height:46px;line-height:1.2}
       if($("burger").getAttribute("aria-expanded")==="true"){$("burger").click();return}
       var h=S.phase;
       if(h==="hist"||h==="between"||h==="over"){goHome();return}
+      if(h==="pp"){ppLeave();return}
       if(h==="online"){$("oleave").click();return}
       if(h==="tour"){$("tleave").click();return}
       if(h!=="home"){giveUp();return}
@@ -1664,6 +1707,159 @@ button{min-height:46px;line-height:1.2}
   }
   $("achmenu").onclick=openAch;
   $("remmenu").onclick=openRem;
+
+  // ===== Notes =====
+  var NT={},NL=["","✕","?","✓"];
+  function ntReset(){NT={}}
+  function openNotes(){
+    $("infoT").textContent="📝 Notes";
+    $("infoBody").innerHTML='<p class="mute" style="margin:0 0 12px;line-height:1.5">Tap a digit to cycle: <b>✕</b> ruled out, <b>?</b> maybe, <b style="color:var(--bull)">✓</b> sure, then blank again. Only you can see these notes.</p><div id="ntg" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div><button class="wide ghost" id="ntr" style="margin-top:14px">Clear notes</button>';
+    drawNotes();
+    $("ntr").onclick=function(){ntReset();drawNotes()};
+    $("info").classList.remove("hide");
+  }
+  function drawNotes(){
+    var g=$("ntg");if(!g)return;g.innerHTML="";
+    for(var d=0;d<10;d++)(function(d){
+      var st=NT[d]||0,b=document.createElement("button");b.className="opt";
+      b.style.cssText="flex:none;min-height:64px;font-size:22px;padding:6px 0"+(st===1?";opacity:.45":st===2?";background:var(--cow);color:#2b1a00":st===3?";background:var(--bull);color:#06281a":"");
+      b.innerHTML='<span'+(st===1?' style="text-decoration:line-through"':'')+'>'+d+'</span><small style="display:block;font-size:12px">'+(NL[st]||"&nbsp;")+'</small>';
+      b.onclick=function(){NT[d]=((NT[d]||0)+1)%4;drawNotes()};
+      g.appendChild(b);
+    })(d);
+  }
+  $("notes").onclick=openNotes;$("onotes").onclick=openNotes;
+
+  // ===== Reveal secrets after an online game =====
+  function renderRev(r){
+    var el=$("orev");
+    if(r.status!=="done"){el.classList.add("hide");return}
+    var opp=O.role==="host"?"guest":"host",rv=r.rv||{},mine=rv[O.role]||O.secret||"",th=rv[opp]||"",on=esc((r[opp]||{}).name||"Opponent"),gs=r.guesses||{},bad={host:0,guest:0};
+    Object.keys(gs).forEach(function(i){var x=gs[i],tg=x.by==="host"?"guest":"host";if(x.k!=null&&rv[tg]&&rv[tg].length===r.n&&score(rv[tg],x.g)!==x.k)bad[tg]++});
+    var h='<div class="mute">🔓 Secret numbers revealed</div><div style="margin-top:6px;font-weight:600">You: <span class="g">'+(mine||"–")+'</span> · '+on+': <span class="g">'+(th||"…")+'</span></div>';
+    ["host","guest"].forEach(function(sd){if(bad[sd])h+='<div class="mute" style="margin-top:6px;color:var(--cow)">⚠️ '+esc((r[sd]||{}).name||"A player")+(sd===O.role?" (you)":"")+': '+bad[sd]+' answer'+(bad[sd]===1?"":"s")+' didn’t match their number.</div>'});
+    el.innerHTML=h;el.classList.remove("hide");
+  }
+
+  // ===== Weekly points + progress =====
+  function weekKey(){var d=new Date(),k=(d.getUTCDay()+6)%7;return new Date(d.getTime()-k*86400000).toISOString().slice(0,10)}
+  var WK=load("bot-wk",null)||{k:"",p:0,b:null},PH=load("bot-ph",[]);
+  function wkNow(){var k=weekKey();if(WK.k!==k||WK.b==null)WK={k:k,p:0,b:S.pts};WK.p=S.pts-WK.b;try{localStorage.setItem("bot-wk",JSON.stringify(WK))}catch(e){}return WK}
+  function phNote(){var l=PH[PH.length-1];if(l&&l.p===S.pts)return;PH.push({t:Date.now(),p:S.pts});if(PH.length>60)PH=PH.slice(-60);try{localStorage.setItem("bot-ph",JSON.stringify(PH))}catch(e){}}
+  phNote();wkNow();
+  function progressHtml(){
+    var out="";
+    if(PH.length>=2){
+      var pts=PH.map(function(x){return x.p}),mn=Math.min.apply(null,pts),mx=Math.max.apply(null,pts),rg=Math.max(1,mx-mn),W=300,H=100,P=8,
+          xy=pts.map(function(v,i){return(P+i*(W-2*P)/(pts.length-1)).toFixed(1)+","+(H-P-(v-mn)/rg*(H-2*P)).toFixed(1)}).join(" ");
+      out+='<div class="card"><div class="mute">Points over time</div><svg viewBox="0 0 300 100" width="100%" style="display:block;margin-top:8px" role="img" aria-label="Points over time"><polyline points="'+xy+'" fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="trow mute" style="margin-top:4px"><span>Low '+mn+'</span><span>Now '+pts[pts.length-1]+'</span><span>High '+mx+'</span></div></div>';
+    }
+    var rows=[3,4,5].map(function(n){
+      var all=S.hist.filter(function(g){return g.n===n}),pv=all.filter(function(g){return g.mode!=="solo"}),w=pv.filter(function(g){return g.res==="u"}),
+          gl=all.filter(function(g){return g.res==="u"&&g.u&&g.u.length}).map(function(g){return g.u.length});
+      if(!all.length)return"";
+      return'<tr><td>'+n+'</td><td>'+pv.length+'</td><td>'+(pv.length?Math.round(w.length/pv.length*100)+"%":"–")+'</td><td>'+(gl.length?(gl.reduce(function(a,b){return a+b},0)/gl.length).toFixed(1):"–")+'</td></tr>';
+    }).join("");
+    if(rows)out+='<div class="card"><div class="mute" style="margin-bottom:6px">By number of digits</div><table class="ptab"><tr><th>Digits</th><th>Duels</th><th>Win rate</th><th>Avg guesses</th></tr>'+rows+'</table></div>';
+    return out;
+  }
+
+  // ===== Friends: online dots + challenge alerts =====
+  var PRES={},lastPres=0,FRU=[],SEENC={};
+  function refreshPresence(){
+    if(!S.user||!window.botCloud||!window.botCloud.db||!S.friends.length)return;
+    Promise.all(S.friends.map(function(f){return window.botCloud.db.get("leaders",f.uid).then(function(d){PRES[f.uid]=!!(d&&d.seen&&Date.now()-d.seen<120000)}).catch(function(){})})).then(function(){if(S.phase==="home"&&S.mode==="online")renderPins()});
+  }
+  function watchFriends(){
+    FRU.forEach(function(u){try{u()}catch(e){}});FRU=[];
+    if(!S.user||!window.botCloud||!window.botCloud.room)return;
+    S.friends.forEach(function(f){
+      var code=friendCode(S.user.uid,f.uid);
+      FRU.push(window.botCloud.room.watch(code,function(r){
+        if(!r||!r.chal||r.chal.by===S.user.uid)return;
+        var at=r.chal.at;if(!at||SEENC[code]===at||Date.now()-at>120000)return;SEENC[code]=at;
+        if(S.phase==="online"&&O.code===code)return;
+        var who=r.chal.name||f.name;
+        if(document.hidden)pushNote("🎮 "+who+" challenged you","Open Cipher to play.");
+        ask("Challenge!",who+" wants to play a Cipher duel.","Play",function(){joinRoom(code)});
+      }));
+    });
+  }
+  setInterval(function(){
+    if(window.botCloud&&window.botCloud.beat&&S.user&&S.nick&&!document.hidden)window.botCloud.beat();
+    if(S.phase==="home"&&S.mode==="online"&&!document.hidden)refreshPresence();
+  },45000);
+
+  // ===== Pass & play: two players, one phone =====
+  var PP={n:3,sec:["",""],g:[[],[]],turn:0,starter:0,ph:"set",who:0,to:0,next:"set",cur:"",wins:[0,0],win:-1,crk:false,last:null};
+  function ppName(i){return i===0?(S.nick||"Player 1"):"Player 2"}
+  function startPP(re){
+    var st=re?1-PP.starter:0,w=re?PP.wins:[0,0];
+    PP={n:S.n,sec:["",""],g:[[],[]],turn:st,starter:st,ph:"set",who:0,to:0,next:"set",cur:"",wins:w,win:-1,crk:false,last:null};
+    S.phase="pp";render();
+  }
+  function renderPP(){
+    var ph=PP.ph,n=PP.n,N=[esc(ppName(0)),esc(ppName(1))],m="";S.n=n;
+    if(ph==="set")m="<b>"+N[PP.who]+"</b>, pick your secret number. Type it in private, the digits stay hidden.";
+    else if(ph==="pass")m="Pass the phone to <b>"+N[PP.to]+"</b>.<div class=\"mute\" style=\"font-weight:400;margin-top:4px\">"+(PP.next==="set"?"They pick their own secret number next.":"Time to start guessing.")+"</div>";
+    else if(ph==="guess")m="<b>"+N[PP.turn]+"</b>’s turn: guess "+N[1-PP.turn]+"’s number."+(PP.crk&&PP.turn!==PP.starter?" Last chance, "+N[PP.starter]+" already cracked yours.":"");
+    else if(ph==="result"){var L=PP.last,b=Math.floor(L.k/(n+1)),c=L.k%(n+1);m="<b>"+N[L.by]+"</b> guessed "+L.g+": <span style=\"color:var(--bull)\">"+b+" bull"+(b===1?"":"s")+"</span>, <span style=\"color:var(--cow)\">"+c+" cow"+(c===1?"":"s")+"</span>."+(PP.crk&&L.by===PP.starter?" 🎯 Cracked it! "+N[1-L.by]+" gets one last guess to tie.":"")}
+    else m=(PP.win===2?"🤝 It’s a draw! Both cracked it in the same number of guesses.":"🏆 <b>"+N[PP.win]+"</b> wins!")+"<div class=\"mute\" style=\"font-weight:400;margin-top:6px\">Secret numbers: "+N[0]+" "+PP.sec[0]+" · "+N[1]+" "+PP.sec[1]+"</div>";
+    $("ppinfo").innerHTML='<div class="mute">Pass &amp; play · '+n+' digits · '+N[0]+' '+PP.wins[0]+' – '+PP.wins[1]+' '+N[1]+'</div><div style="margin-top:8px;font-weight:600;font-size:15px;line-height:1.5">'+m+'</div>';
+    var showLogs=ph==="guess"||ph==="result"||ph==="over";
+    $("pplogs").classList.toggle("hide",!showLogs);
+    $("ppl0").innerHTML=list(N[0]+" → "+N[1],PP.g[0],"u",n);
+    $("ppl1").innerHTML=list(N[1]+" → "+N[0],PP.g[1],"a",n);
+    var play=ph==="set"||ph==="guess";
+    $("ppplay").classList.toggle("hide",!play);
+    if(play){
+      var sl=$("ppslots");sl.innerHTML="";
+      for(var i=0;i<n;i++){var d=document.createElement("div");d.className="slot"+(i===PP.cur.length?" on":"");d.textContent=PP.cur[i]?(ph==="set"?"•":PP.cur[i]):"";sl.appendChild(d)}
+      $("ppgo").textContent=ph==="set"?"Lock in":"Guess";$("ppgo").disabled=!valid(PP.cur);
+    }
+    var nb=$("ppgo2");nb.classList.toggle("hide",!(ph==="pass"||ph==="result"));
+    if(ph==="pass")nb.textContent="I’m "+ppName(PP.to)+", ready";
+    if(ph==="result")nb.textContent="Pass the phone to "+ppName(1-PP.last.by);
+    $("pprematch").classList.toggle("hide",ph!=="over");
+  }
+  function ppPress(d){if((PP.ph!=="set"&&PP.ph!=="guess")||PP.cur.length>=PP.n)return;PP.cur+=d;renderPP()}
+  function ppBack(){if(PP.ph!=="set"&&PP.ph!=="guess")return;PP.cur=PP.cur.slice(0,-1);renderPP()}
+  function ppGo(){
+    var n=PP.n;if(!valid(PP.cur))return;
+    if(PP.ph==="set"){
+      PP.sec[PP.who]=PP.cur;PP.cur="";PP.ph="pass";
+      if(PP.who===0){PP.to=1;PP.next="set"}else{PP.to=PP.starter;PP.next="guess"}
+      renderPP();return;
+    }
+    if(PP.ph!=="guess")return;
+    var t=PP.turn,g=PP.cur;
+    if(PP.g[t].some(function(x){return x.g===g})){toast("Already tried "+g);PP.cur="";renderPP();return}
+    var k=score(PP.sec[1-t],g),cr=Math.floor(k/(n+1))===n;
+    PP.cur="";PP.g[t].push({g:g,k:k});PP.last={by:t,g:g,k:k};
+    if(cr&&t!==PP.starter){if(PP.crk)PP.win=2;else{PP.win=t;PP.wins[t]++}PP.ph="over"}
+    else if(cr){PP.crk=true;PP.ph="result"}
+    else if(PP.crk&&t!==PP.starter){PP.win=PP.starter;PP.wins[PP.starter]++;PP.ph="over"}
+    else PP.ph="result";
+    if(PP.ph==="over")sfx("win");
+    renderPP();
+  }
+  function ppNext(){
+    if(PP.ph==="pass"){
+      if(PP.next==="set"){PP.ph="set";PP.who=PP.to}else{PP.ph="guess";PP.turn=PP.to}
+      PP.cur="";renderPP();
+    }else if(PP.ph==="result"){PP.turn=1-PP.turn;PP.ph="guess";PP.cur="";renderPP()}
+  }
+  function ppLeave(){
+    if(PP.ph==="over"||(PP.ph==="set"&&PP.who===0&&!PP.cur)){S.phase="home";render();return}
+    ask("Leave this game?","The current game will be lost.","Leave",function(){S.phase="home";render()});
+  }
+  var ppd=$("pppad");
+  for(var pq=1;pq<=9;pq++)(function(q){var b=document.createElement("button");b.textContent=q;b.onclick=function(){ppPress(String(q))};ppd.appendChild(b)})(pq);
+  var pbk=document.createElement("button");pbk.textContent="⌫";holdBtn(pbk,ppBack,function(){PP.cur="";renderPP()});ppd.appendChild(pbk);
+  var pzr=document.createElement("button");pzr.textContent="0";pzr.onclick=function(){ppPress("0")};ppd.appendChild(pzr);
+  var pgo=document.createElement("button");pgo.id="ppgo";pgo.textContent="Guess";pgo.onclick=ppGo;ppd.appendChild(pgo);
+  $("ppgo2").onclick=ppNext;$("pprematch").onclick=function(){startPP(true)};$("ppleave").onclick=ppLeave;
+
   updateAcct();
   render();
 })();
@@ -1690,11 +1886,12 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
     signIn:()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>alert("Sign-in failed: "+e.code)),
     pid:firebaseConfig.projectId,
     signOut:()=>signOut(auth),
+    beat:()=>{if(!user)return;setDoc(doc(db,"leaders",user.uid),{seen:Date.now()},{merge:true}).catch(()=>{})},
     guest:async(name)=>{
       try{const c=await signInAnonymously(auth);await updateProfile(c.user,{displayName:name});window.botAuth&&window.botAuth(auth.currentUser)}
       catch(e){alert(e.code==="auth/operation-not-allowed"?"Guest play isn’t switched on yet. In Firebase, enable Anonymous under Authentication > Sign-in method.":"Couldn’t start guest mode: "+e.code)}
     },
-    save:(pts,hist,pins,nick,friends)=>{if(!user)return;setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],friends:friends||[],...(nick?{nick:nick}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e));setDoc(doc(db,"leaders",user.uid),{uid:user.uid,name:nick||user.displayName||"Player",pts:pts,updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
+    save:(pts,hist,pins,nick,friends,wk)=>{if(!user)return;setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],friends:friends||[],...(nick?{nick:nick}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e));setDoc(doc(db,"leaders",user.uid),{uid:user.uid,name:nick||user.displayName||"Player",pts:pts,...(wk&&wk.k?{wk:wk.k,wpts:wk.p}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
   };
   window.botCloud.db={
     get:async(c,i)=>{const s=await getDoc(doc(db,c,i));return s.exists()?s.data():null},
@@ -1702,6 +1899,7 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
     update:(c,i,p)=>updateDoc(doc(db,c,i),p),
     del:(c,i,f)=>updateDoc(doc(db,c,i),{[f]:deleteField()}),
     top:async(d)=>{const q=await getDocs(query(collection(db,"daily"),where("date","==",d),limit(50)));return q.docs.map(x=>x.data())},
+    weekly:async(k)=>{const q=await getDocs(query(collection(db,"leaders"),where("wk","==",k),limit(100)));return q.docs.map(x=>x.data())},
     leaders:async()=>{const q=await getDocs(query(collection(db,"leaders"),orderBy("pts","desc"),limit(50)));return q.docs.map(x=>x.data())},
     watch:(c,i,cb)=>onSnapshot(doc(db,c,i),s=>cb(s.exists()?s.data():null))
   };
