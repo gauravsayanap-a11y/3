@@ -1,5 +1,6 @@
-// Cipher service worker. Bump CACHE on every release so users get the new version.
-const CACHE = "cipher-v1";
+// Cipher service worker.
+// Bump CACHE on every release (cipher-v3, v4, ...) so installed copies update.
+const CACHE = "cipher-v2";
 
 const ASSETS = [
   "./",
@@ -13,18 +14,28 @@ const ASSETS = [
   "favicon-32.png"
 ];
 
-// Cache each file separately so one missing file doesn't break the whole install.
-self.addEventListener("install", (e) => {
-  e.waitUntil(
+const NAV_TIMEOUT = 4000; // slow network: fall back to the cached page after 4 s
+
+// Install: fetch fresh copies (bypassing the HTTP cache) and store each one separately,
+// so a single missing file can't break the whole install.
+self.addEventListener("install", (event) => {
+  event.waitUntil(
     caches.open(CACHE).then((cache) =>
-      Promise.all(ASSETS.map((a) => cache.add(a).catch(() => {})))
+      Promise.all(
+        ASSETS.map((a) =>
+          fetch(new Request(a, { cache: "reload" }))
+            .then((res) => (res.ok ? cache.put(a, res) : null))
+            .catch(() => {})
+        )
+      )
     )
   );
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(
+// Activate: delete old caches and take control of open pages.
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
     caches
       .keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
@@ -32,30 +43,40 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-self.addEventListener("fetch", (e) => {
-  const req = e.request;
+function networkFirstPage(request) {
+  const network = fetch(request, { cache: "no-cache" }).then((res) => {
+    if (res.ok) {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put("index.html", copy)); // only good responses are stored
+    }
+    return res;
+  });
+  const timeout = new Promise((resolve) =>
+    setTimeout(() => resolve(caches.match("index.html", { ignoreSearch: true })), NAV_TIMEOUT)
+  );
+  return Promise.race([network, timeout])
+    .then((res) => res || network)
+    .catch(() =>
+      caches.match("index.html", { ignoreSearch: true }).then((r) => r || caches.match("./"))
+    );
+}
+
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
   const url = new URL(req.url);
 
-  // Only handle same-origin GETs. Firebase, gstatic and online play go straight to the network.
-  if (req.method !== "GET" || url.origin !== location.origin) return;
+  // Only handle same-origin GETs. Firebase, gstatic and all online play go straight to the network.
+  if (req.method !== "GET" || url.origin !== self.location.origin) return;
 
-  // Pages: network first (fresh updates), cached copy when offline.
+  // Opening the game (including challenge links like ?c=ABC123): network first, cached page as backup.
   if (req.mode === "navigate") {
-    e.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put("index.html", copy));
-          return res;
-        })
-        .catch(() => caches.match("index.html").then((r) => r || caches.match("./")))
-    );
+    event.respondWith(networkFirstPage(req));
     return;
   }
 
-  // Static files: cache first, then network (and remember it).
-  e.respondWith(
-    caches.match(req).then(
+  // Icons, manifest and other static files: cache first, then network.
+  event.respondWith(
+    caches.match(req, { ignoreSearch: true }).then(
       (hit) =>
         hit ||
         fetch(req).then((res) => {
@@ -69,10 +90,10 @@ self.addEventListener("fetch", (e) => {
   );
 });
 
-// Tapping a notification (e.g. the daily reminder) opens or focuses the game.
-self.addEventListener("notificationclick", (e) => {
-  e.notification.close();
-  e.waitUntil(
+// Tapping a notification (for example the daily reminder) opens or focuses the game.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
       for (const c of list) {
         if ("focus" in c) return c.focus();
