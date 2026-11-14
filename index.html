@@ -12,7 +12,7 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181a;--card:#222426;--ink:#f1f0ec;--mute:#9a9aa0;--line:#34363a;--key:#2e3033;--acc:#6ea8ff;--bull:#5fbf8f;--cow:#e9a94a;--ai:#b794ff;--shadow:none;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#17181a;--card:#222426;--ink:#f1f0ec;--mute:#9a9aa0;--line:#34363a;--key:#2e3033;--acc:#6ea8ff;--bull:#5fbf8f;--cow:#e9a94a;--ai:#b794ff;--shadow:none;color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{overscroll-behavior-y:contain;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 main{max-width:440px;margin:0 auto;padding:22px 16px 32px}
 h1{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:0 0 14px}
 h1 .mute{font-size:14px;font-weight:500;letter-spacing:0}
@@ -1438,7 +1438,7 @@ button{min-height:46px;line-height:1.2}
   $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
-  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place. Pass & play: two players, one phone. Secret digits stay hidden.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry.","Reloading or closing the page during a game counts as a give up (you get a warning first)."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place. Pass & play: two players, one phone. Secret digits stay hidden.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry.","Reloading or closing the page during a game counts as a give up. Pressing F5 or Ctrl/Cmd+R shows a warning first."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
   $("howto").onclick=openHow;
   setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
   function dky(){return new Date().toISOString().slice(0,10)}
@@ -1715,7 +1715,7 @@ button{min-height:46px;line-height:1.2}
   function ntGet(p,d){return (NT[p]&&NT[p][d])||0}
   function openNotes(){
     $("infoT").textContent="📝 Notes";
-    $("infoBody").innerHTML='<p class="mute" style="margin:0 0 12px;line-height:1.5">Pick an underscore (left to right = place 1, 2, …), then tap a digit to cycle: <b style="color:var(--cow)">?</b> might be here, <b style="color:var(--bull)">✓</b> will be here, <b>✕</b> should not be here, then blank again. Only you can see these notes.</p><div id="ntp" style="display:flex;gap:8px;margin-bottom:12px"></div><div id="ntg" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div><div id="nts" style="margin-top:14px"></div><button class="wide ghost" id="ntr" style="margin-top:14px">Clear notes</button>';
+    $("infoBody").innerHTML='<p class="mute" style="margin:0 0 12px;line-height:1.5">Pick an underscore (left to right = place 1, 2, …), then tap a digit to cycle: <b style="color:var(--cow)">?</b> might be here, <b style="color:var(--bull)">✓</b> will be here (only one per place), <b>✕</b> should not be here, then blank again. Only you can see these notes.</p><div id="ntp" style="display:flex;gap:8px;margin-bottom:12px"></div><div id="ntg" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div><div id="nts" style="margin-top:14px"></div><button class="wide ghost" id="ntr" style="margin-top:14px">Clear notes</button>';
     drawNotes();
     $("ntr").onclick=function(){ntReset();drawNotes()};
     $("info").classList.remove("hide");
@@ -1736,7 +1736,10 @@ button{min-height:46px;line-height:1.2}
       var st=ntGet(NP,d),b=document.createElement("button");b.className="opt";
       b.style.cssText="flex:none;min-height:64px;font-size:22px;padding:6px 0"+(st===1?";background:var(--cow);color:#2b1a00":st===2?";background:var(--bull);color:#06281a":st===3?";opacity:.45":"");
       b.innerHTML='<span'+(st===3?' style="text-decoration:line-through"':'')+'>'+d+'</span><small style="display:block;font-size:12px">'+(NL[st]||"&nbsp;")+'</small>';
-      b.onclick=function(){(NT[NP]=NT[NP]||{})[d]=(ntGet(NP,d)+1)%4;drawNotes()};
+      b.onclick=function(){
+        var nx=(ntGet(NP,d)+1)%4;
+        if(nx===2){for(var q=0;q<10;q++)if(q!==d&&ntGet(NP,q)===2){toast("Place "+(NP+1)+" already has a ✓ ("+q+"). Clear it first.");nx=3;break}}
+        (NT[NP]=NT[NP]||{})[d]=nx;drawNotes()};
       g.appendChild(b);
     })(d);
     var h='<div class="mute" style="margin-bottom:6px">Summary</div>';
@@ -1886,10 +1889,15 @@ button{min-height:46px;line-height:1.2}
     if(S.phase==="online"&&O.room&&O.room.status==="playing"&&O.code)return{t:"room",code:O.code,role:O.role,n:S.n,tid:O.room.tid||""};
     return null;
   }
-  window.addEventListener("beforeunload",function(e){
-    if(!liveGame())return;
-    e.preventDefault();e.returnValue="";return"";
-  });
+  // The browser's own "Leave site?" box can't be restyled, so Cipher asks in its own window instead.
+  document.addEventListener("keydown",function(e){
+    var k=(e.key||"").toLowerCase();
+    if(!(k==="f5"||((e.ctrlKey||e.metaKey)&&k==="r")))return;
+    var g=liveGame();if(!g)return;
+    e.preventDefault();
+    var pen=(g.t==="room"&&g.tid)?0:10*(g.n-2);
+    ask("Reload and give up?","Reloading will count this game as a give up"+(pen?" and you’ll lose "+pen+" points":"")+"."+(g.t==="room"?" Your opponent wins.":""),"Reload",function(){location.reload()});
+  },true);
   window.addEventListener("pagehide",function(e){
     if(e.persisted)return;
     var g=liveGame();if(!g)return;
