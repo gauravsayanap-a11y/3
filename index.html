@@ -221,6 +221,8 @@ button{min-height:46px;line-height:1.2}
 .burger i{display:block;width:20px;height:2px;border-radius:2px;background:var(--ink)}
 #menuwrap{position:fixed;inset:0;z-index:40}
 #menuback{position:absolute;inset:0;background:rgba(6,8,14,.45)}
+html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:none}
+#menuwrap{touch-action:none;overscroll-behavior:contain}
 #menu{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:16px;width:min(280px,calc(100vw - 32px));background:var(--hdbg,#12172a);border:1px solid var(--line);border-radius:18px;padding:8px;display:flex;flex-direction:column;gap:4px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 @keyframes menuR{from{clip-path:inset(0 100% 0 0 round 18px);opacity:.4}to{clip-path:inset(0 0 0 0 round 18px);opacity:1}}
 #menuwrap:not(.hide) #menu{transform-origin:left top;animation:menuR .26s cubic-bezier(.2,.8,.2,1)}
@@ -233,6 +235,11 @@ button{min-height:46px;line-height:1.2}
 .opts .opt{flex:1 1 104px!important;width:auto;min-width:0}
 #dig .opt,.rep .opt,#odig .opt{flex:1 1 56px!important}
 #fmt .opt,#ofmt .opt{flex:1 1 100px!important}
+/* Challenge buttons: tidy 2-column grid, no ragged wrapping */
+#chopt,#timedopt{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#chopt .opt,#timedopt .opt{flex:none!important;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;padding:12px 8px;font-size:15px}
+#chopt .opt:last-child:nth-child(odd),#timedopt .opt:last-child:nth-child(odd){grid-column:1/-1}
+@media (max-width:360px){#chopt .opt{font-size:14px;padding:12px 4px}}
 
 #hintrow{display:flex;justify-content:flex-end;gap:8px;margin-bottom:-4px}
 #hint,#notes,#coach{min-height:32px;padding:6px 14px;font-size:13px;border-radius:999px;background:transparent;border:1px solid var(--line);color:var(--mute)}
@@ -1481,9 +1488,10 @@ button{min-height:46px;line-height:1.2}
   function sfx(k){if(!SND)return;try{if(navigator.vibrate)navigator.vibrate(k==="win"?[60,40,90]:200);var a=sfx.c||(sfx.c=new(window.AudioContext||window.webkitAudioContext)()),t=a.currentTime;(k==="win"?[523,659,784]:[330,262]).forEach(function(f,i){var o=a.createOscillator(),g=a.createGain();o.frequency.value=f;g.gain.setValueAtTime(.15,t+i*.14);g.gain.exponentialRampToValueAtTime(.001,t+i*.14+.25);o.connect(g);g.connect(a.destination);o.start(t+i*.14);o.stop(t+i*.14+.26)})}catch(e){}}
 
   (function(){var w=$("menuwrap"),b=$("burger");
-    function set(o){w.classList.toggle("hide",!o);b.setAttribute("aria-expanded",o?"true":"false");if(o){var r=b.getBoundingClientRect(),m=$("menu");m.style.top=(r.bottom+8)+"px";m.style.left=Math.max(8,Math.min(r.left,innerWidth-m.offsetWidth-8))+"px"}}
+    function set(o){w.classList.toggle("hide",!o);b.setAttribute("aria-expanded",o?"true":"false");document.documentElement.classList.toggle("menulock",!!o);if(o){var r=b.getBoundingClientRect(),m=$("menu");m.style.top=(r.bottom+8)+"px";m.style.left=Math.max(8,Math.min(r.left,innerWidth-m.offsetWidth-8))+"px"}}
     b.onclick=function(e){e.stopPropagation();set(w.classList.contains("hide"))};
     $("menuback").onclick=function(){set(false)};
+    ["touchmove","wheel"].forEach(function(ev){w.addEventListener(ev,function(e){e.preventDefault()},{passive:false})});
     $("menu").addEventListener("click",function(e){var t=e.target.closest("button");if(t&&t.id!=="sndbtn")set(false)});
   })();
   var RN=["zero","one","two","three","four","five","six","seven","eight","nine"],
