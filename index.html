@@ -219,14 +219,15 @@ button{min-height:46px;line-height:1.2}
 .hd{background:transparent!important;position:static!important}
 .burger{flex:none;width:44px;min-height:44px;padding:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:transparent}
 .burger i{display:block;width:20px;height:2px;border-radius:2px;background:var(--ink)}
-#menuwrap{position:fixed;inset:0;z-index:40}
-#menuback{position:absolute;inset:0;background:rgba(6,8,14,.45)}
+#menuwrap{position:fixed;inset:0;z-index:40;touch-action:none;overscroll-behavior:contain}
+#menuback{position:absolute;inset:0;background:rgba(6,8,14,.5);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity .3s ease}
+#menuwrap.open #menuback{opacity:1}
 html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:none}
-#menuwrap{touch-action:none;overscroll-behavior:contain}
-#menu{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:16px;width:min(280px,calc(100vw - 32px));background:var(--hdbg,#12172a);border:1px solid var(--line);border-radius:18px;padding:8px;display:flex;flex-direction:column;gap:4px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-@keyframes menuR{from{clip-path:inset(0 100% 0 0 round 18px);opacity:.4}to{clip-path:inset(0 0 0 0 round 18px);opacity:1}}
-#menuwrap:not(.hide) #menu{transform-origin:left top;animation:menuR .26s cubic-bezier(.2,.8,.2,1)}
-@media (prefers-reduced-motion:reduce){#menuwrap:not(.hide) #menu{animation:none}}
+#menu{position:absolute;top:0;bottom:0;left:0;width:min(300px,84vw);padding:calc(14px + env(safe-area-inset-top,0px)) 10px calc(14px + env(safe-area-inset-bottom,0px));background:var(--hdbg,#12172a);border-right:1px solid var(--line);border-radius:0 22px 22px 0;display:flex;flex-direction:column;gap:2px;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;box-shadow:14px 0 44px rgba(0,0,0,.4);transform:translateX(-104%);transition:transform .34s cubic-bezier(.22,1,.36,1);will-change:transform}
+#menuwrap.open #menu{transform:none}
+#menu button{opacity:0;transform:translateX(-16px);transition:opacity .22s ease,transform .22s ease}
+#menuwrap.open #menu button{opacity:1;transform:none;transition:opacity .34s ease calc(var(--i,0)*32ms + 110ms),transform .4s cubic-bezier(.22,1,.36,1) calc(var(--i,0)*32ms + 110ms)}
+@media (prefers-reduced-motion:reduce){#menu,#menuback,#menu button,#menuwrap.open #menu button{transition-duration:.01s!important;transition-delay:0s!important}}
 #menu button{background:transparent;text-align:left;padding:12px 14px;border-radius:12px;font-size:15px}
 #menu button:active{background:var(--key)}
 
@@ -1487,12 +1488,21 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
   var HINT=[],SND=load("bot-snd",1);
   function sfx(k){if(!SND)return;try{if(navigator.vibrate)navigator.vibrate(k==="win"?[60,40,90]:200);var a=sfx.c||(sfx.c=new(window.AudioContext||window.webkitAudioContext)()),t=a.currentTime;(k==="win"?[523,659,784]:[330,262]).forEach(function(f,i){var o=a.createOscillator(),g=a.createGain();o.frequency.value=f;g.gain.setValueAtTime(.15,t+i*.14);g.gain.exponentialRampToValueAtTime(.001,t+i*.14+.25);o.connect(g);g.connect(a.destination);o.start(t+i*.14);o.stop(t+i*.14+.26)})}catch(e){}}
 
-  (function(){var w=$("menuwrap"),b=$("burger");
-    function set(o){w.classList.toggle("hide",!o);b.setAttribute("aria-expanded",o?"true":"false");document.documentElement.classList.toggle("menulock",!!o);if(o){var r=b.getBoundingClientRect(),m=$("menu");m.style.top=(r.bottom+8)+"px";m.style.left=Math.max(8,Math.min(r.left,innerWidth-m.offsetWidth-8))+"px"}}
-    b.onclick=function(e){e.stopPropagation();set(w.classList.contains("hide"))};
+  (function(){var w=$("menuwrap"),b=$("burger"),m=$("menu"),tm=0;
+    Array.prototype.forEach.call(m.children,function(el,i){el.style.setProperty("--i",i)});
+    function set(o){
+      clearTimeout(tm);
+      b.setAttribute("aria-expanded",o?"true":"false");
+      document.documentElement.classList.toggle("menulock",!!o);
+      if(o){w.classList.remove("hide");void w.offsetWidth;w.classList.add("open")}
+      else{w.classList.remove("open");tm=setTimeout(function(){w.classList.add("hide")},340)}
+    }
+    b.onclick=function(e){e.stopPropagation();set(b.getAttribute("aria-expanded")!=="true")};
     $("menuback").onclick=function(){set(false)};
-    ["touchmove","wheel"].forEach(function(ev){w.addEventListener(ev,function(e){e.preventDefault()},{passive:false})});
-    $("menu").addEventListener("click",function(e){var t=e.target.closest("button");if(t&&t.id!=="sndbtn")set(false)});
+    ["touchmove","wheel"].forEach(function(ev){w.addEventListener(ev,function(e){
+      if(e.target.closest&&e.target.closest("#menu")&&m.scrollHeight>m.clientHeight)return;
+      e.preventDefault()},{passive:false})});
+    m.addEventListener("click",function(e){var t=e.target.closest("button");if(t&&t.id!=="sndbtn")set(false)});
   })();
   var RN=["zero","one","two","three","four","five","six","seven","eight","nine"],
   RT=[["the number of sides on a circle",0],["the number of suns in our sky",1],["the number of legs on a bird",2],["the number of sides on a triangle",3],["the number of legs on a table",4],["the number of fingers on one hand",5],["the number of faces on a die",6],["the number of days in a week",7],["the number of legs on a spider",8],["the number of lives a proverbial cat has",9]],
