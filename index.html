@@ -872,6 +872,7 @@ button{min-height:46px;line-height:1.2}
     if(!S.nick)openName();
     watchFriends();if(window.botCloud&&window.botCloud.beat)window.botCloud.beat();refreshPresence();
     render();tryInvite();
+    if(window.botForfeitRoom)window.botForfeitRoom();
   };
   // ===== Online play: rooms live in Firestore; each player's secret stays on their own device =====
   var O={code:"",role:"",room:null,secret:"",cur:"",locked:false,unsub:null,done:false,ans:{}};
@@ -1437,7 +1438,7 @@ button{min-height:46px;line-height:1.2}
   $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
-  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place. Pass & play: two players, one phone. Secret digits stay hidden.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (3 pts each, not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place. Pass & play: two players, one phone. Secret digits stay hidden.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry.","Reloading or closing the page during a game counts as a give up (you get a warning first)."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
   $("howto").onclick=openHow;
   setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
   function dky(){return new Date().toISOString().slice(0,10)}
@@ -1714,7 +1715,7 @@ button{min-height:46px;line-height:1.2}
   function ntGet(p,d){return (NT[p]&&NT[p][d])||0}
   function openNotes(){
     $("infoT").textContent="📝 Notes";
-    $("infoBody").innerHTML='<p class="mute" style="margin:0 0 12px;line-height:1.5">Pick a place, then tap a digit to cycle: <b style="color:var(--cow)">?</b> might be here, <b style="color:var(--bull)">✓</b> will be here, <b>✕</b> should not be here, then blank again. Only you can see these notes.</p><div id="ntp" style="display:flex;gap:8px;margin-bottom:12px"></div><div id="ntg" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div><div id="nts" style="margin-top:14px"></div><button class="wide ghost" id="ntr" style="margin-top:14px">Clear notes</button>';
+    $("infoBody").innerHTML='<p class="mute" style="margin:0 0 12px;line-height:1.5">Pick an underscore (left to right = place 1, 2, …), then tap a digit to cycle: <b style="color:var(--cow)">?</b> might be here, <b style="color:var(--bull)">✓</b> will be here, <b>✕</b> should not be here, then blank again. Only you can see these notes.</p><div id="ntp" style="display:flex;gap:8px;margin-bottom:12px"></div><div id="ntg" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div><div id="nts" style="margin-top:14px"></div><button class="wide ghost" id="ntr" style="margin-top:14px">Clear notes</button>';
     drawNotes();
     $("ntr").onclick=function(){ntReset();drawNotes()};
     $("info").classList.remove("hide");
@@ -1725,8 +1726,9 @@ button{min-height:46px;line-height:1.2}
     pb.innerHTML="";g.innerHTML="";
     for(var p=0;p<n;p++)(function(p){
       var t=document.createElement("button"),on=p===NP;
-      t.className="opt"+(on?" sel":"");t.style.cssText="flex:1;min-height:44px;padding:6px 0;font-size:14px";
-      t.innerHTML="Place "+(p+1);
+      t.className="opt"+(on?" sel":"");t.style.cssText="flex:1;min-height:52px;padding:6px 0;font-size:28px;font-weight:700;line-height:1";
+      var sure=[];for(var q=0;q<10;q++)if(ntGet(p,q)===2)sure.push(q);
+      t.innerHTML=sure.length===1?sure[0]:"_";t.setAttribute("aria-label","Place "+(p+1));
       t.onclick=function(){NP=p;drawNotes()};
       pb.appendChild(t);
     })(p);
@@ -1877,6 +1879,66 @@ button{min-height:46px;line-height:1.2}
   var pzr=document.createElement("button");pzr.textContent="0";pzr.onclick=function(){ppPress("0")};ppd.appendChild(pzr);
   var pgo=document.createElement("button");pgo.id="ppgo";pgo.textContent="Guess";pgo.onclick=ppGo;ppd.appendChild(pgo);
   $("ppgo2").onclick=ppNext;$("pprematch").onclick=function(){startPP(true)};$("ppleave").onclick=ppLeave;
+
+  // ===== Reload / close = give up the current game =====
+  function liveGame(){
+    if(S.phase==="guess"||S.phase==="report"||S.phase==="think")return{t:"bot",mode:S.mode,n:S.n,daily:S.daily||"",dt:S.dt||0,secret:S.aSecret,lvl:S.lvl,u:S.uT,a:S.aT};
+    if(S.phase==="online"&&O.room&&O.room.status==="playing"&&O.code)return{t:"room",code:O.code,role:O.role,n:S.n,tid:O.room.tid||""};
+    return null;
+  }
+  window.addEventListener("beforeunload",function(e){
+    if(!liveGame())return;
+    e.preventDefault();e.returnValue="";return"";
+  });
+  window.addEventListener("pagehide",function(e){
+    if(e.persisted)return;
+    var g=liveGame();if(!g)return;
+    try{localStorage.setItem("bot-forfeit",JSON.stringify(g))}catch(x){}
+  });
+  function forfeitPop(msg){
+    setTimeout(function(){
+      $("popEm").textContent="🏳️";$("popT").textContent="Game given up";$("popP").textContent=msg;
+      $("pop").classList.remove("hide");
+    },600);
+  }
+  function applyForfeit(g){
+    var pen=10*(g.n-2);
+    if(g.t==="bot"){
+      awardPts(-pen);
+      if(g.daily)save("bot-daily",{d:g.daily,g:0,n:g.n,t:g.dt});
+      S.hist.push({t:Date.now(),mode:g.mode,n:g.n,res:"a",bot:g.secret,lvl:g.lvl,ln:LEVELS[g.lvl].n,u:g.u||[],a:g.a||[]});
+      if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist);
+      track({won:false,ended:true,g:0,mode:g.mode,n:g.n,lvl:g.lvl,daily:!!g.daily});
+      forfeitPop("The page was reloaded or closed during your game, so it counted as a give up. BOT’s number was "+g.secret+". −"+pen+" pts.");
+    }
+  }
+  (function(){
+    var raw=null;try{raw=localStorage.getItem("bot-forfeit")}catch(e){}
+    if(!raw)return;
+    var g;try{g=JSON.parse(raw)}catch(e){try{localStorage.removeItem("bot-forfeit")}catch(x){}return}
+    if(g.t==="bot"){try{localStorage.removeItem("bot-forfeit")}catch(e){}applyForfeit(g)}
+    else if(g.t==="room")S.fz=g;
+  })();
+  // Online games: once signed in, give up the room we left behind.
+  window.botForfeitRoom=function(){
+    var g=S.fz;if(!g||!window.botCloud||!window.botCloud.room||!S.user)return;
+    S.fz=null;try{localStorage.removeItem("bot-forfeit")}catch(e){}
+    window.botCloud.db.get("rooms",g.code).then(function(r){
+      if(!r||r.status!=="playing")return;
+      var me=r.host&&r.host.uid===S.user.uid?"host":r.guest&&r.guest.uid===S.user.uid?"guest":"";
+      if(!me)return;
+      var opp=me==="host"?"guest":"host",p={status:"done",winner:opp,gaveUp:me};
+      p["wins."+opp]=((r.wins&&r.wins[opp])||0)+1;
+      return window.botCloud.room.update(g.code,p).then(function(){
+        var pen=10*(g.n-2);
+        if(!g.tid)awardPts(-pen);
+        S.hist.push({t:Date.now(),mode:g.tid?"tour":"online",n:g.n,res:"a",opp:(r[opp]||{}).name||"Friend",u:[],a:[]});
+        if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist);
+        track({won:false,ended:true,g:0,mode:"online",n:g.n,lvl:0,daily:false});
+        forfeitPop("The page was reloaded or closed during your online game, so it counted as a give up."+(g.tid?" Your opponent advances in the tournament.":" −"+pen+" pts."));
+      });
+    }).catch(function(){});
+  };
 
   updateAcct();
   render();
