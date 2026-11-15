@@ -1,5 +1,8 @@
-/* Cipher service worker: offline app shell + notification support */
-const VERSION = "cipher-v2";
+// Cipher service worker: offline app shell + fast updates.
+// Bump VERSION whenever you want every device to refresh its cache.
+const VERSION = "v1";
+const SHELL_CACHE = "cipher-shell-" + VERSION;
+const LIB_CACHE = "cipher-lib-v1"; // versioned Firebase SDK files, safe to keep
 const SHELL = [
   "./",
   "index.html",
@@ -14,16 +17,18 @@ const SHELL = [
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
-    caches.open(VERSION)
-      .then((c) => Promise.all(SHELL.map((u) => c.add(u).catch(() => {}))))
-      .then(() => self.skipWaiting())
+    caches.open(SHELL_CACHE).then((c) =>
+      Promise.all(SHELL.map((u) => c.add(u).catch(() => {})))
+    ).then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((ks) => Promise.all(ks.filter((k) => k !== VERSION).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys
+        .filter((k) => k !== SHELL_CACHE && k !== LIB_CACHE)
+        .map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -33,53 +38,60 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
 
-  // Pages: network first so updates arrive, fall back to the cached shell offline.
-  // Invite links (?room=…, ?tour=…, ?c=…) all resolve to the same cached page.
-  if (req.mode === "navigate") {
-    e.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put("index.html", copy)).catch(() => {});
-          return res;
-        })
-        .catch(() => caches.match("index.html").then((r) => r || caches.match("./")))
-    );
-    return;
-  }
-
-  // Firebase SDK files are versioned URLs, so cache-first is safe.
+  // Firebase SDK files (version in the URL): cache-first so the app can start offline
   if (url.hostname === "www.gstatic.com" && url.pathname.indexOf("/firebasejs/") === 0) {
     e.respondWith(
-      caches.match(req).then((hit) => hit || fetch(req).then((res) => {
-        if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)).catch(() => {}); }
-        return res;
-      }))
+      caches.open(LIB_CACHE).then((c) =>
+        c.match(req).then((hit) => hit || fetch(req).then((res) => {
+          if (res && res.ok) c.put(req, res.clone());
+          return res;
+        }))
+      )
     );
     return;
   }
 
-  // Own static files: stale-while-revalidate.
-  if (url.origin === self.location.origin) {
+  // Anything else on another origin (Firestore, Auth, Google sign-in, photos): never touch it
+  if (url.origin !== self.location.origin) return;
+
+  // Opening the app: network first so updates show up, cached copy when offline
+  if (req.mode === "navigate") {
     e.respondWith(
-      caches.match(req).then((hit) => {
+      fetch(req).then((res) => {
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(SHELL_CACHE).then((c) => c.put("index.html", copy));
+        }
+        return res;
+      }).catch(() =>
+        caches.match("index.html").then((r) => r || caches.match("./"))
+      )
+    );
+    return;
+  }
+
+  // Other same-origin files (icons, manifest): serve cached, refresh in background
+  e.respondWith(
+    caches.open(SHELL_CACHE).then((c) =>
+      c.match(req).then((hit) => {
         const net = fetch(req).then((res) => {
-          if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)).catch(() => {}); }
+          if (res && res.ok) c.put(req, res.clone());
           return res;
         }).catch(() => hit);
         return hit || net;
       })
-    );
-  }
-  // Everything else (Firestore, Auth, Google sign-in) goes straight to the network.
+    )
+  );
 });
 
-// Tapping a reminder / challenge notification opens or focuses the app.
+// Tapping a notification opens or focuses the app
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
   e.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
-      for (const c of list) { if ("focus" in c) return c.focus(); }
+      for (const c of list) {
+        if ("focus" in c) return c.focus();
+      }
       return self.clients.openWindow("./");
     })
   );

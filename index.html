@@ -1277,7 +1277,12 @@ var RVE=(function(){
   };
   $("acctBtn").onclick=function(){
     if(!window.botCloud){alert("Firebase isn’t set up yet. Paste your firebaseConfig into the file first.");return}
-    if(S.user)window.botCloud.signOut();else $("sheet").classList.remove("hide");
+    if(S.user){var wasAnon=!!S.user.isAnonymous;S.switching=true;window.botCloud.signOut().then(function(){
+      if(wasAnon){S.switching=false;return}
+      // Google account signed out: wipe its local name, avatar and progress so the next account starts clean
+      try{Object.keys(localStorage).forEach(function(k){if(k.indexOf("bot-")===0&&k!=="bot-snd"&&k!=="bot-seen"&&k!=="bot-cfilter")localStorage.removeItem(k)})}catch(e){}
+      location.reload();
+    }).catch(function(){S.switching=false})}else $("sheet").classList.remove("hide");
   };
 
   // ===== Profile sheet: change avatar =====
@@ -1381,8 +1386,9 @@ var RVE=(function(){
     }catch(e){return false}
     location.reload();return true;
   }
-  window.botAuth=function(u){if(u&&acctSwitch(u))return;S.user=u;watchFriends();if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide")};
+  window.botAuth=function(u){if(u&&acctSwitch(u))return true;S.user=u;watchFriends();if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide");return false};
   window.botLoaded=function(d){
+    if(S.switching)return;
     if(d.nick&&!S.nick){S.nick=d.nick;try{localStorage.setItem("bot-nick",JSON.stringify(S.nick))}catch(e){}}
     var cav=cleanAv(d.av);if(cav){S.av=cav;try{localStorage.setItem("bot-av",JSON.stringify(S.av))}catch(e){}}else if(!S.av&&gPhoto()){S.av={t:"p",v:gPhoto()};try{localStorage.setItem("bot-av",JSON.stringify(S.av))}catch(e){}}
     updateAcct();
@@ -3192,7 +3198,7 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
   };
   onAuthStateChanged(auth,async u=>{
     user=u;
-    window.botAuth&&window.botAuth(u);
+    if(window.botAuth&&window.botAuth(u)===true)return;
     if(!u)return;
     try{const s=await getDoc(doc(db,"botUsers",u.uid));window.botLoaded&&window.botLoaded(s.exists()?s.data():{})}catch(e){console.warn(e)}
   });
