@@ -876,13 +876,13 @@ main{padding-top:8px;padding-bottom:12px}
     if(!S.sdl)S.sdl=Date.now()+SPL()*1000;
     if(!b){b=document.createElement("div");b.id="spdbar";b.style.cssText="height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:-4px 0 10px";b.innerHTML='<i style="display:block;height:100%;width:100%;background:var(--acc);transition:width .25s linear"></i>';$("score").after(b)}
     b.classList.remove("hide");var l=S.sdl-Date.now(),i=b.firstChild;i.style.width=Math.max(0,l/(SPL()*10))+"%";i.style.background=l<5000?"var(--cow)":"var(--acc)";
-    if(l<=0){S.sdl=0;S.cur="";awardPts(-1);toast("⚡ Too slow! Turn skipped (−1 pt)");S.next="a";say("");goNext()}
+    if(l<=0){S.sdl=0;S.cur="";var sp=S.pts>=1;if(sp)awardPts(-1);toast("⚡ Too slow! Turn skipped"+(sp?" (−1 pt)":""));S.next="a";say("");goNext()}
   },250);
   function submitGuess(){
     if(S.phase!=="guess"||!valid(S.cur))return;
     if(S.uT.some(function(t){return t.g===S.cur})){toast("You already tried "+S.cur);S.cur="";render();return}
     var g=S.cur,k=score(S.aSecret,g);S.cur="";
-    if(HRD()){var br=S.uT.filter(function(t){return score(g,t.g)!==t.k})[0];if(br){S.hv++;awardPts(-2);toast("🧠 Hard mode: "+g+" contradicts the clue for "+br.g+" (−2 pts)")}}
+    if(HRD()){var br=S.uT.filter(function(t){return score(g,t.g)!==t.k})[0];if(br){S.hv++;if(S.pts>=2){awardPts(-2);toast("🧠 Hard mode: "+g+" contradicts the clue for "+br.g+" (−2 pts)")}else toast("🧠 Hard mode: "+g+" contradicts the clue for "+br.g+" (not enough points, so no penalty)")}}
     if(SPD()&&S.sdl){if(S.sdl-Date.now()>SPL()*500)S.fast++;S.sdl=0}
     S.uT.push({g:g,k:k});
     if(Math.floor(k/(S.n+1))===S.n){endRound("u");return}
@@ -910,7 +910,7 @@ main{padding-top:8px;padding-bottom:12px}
     if(w==="u"){if(HRD()&&!S.hv)gain+=5*(S.n-2);if(SPD())gain+=Math.min(10,S.fast*2)}
     S.pts=Math.max(0,S.pts+gain);save("bot-pts",S.pts);
     var after=levelOf(S.pts);
-    track({won:w==="u",ended:S.mode==="solo"||win,g:(w==="u"&&!gaveUp)?S.uT.length:0,mode:S.mode,n:S.n,lvl:S.lvl,daily:!!S.daily});
+    track({gu:!!gaveUp,won:w==="u",ended:S.mode==="solo"||win,g:(w==="u"&&!gaveUp)?S.uT.length:0,mode:S.mode,n:S.n,lvl:S.lvl,daily:!!S.daily});
     if(win){
       S.phase="over";
       t=w==="u"?(S.need===1?"🎉 You cracked BOT’s number first!":"🏆 You win the match "+S.score.u+"–"+S.score.a+"!"):(S.need===1?"🤖 BOT cracked your number first.":"🤖 BOT wins the match "+S.score.a+"–"+S.score.u+".");
@@ -932,7 +932,7 @@ main{padding-top:8px;padding-bottom:12px}
   function giveUp2(pen){S.deadline=0;S.lost=true;if(S.daily)dailyMark(0);
     S.gid++;S.busy=false;
     if(S.mode==="solo"){
-      awardPts(-pen);track({won:false,ended:true,g:0,mode:"solo",n:S.n,lvl:S.lvl,daily:!!S.daily});S.phase="between";
+      awardPts(-pen);track({gu:true,won:false,ended:true,g:0,mode:"solo",n:S.n,lvl:S.lvl,daily:!!S.daily});S.phase="between";
       say("🏳️ You gave up. BOT’s number was "+S.aSecret+". −"+pen+" pts.","var(--cow)");render();return;
     }
     endRound("a",true);
@@ -1400,7 +1400,7 @@ var RVE=(function(){
       }
       if(wasPlaying){
         var tkW=r.winner===O.role,tkN=r.need||0,tkS=r.wins||{},tkG=Object.keys(r.guesses||{}).filter(function(i){return r.guesses[i].by===O.role}).length;
-        track({won:tkW,ended:tkN<1||(tkS.host||0)>=tkN||(tkS.guest||0)>=tkN,g:(tkW&&!r.gaveUp)?tkG:0,mode:"online",n:S.n,lvl:0,daily:false});
+        track({gu:r.gaveUp===O.role,won:tkW,ended:tkN<1||(tkS.host||0)>=tkN||(tkS.guest||0)>=tkN,g:(tkW&&!r.gaveUp)?tkG:0,mode:"online",n:S.n,lvl:0,daily:false});
       }
     }
     render();
@@ -2124,7 +2124,7 @@ var RVE=(function(){
   ];
   function track(o){
     var A=ACH;
-    bump();A.rounds++;
+    if(!o.gu)bump();A.rounds++;
     if(o.ended){if(o.won){A.wins++;A.run++;if(A.run>A.bestRun)A.bestRun=A.run}else A.run=0}
     BADGES.forEach(function(b){
       if(!A.badges[b.id]&&b.t(A,o)){A.badges[b.id]=Date.now();BQ.push("🏅 Badge unlocked: "+b.n)}
@@ -2999,7 +2999,7 @@ var RVE=(function(){
       if(g.daily)save("bot-daily",{d:g.daily,g:0,n:g.n,t:g.dt});
       S.hist.push({t:Date.now(),mode:g.mode,n:g.n,res:"a",bot:g.secret,lvl:g.lvl,ln:LEVELS[g.lvl].n,u:g.u||[],a:g.a||[]});
       if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist);
-      track({won:false,ended:true,g:0,mode:g.mode,n:g.n,lvl:g.lvl,daily:!!g.daily});
+      track({gu:true,won:false,ended:true,g:0,mode:g.mode,n:g.n,lvl:g.lvl,daily:!!g.daily});
       forfeitPop("The page was reloaded or closed during your game, so it counted as a give up. BOT’s number was "+g.secret+". −"+pen+" pts."+lv);
     }
   }
@@ -3025,7 +3025,7 @@ var RVE=(function(){
         var lv2=g.tid?"":ffPts(pen);
         S.hist.push({t:Date.now(),mode:g.tid?"tour":"online",n:g.n,res:"a",opp:(r[opp]||{}).name||"Friend",u:[],a:[]});
         if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist);
-        track({won:false,ended:true,g:0,mode:"online",n:g.n,lvl:0,daily:false});
+        track({gu:true,won:false,ended:true,g:0,mode:"online",n:g.n,lvl:0,daily:false});
         forfeitPop("The page was reloaded or closed during your online game, so it counted as a give up."+(g.tid?" Your opponent advances in the tournament.":" −"+pen+" pts."+lv2));
       });
     }).catch(function(){});
