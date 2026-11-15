@@ -3141,7 +3141,9 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
       if(!u)throw {code:"auth/no-user"};
       const uid=u.uid;
       // Google accounts must confirm again before Firebase allows deletion (popup must open straight from the click)
-      if(!u.isAnonymous)await reauthenticateWithPopup(u,new GoogleAuthProvider());
+      // skip the Google window if they signed in a moment ago (pop-ups often fail in installed apps)
+      const fresh=u.metadata&&u.metadata.lastSignInTime&&(Date.now()-new Date(u.metadata.lastSignInTime).getTime()<240000);
+      if(!u.isAnonymous&&!fresh)await reauthenticateWithPopup(u,new GoogleAuthProvider());
       busy=true;
       try{
         // 1) erase this player's data while still signed in (rules need the signed-in user)
