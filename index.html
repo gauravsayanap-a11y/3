@@ -238,6 +238,27 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
 .cc-fb{border-radius:12px;padding:10px 12px;margin:10px 0;line-height:1.5;font-size:14px}
 .cc-fb.ok{background:rgba(95,191,143,.18)}
 .cc-fb.no{background:rgba(233,169,74,.2)}
+.cc-say{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px}
+.cc-av{flex:none;width:36px;height:36px;border-radius:50%;background:var(--key);display:flex;align-items:center;justify-content:center;font-size:18px}
+.cc-tx{min-width:0;flex:1;background:var(--key);border-radius:14px;padding:10px 12px;line-height:1.55;font-size:14px;overflow-wrap:anywhere}
+.cc-step{font-size:13px;margin:0 0 10px}
+.cc-chips{display:inline-flex;gap:6px;margin-top:4px}
+.cc-chip{width:40px;padding:6px 0 4px;border-radius:10px;display:flex;flex-direction:column;align-items:center;background:var(--key);color:var(--ink);box-shadow:inset 0 0 0 2px transparent}
+.cc-chip span{font-size:22px;font-weight:800;line-height:1.1}
+.cc-chip small{font-size:9px;height:11px;line-height:11px}
+.cc-chip.b{box-shadow:inset 0 0 0 3px var(--bull)}
+.cc-chip.c{box-shadow:inset 0 0 0 3px var(--cow)}
+.cc-chip.x{opacity:.5}
+.cc-bar{display:grid;grid-template-columns:52px 1fr 40px;gap:8px;align-items:center;font-size:12px;margin:3px 0}
+.cc-bt{height:10px;border-radius:6px;background:var(--key);overflow:hidden}
+.cc-bt i{display:block;height:100%;background:var(--acc)}
+.cc-bn{text-align:right}
+.cc-oc{margin:8px 0;padding:12px}
+.cc-oc.hl{box-shadow:inset 0 0 0 2px var(--bull)}
+.cc-opt{text-align:left}
+.cc-os{padding:12px 14px;border-radius:12px;background:var(--key);margin:8px 0;font-size:15px}
+.cc-os.ok{box-shadow:inset 0 0 0 2px var(--bull)}
+.cc-os.no{box-shadow:inset 0 0 0 2px var(--cow)}
 
 /* ===== brick-style wrapping for option buttons ===== */
 .opts{display:flex!important;flex-wrap:wrap;justify-content:stretch;gap:8px}
@@ -677,12 +698,11 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
             if(g.mode==="solo")d.style.gridTemplateColumns="1fr";
           }
           el.appendChild(d);
-          if(okU){var rv=document.createElement("div");rv.className="card";rv.style.marginTop="10px";rv.innerHTML='<div class="hd">Post-game review</div><div class="mute">Analysing…</div>';el.appendChild(rv);
-            setTimeout(function(){
-              var sec=g.osec||g.bot||"",lt=g.u[g.u.length-1];
-              if(!sec&&lt&&lt.k===g.n*(g.n+1))sec=lt.g;
-              RVC[g.t]=RVC[g.t]||reviewHtml(analyze(g.n,sec,g.u,g.opp?[]:g.a));
-              rv.innerHTML='<div class="hd">Post-game review</div>'+RVC[g.t]},30)}
+          if(okU){var rv=document.createElement("div");rv.className="card";rv.style.marginTop="10px";
+            if(RVC[g.t])rv.innerHTML='<div class="hd">Post-game review</div>'+RVC[g.t];
+            else{rv.innerHTML='<div class="hd">Post-game review</div><div class="mute">Analysing…</div>';
+              analyze(g.n,g.u,g.opp?[]:g.a,function(i,t){var m=rv.querySelector(".mute");if(m)m.textContent="Analysing guess "+Math.min(i+1,t)+" of "+t+"…"},function(R){RVC[g.t]=reviewHtml(R);rv.innerHTML='<div class="hd">Post-game review</div>'+RVC[g.t]})}
+            el.appendChild(rv)}
         }
       }
     });
@@ -822,52 +842,171 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
     say("⏱ Time’s up! BOT’s number was "+S.aSecret+". −"+pen+" pts.","var(--cow)");render();
   }
   setInterval(function(){if(S.deadline&&S.phase==="guess"){if(Date.now()>=S.deadline)timeUp();else tick()}},250);
-  // Post-game review: for each of your guesses, how many codes were still possible and what a sharper guess would have left.
-  var RVC={},GR=[[.9,"⭐","Best move","var(--bull)"],[.7,"✨","Great","var(--bull)"],[.5,"👍","Good","var(--acc)"],[.3,"❔","Inaccuracy","var(--cow)"],[.15,"⚠️","Mistake","var(--cow)"],[0,"💥","Blunder","#ff6b6b"]];
-  function gradeOf(r){for(var i=0;i<GR.length;i++)if(r>=GR[i][0])return GR[i]}
-  // Post-game analysis: for every guess, how many codes were possible, how many were left, how good the guess was vs the best available, and luck.
-  function analyze(n,secret,T,A){
-    var sv=S.n;S.n=n;
-    try{
-      var all=allCodes(),cs=all,rows=[],sum=0;
-      T.forEach(function(t,i){
-        var sm=sample(cs,350),N=cs.length;
-        function ex(g){var c={},e=0,k;sm.forEach(function(x){k=score(x,g);c[k]=(c[k]||0)+1});for(k in c)e+=c[k]*c[k];return e/sm.length/sm.length*N}
-        var pool=N<=250?cs.concat(sample(all,100)):sample(cs,130).concat(sample(all,130));
-        if(i===0&&n>=4)pool.push("0123456789".slice(0,n));
-        var bg=pool[0],be=1e9;pool.forEach(function(g){var e=ex(g);if(e<be){be=e;bg=g}});
-        var ye=ex(t.g),win=t.g===secret,left=cs.filter(function(x){return score(x,t.g)===t.k}),imp=cs.indexOf(t.g)<0;
-        var r=win?1:Math.min(1,Math.max(1,be)/Math.max(1,ye));sum+=r;
-        rows.push({g:t.g,k:t.k,N:N,L:left.length,bits:left.length?Math.log(N/left.length)/Math.LN2:0,r:r,bg:bg,be:Math.round(be),ye:Math.round(ye),imp:imp&&N>1,win:win,
-          luck:win?0:left.length<=ye*.4?1:left.length>=ye*2.5+2?-1:0});
-        cs=left.length?left:all;
-      });
+  // ===== Review engine: exact, repeatable analysis (no random sampling) =====
+var RVE=(function(){
+  var W=null,CX={},HM={},BETA=6,H40=3;
+  function ctx(n){
+    if(!CX[n]){
+      var N=Math.pow(10,n),dig=new Uint8Array(N*n),cnt=new Uint8Array(N*10),i,j,x,d,pw=[],q=1,k;
+      for(i=0;i<N;i++){x=i;for(j=n-1;j>=0;j--){d=x%10;x=(x-d)/10;dig[i*n+j]=d;cnt[i*10+d]++}}
+      for(k=0;k<n;k++){pw.unshift(q);q*=10}
+      var cal={3:[3.9,4.1],4:[3.05,6.5],5:[2.8,6]}[n]||[3,6];
+      CX[n]={n:n,N:N,dig:dig,cnt:cnt,K:(n+1)*(n+1),win:n*(n+1),pw:pw,HM:{},H40:cal[0],BETA:cal[1]};
+    }
+    W=CX[n];HM=W.HM;H40=W.H40;BETA=W.BETA;
+    return W}
+  function reset(){if(W){W.HM={};HM=W.HM}}
+  // reply code of guess g against secret c (same encoding as the game: bulls*(n+1)+cows)
+  function sc(g,c){var n=W.n,dig=W.dig,cnt=W.cnt,b=0,m=0,j,gb=g*n,cb=c*n,gc=g*10,cc=c*10,d,a,e;
+    for(j=0;j<n;j++)if(dig[gb+j]===dig[cb+j])b++;
+    for(d=0;d<10;d++){a=cnt[gc+d];if(a){e=cnt[cc+d];m+=a<e?a:e}}
+    return b*(n+1)+(m-b)}
+  var OUT=null;
+  // fills OUT with reply counts of guess g against list[0..len)
+  function part(g,list,len){
+    var n=W.n,dig=W.dig,cnt=W.cnt,K=W.K,gb=g*n,gd=[],dd=[],gcn=[],j,d,t,c,cb,b,m,a,e,q;
+    if(!OUT||OUT.length!==K)OUT=new Int32Array(K);else OUT.fill(0);
+    for(j=0;j<n;j++)gd[j]=dig[gb+j];
+    for(d=0;d<10;d++){a=cnt[g*10+d];if(a){dd.push(d);gcn.push(a)}}
+    var nd=dd.length,n1=n+1;
+    for(t=0;t<len;t++){
+      c=list[t];cb=c*n;b=0;
+      for(j=0;j<n;j++)if(dig[cb+j]===gd[j])b++;
+      m=0;q=c*10;
+      for(j=0;j<nd;j++){e=cnt[q+dd[j]];a=gcn[j];m+=a<e?a:e}
+      OUT[b*n1+(m-b)]++;
+    }
+    return OUT}
+  // expected size of what is left after guess g (solved reply counts as 0)
+  function prox(g,list,len){var o=part(g,list,len),e=0,k,K=W.K,w=W.win;for(k=0;k<K;k++)if(k!==w&&o[k])e+=o[k]*o[k];return e/len}
+  function ident(len){var a=new Int32Array(len),i;for(i=0;i<len;i++)a[i]=i;return a}
+  // expected number of guesses (this one included) to finish a set S under strong play; exact greedy for small sets
+  function V(set){
+    var c=set.length;
+    if(c===1)return 1;
+    if(c===2)return 1.5;
+    if(c>40)return Vbig(c);
+    var key=set.join(","),hit=HM[key];if(hit!==undefined)return hit;
+    var best=-1,be=1e18,i,e,arr=Int32Array.from(set);
+    for(i=0;i<c;i++){e=prox(set[i],arr,c);if(e<be-1e-9){be=e;best=set[i]}}
+    var w=W.win,groups={},t,k,tot=1;
+    for(t=0;t<c;t++){k=sc(best,set[t]);if(k===w)continue;(groups[k]=groups[k]||[]).push(set[t])}
+    for(k in groups)tot+=groups[k].length/c*V(groups[k]);
+    HM[key]=tot;return tot}
+  function Vbig(c){return H40+Math.log(c/40)/Math.log(BETA)}
+    // Full evaluation of guess g against candidate list: expected guesses, expected remaining, per-reply counts
+  function evalGuess(g,list,len){
+    var o=part(g,list,len),K=W.K,w=W.win,k,t,e=0,mx=0,r=0,cl=[],T=1,groups={};
+    for(k=0;k<K;k++)if(o[k]){r++;if(o[k]>mx)mx=o[k];if(k!==w)e+=o[k]*o[k]}
+    var cnts=Array.prototype.slice.call(o);
+    var needMembers=false;for(k=0;k<K;k++)if(k!==w&&cnts[k]>1&&cnts[k]<=40)needMembers=true;
+    if(needMembers){for(t=0;t<len;t++){k=sc(g,list[t]);if(k!==w&&cnts[k]>1&&cnts[k]<=40)(groups[k]=groups[k]||[]).push(list[t])}}
+    for(k=0;k<K;k++){var c=cnts[k];if(!c||k===w)continue;
+      T+=c/len*(c===1?1:c<=40?V(groups[k]):Vbig(c))}
+    return{T:T,E:e/len,r:r,mx:mx,cnts:cnts}}
+  function canon(n){ // one guess per digit-pattern (set partition of positions): exact by symmetry on the full space
+    var out=[],cur=[];
+    (function rec(p,m){if(p===n){var v=0,j;for(j=0;j<n;j++)v=v*10+cur[j];out.push(v);return}
+      for(var d=0;d<=m&&d<10;d++){cur[p]=d;rec(p+1,d===m?m+1:m)}})(0,0);
+    return out}
+  function climb(seed,list,len,cap){
+    var n=W.n,cur=seed,ce=prox(cur,list,len),imp=true,steps=0,p,d,dg,nb,e;
+    while(imp&&steps<cap){imp=false;steps++;
+      for(p=0;p<n;p++){dg=Math.floor(cur/W.pw[p])%10;
+        for(d=0;d<10;d++){if(d===dg)continue;nb=cur+(d-dg)*W.pw[p];e=prox(nb,list,len);if(e<ce-1e-9){ce=e;cur=nb;dg=d;imp=true}}}}
+    return cur}
+  function stride(list,len,m){if(len<=m)return{a:list,l:len};var a=new Int32Array(m),i;for(i=0;i<m;i++)a[i]=list[Math.floor(i*len/m)];return{a:a,l:m}}
+  // best guess for candidate list; extra guesses (user's) are always considered
+  function bestGuess(list,len,extra){
+    var n=W.n,N=W.N,pool=[],i,seen={};
+    function add(g){if(!seen[g]){seen[g]=1;pool.push(g)}}
+    var ev=len>2500?stride(list,len,2500):{a:list,l:len};
+    var top=[];
+    if(len===N){canon(n).forEach(add);
+      top=pool.map(function(g){return[g,prox(g,ev.a,ev.l)]}).sort(function(a,b){return a[1]-b[1]}).slice(0,15).map(function(x){return x[0]})}
+    else if(len<=2){for(i=0;i<len;i++)top.push(list[i])}
+    else{
+      // stage A: every possible code against a sample sized to the time budget (exact when the candidate set is small)
+      var sa=stride(list,len,Math.max(60,Math.min(len,Math.floor(2.2e7/N))));
+      var scA=new Array(N);for(i=0;i<N;i++)scA[i]=[i,prox(i,sa.a,sa.l)];
+      scA.sort(function(a,b){return a[1]-b[1]});
+      top=scA.slice(0,24).map(function(x){return x[0]});
+      // stage B: when stage A only saw part of the set, refine on a larger sample and polish by local search
+      if(sa.l<len){
+        var cs=stride(list,len,len>1200?1200:len),cp=[];for(i=0;i<cs.l;i++)cp.push([cs.a[i],prox(cs.a[i],ev.a,ev.l)]);
+        cp.sort(function(a,b){return a[1]-b[1]});
+        top=top.concat(cp.slice(0,8).map(function(x){return x[0]}));
+        var seeds=top.slice(0,8).concat(cp.slice(0,4).map(function(x){return x[0]})).concat(extra||[]);
+        seeds.forEach(function(s){top.push(climb(s,ev.a,ev.l,8))});
+      }
+    }
+    var fin={},res=[];top.concat(extra||[]).forEach(function(g){if(fin[g])return;fin[g]=1;var r=evalGuess(g,list,len);r.g=g;res.push(r)});
+    res.sort(function(a,b){return a.T-b.T||a.E-b.E});
+    return res}
+  return{ctx:ctx,reset:reset,sc:sc,V:V,evalGuess:evalGuess,bestGuess:bestGuess,ident:ident,prox:prox,canon:canon,part:part,W:function(){return W}};
+})();
+
+  var RVC={};
+  var GR=[[.03,"⭐","Best move","var(--bull)"],[.08,"✨","Great","var(--bull)"],[.16,"👍","Good","var(--acc)"],[.3,"❔","Inaccuracy","var(--cow)"],[.5,"⚠️","Mistake","var(--cow)"],[1e9,"💥","Blunder","#ff6b6b"]];
+  function gradeOf(d){for(var i=0;i<GR.length;i++)if(d<=GR[i][0])return GR[i];return GR[GR.length-1]}
+  // Post-game analysis. Exact and repeatable: after each of your guesses it keeps every code that still fit, then searches for the guess
+  // that would have finished fastest on average and compares yours with it (in expected guesses to finish).
+  function analyze(n,T,A,prog,done){
+    var i=0,cs,len,inC,rows=[],sum=0,N,ok=true;
+    function pad(v){v=String(v);while(v.length<n)v="0"+v;return v}
+    function finish(){
       var bot=null;
-      if(A&&A.length){var c2=all;bot=A.map(function(t){c2=c2.filter(function(x){return score(x,t.g)===t.k});return{g:t.g,k:t.k,L:c2.length}})}
-      return{rows:rows,acc:T.length?Math.round(100*sum/T.length):0,bot:bot,n:n}
-    }finally{S.n=sv}
+      try{
+        RVE.ctx(n);
+        if(A&&A.length){var c2=RVE.ident(N),l2=N;bot=A.map(function(t){var g=parseInt(t.g,10),nx=[],j;for(j=0;j<l2;j++)if(RVE.sc(g,c2[j])===t.k)nx.push(c2[j]);c2=Int32Array.from(nx);l2=nx.length;return{g:t.g,k:t.k,L:l2}})}
+      }catch(e){bot=null}
+      done({rows:rows,acc:T.length?Math.round(100*sum/T.length):0,bot:bot,n:n})}
+    function step(){
+      try{
+        if(i>=T.length)return finish();
+        RVE.ctx(n);
+        var t=T[i],g=parseInt(t.g,10),bg,best,me,j,r,d,win,left=[],nx,imp;
+        if(!/^[0-9]+$/.test(String(t.g))||String(t.g).length!==n)throw 0;
+        bg=RVE.bestGuess(cs,len,[g]);best=bg[0];
+        for(j=0;j<bg.length;j++)if(bg[j].g===g){me=bg[j];break}
+        d=Math.max(0,me.T-best.T);win=t.k===n*(n+1);
+        for(j=0;j<len;j++)if(RVE.sc(g,cs[j])===t.k)left.push(cs[j]);
+        imp=!inC[g]&&len>1;
+        r=win?1:Math.max(0,1-d/.6);sum+=r;
+        rows.push({g:t.g,k:t.k,N:len,L:left.length,bits:left.length?Math.log(len/left.length)/Math.LN2:0,d:win?0:d,bg:pad(best.g),bgIn:!!inC[best.g],be:best.E,ye:me.E,imp:imp,win:win,
+          luck:win?0:left.length<=me.E*.4?1:left.length>=me.E*2.5+2?-1:0});
+        if(left.length){cs=Int32Array.from(left);len=left.length;inC.fill(0);for(j=0;j<len;j++)inC[cs[j]]=1}
+        else{cs=RVE.ident(N);len=N;inC.fill(1)}
+        i++;if(prog)prog(i,T.length);
+        setTimeout(step,12);
+      }catch(e){done(null)}
+    }
+    try{RVE.ctx(n);RVE.reset();N=RVE.W().N;cs=RVE.ident(N);len=N;inC=new Uint8Array(N).fill(1);if(prog)prog(0,T.length);setTimeout(step,12)}catch(e){done(null)}
   }
   function reviewHtml(R){
+    if(!R)return'<div class="mute">The review could not be built for this game.</div>';
     var rows=R.rows,cnt={},worst=null,top=null,tb=0,h="",luckN=0;
     if(!rows.length)return'<div class="mute">No guesses to review.</div>';
-    rows.forEach(function(x,i){var g=gradeOf(x.r)[2];cnt[g]=(cnt[g]||0)+1;x.i=i;tb+=x.bits;if(!x.win&&(!worst||x.r<worst.r))worst=x;if(!top||x.bits>top.bits)top=x;luckN+=x.luck});
-    var v=R.acc>=85?"Masterclass. Near-optimal play.":R.acc>=70?"Solid play with a few missed chances.":R.acc>=50?"Decent, but several guesses left a lot on the table.":"Plenty of room to grow. Aim each guess to split the possibilities evenly.";
+    rows.forEach(function(x,i){var g=gradeOf(x.d)[2];cnt[g]=(cnt[g]||0)+1;x.i=i;tb+=x.bits;if(!x.win&&(!worst||x.d>worst.d))worst=x;if(!top||x.bits>top.bits)top=x;luckN+=x.luck});
+    var v=R.acc>=90?"Masterclass. Near-optimal play.":R.acc>=75?"Solid play with a few missed chances.":R.acc>=55?"Decent, but several guesses left a lot on the table.":"Plenty of room to grow. Aim each guess to split the possibilities evenly.";
     h+='<div class="card" style="margin:0 0 10px;text-align:center"><div style="font-size:34px;font-weight:800;color:var(--acc)">'+R.acc+'%</div><div class="mute">Accuracy</div><div style="line-height:1.5;margin-top:6px">'+v+'</div></div>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">'+GR.map(function(g){return cnt[g[2]]?'<span style="border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:'+g[3]+'">'+g[1]+' '+cnt[g[2]]+' '+g[2]+'</span>':""}).join("")+'</div>';
     h+='<ul style="margin:0 0 6px;padding-left:18px;font-size:13px;line-height:1.55"><li>You gained about <b>'+tb.toFixed(1)+' bits</b> of information in '+rows.length+' guess'+(rows.length>1?"es":"")+'.</li>'
       +(top&&rows.length>1?'<li>Your most informative guess was #'+(top.i+1)+' (<b>'+top.g+'</b>), cutting '+top.N+' possibilities to '+top.L+'.</li>':'')
-      +(worst&&worst.r<.5?'<li>Turning point: guess #'+(worst.i+1)+' (<b>'+worst.g+'</b>) was your weakest.</li>':'')
+      +(worst&&worst.d>.3?'<li>Turning point: guess #'+(worst.i+1)+' (<b>'+worst.g+'</b>) was your weakest.</li>':'')
       +(luckN>1?'<li>The answers fell kindly for you: lucky feedback on '+luckN+' guesses.</li>':luckN<-1?'<li>Unlucky feedback on '+(-luckN)+' guesses: the odds were better than the result showed.</li>':'')+'</ul>';
-    rows.forEach(function(x,i){var g=gradeOf(x.r);
+    rows.forEach(function(x,i){var g=gradeOf(x.d);
       h+='<div class="row" style="display:block"><b>#'+(i+1)+' <span class="g" style="font-size:16px">'+x.g+'</span></b> <span style="color:'+g[3]+';font-size:12px">'+(x.win?"🏁 Cracked it":g[1]+" "+g[2])+'</span><div class="mute" style="margin-top:4px;line-height:1.5">'+x.N+' possible → '+x.L+' left · '+x.bits.toFixed(1)+' bits'
       +(x.imp?'<br>It couldn’t be the answer given your earlier clues.':'')
-      +(!x.win&&x.r<.7?'<br>Sharper: <b style="color:var(--acc)">'+x.bg+'</b> would leave about '+Math.max(1,x.be)+' on average (yours ~'+Math.max(1,x.ye)+').':'')
+      +(!x.win&&x.d>.08?'<br>Sharper: <b style="color:var(--acc)">'+x.bg+'</b>'+(x.bgIn?' (could also have been the answer)':'')+' would leave about '+Math.max(1,Math.round(x.be))+' on average (yours ~'+Math.max(1,Math.round(x.ye))+').':'')
       +(x.luck>0&&!x.win?'<br>🍀 Lucky feedback.':x.luck<0?'<br>😕 Unlucky feedback.':'')+'</div></div>'});
     if(R.bot&&R.bot.length)h+='<h3>BOT’s search</h3><div class="mute" style="font-size:13px;line-height:1.6">'+R.bot.map(function(b,i){return"#"+(i+1)+" "+b.g+" → "+b.L+" left"}).join(" · ")+'</div>';
     return h}
+  var rvTok=0;
   function openReview(){
-    $("infoT").textContent="Review · BOT’s number was "+S.aSecret;$("infoBody").innerHTML='<div class="mute">Analysing…</div>';$("info").classList.remove("hide");
-    setTimeout(function(){$("infoBody").innerHTML=reviewHtml(analyze(S.n,S.aSecret,S.uT,S.aT))},30)}
+    var tok=++rvTok;
+    $("infoT").textContent="Review · BOT’s number was "+S.aSecret;$("infoBody").innerHTML='<div class="mute" id="rvp">Analysing…</div>';$("info").classList.remove("hide");
+    analyze(S.n,S.uT,S.aT,function(i,t){var e=$("rvp");if(e&&tok===rvTok)e.textContent="Analysing guess "+Math.min(i+1,t)+" of "+t+"…"},function(R){if(tok!==rvTok)return;$("infoBody").innerHTML=reviewHtml(R)})}
   $("review").onclick=openReview;
   var DT_N=[3,4,4,5,5],DT_NAME=["Easy","Medium","Hard","Expert","Insane"];
   function dailyT(l){return l>=8?4:l>=6?3:l>=4?2:l>=2?1:0}
@@ -1575,7 +1714,7 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
   $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
-  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (costs rise with each hint: 3, 6, 10, 15 pts. Not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place, and cancel a digit from the whole number. Pass & play: two players, one phone. Secret digits stay hidden.","🎓 Coach (in the menu): drills and game reviews that train your skills away from the match. It never helps during a game and costs or earns no points.","Challenge (BOT duels, Hard also in solo): 🧠 Hard means each guess must fit all your earlier clues, or you lose 2 pts per slip, and a clean win earns a bonus. ⚡ Speed gives each guess a short timer (a skipped turn costs 1 pt) and fast guesses add bonus points to a win.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry.","Reloading or closing the page during a game counts as a give up. Pressing F5 or Ctrl/Cmd+R shows a warning first."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (costs rise with each hint: 3, 6, 10, 15 pts. Not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place, and cancel a digit from the whole number. Pass & play: two players, one phone. Secret digits stay hidden.","🎓 Coach (in the menu): a teacher that explains each idea, practises it with you and follows your recent games. It never helps during a game and costs or earns no points.","Challenge (BOT duels, Hard also in solo): 🧠 Hard means each guess must fit all your earlier clues, or you lose 2 pts per slip, and a clean win earns a bonus. ⚡ Speed gives each guess a short timer (a skipped turn costs 1 pt) and fast guesses add bonus points to a win.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry.","Reloading or closing the page during a game counts as a give up. Pressing F5 or Ctrl/Cmd+R shows a warning first."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
   $("howto").onclick=openHow;
   setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
   function dky(){return new Date().toISOString().slice(0,10)}
@@ -1956,18 +2095,27 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
       BAD.push({s:pm,r:i+1});save("bot-badges",BAD);applyFrame();
       $("infoT").textContent="🏅 Season "+pm+" result";$("infoBody").innerHTML='<div class="card" style="text-align:center"><div style="font-size:44px">'+(i===0?"🥇":i===1?"🥈":"🥉")+'</div><div style="margin-top:6px;line-height:1.5">You finished #'+(i+1)+' of '+l.length+'. Your avatar now has a glowing frame.</div></div>';$("info").classList.remove("hide")})}
   applyFrame();
-  // ===== Coach: train your skills away from the match =====
-  var CC={cache:{},n:4,drill:"",q:null,tl:{r:0,t:0,s:0}};
+  // ===== Coach: a teacher that walks you through the game, step by step =====
+  var CC={cache:{},n:4,les:"",q:null,qi:0,qn:4,res:[],hint:0,G:null,tok:0};
   function ccTrain(){var s=load("bot-coach",null);if(!s||typeof s!=="object")s={};s.d=s.d||{};["fit","find","best"].forEach(function(k){if(!s.d[k])s.d[k]=[0,0]});s.streak=s.streak||0;s.last=s.last||"";s.best=s.best||0;return s}
   function ccDay(o){var d=new Date();d.setDate(d.getDate()+(o||0));return d.toISOString().slice(0,10)}
-  function ccNote(k,ok){var s=ccTrain(),t=ccDay();s.d[k][1]++;if(ok)s.d[k][0]++;if(s.last!==t){s.streak=(s.last===ccDay(-1))?s.streak+1:1;s.last=t}if(s.streak>s.best)s.best=s.streak;save("bot-coach",s)}
-  function ccScoreIt(k,ok){var t=CC.tl;t.t++;if(ok){t.r++;t.s++}else t.s=0;ccNote(k,ok)}
+  function ccStreak(){var s=ccTrain(),t=ccDay();if(s.last!==t){s.streak=(s.last===ccDay(-1))?s.streak+1:1;s.last=t}if(s.streak>s.best)s.best=s.streak;save("bot-coach",s)}
+  function ccStore(){var s=load("bot-coach2",null);if(!s||typeof s!=="object")s={};s.m=s.m||{};return s}
+  function ccLog(id,ok){var s=ccStore(),a=s.m[id]||[];a.push(ok?1:0);if(a.length>6)a.shift();s.m[id]=a;save("bot-coach2",s);ccStreak()}
+  // 0 = new, 1 = learning, 2 = mastered (at least 4 recent answers, 80% or better)
+  function ccMastery(id){var a=ccStore().m[id]||[],t=0,i;if(!a.length)return 0;for(i=0;i<a.length;i++)t+=a[i];return(a.length>=4&&t/a.length>=.8)?2:1}
   function ccCodes(n){if(CC.cache[n])return CC.cache[n];var r=[],t=Math.pow(10,n),i,s;for(i=0;i<t;i++){s=String(i);while(s.length<n)s="0"+s;r.push(s)}return CC.cache[n]=r}
   function ccScore(a,g,n){var b=0,ca=[0,0,0,0,0,0,0,0,0,0],cg=[0,0,0,0,0,0,0,0,0,0],t=0,i,x,y;for(i=0;i<n;i++){x=a.charCodeAt(i)-48;y=g.charCodeAt(i)-48;if(x===y)b++;ca[x]++;cg[y]++}for(i=0;i<10;i++)t+=ca[i]<cg[i]?ca[i]:cg[i];return b*(n+1)+(t-b)}
   function ccReply(k,n){var b=Math.floor(k/(n+1)),c=k%(n+1);return b+(b===1?" bull":" bulls")+", "+c+(c===1?" cow":" cows")}
+  function ccShort(k,n){var b=Math.floor(k/(n+1)),c=k%(n+1);return b===n?"solved":b+"B "+c+"C"}
   function ccFits(x,clues,n){for(var i=0;i<clues.length;i++)if(ccScore(x,clues[i].g,n)!==clues[i].k)return false;return true}
   function ccBreakAt(x,clues,n){for(var i=0;i<clues.length;i++)if(ccScore(x,clues[i].g,n)!==clues[i].k)return i;return -1}
   function ccShuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+  function ccPick(a){return a[Math.floor(Math.random()*a.length)]}
+  function ccPad(i,n){var s=String(i);while(s.length<n)s="0"+s;return s}
+  function ccRC(n){var s="",i;for(i=0;i<n;i++)s+=Math.floor(Math.random()*10);return s}
+  function ccDistinct(n){return ccShuffle("0123456789".split("")).slice(0,n).join("")}
+  function ccHasRep(s){var i,seen={};for(i=0;i<s.length;i++){if(seen[s[i]])return true;seen[s[i]]=1}return false}
   function ccPuzzle(n,m,lo,hi){
     var all=ccCodes(n),best=null,last=null,mid=(lo+hi)/2,tr,sec,clues,cands,g,k,nc,tries;
     for(tr=0;tr<30;tr++){
@@ -1988,161 +2136,416 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
     }
     return best||last;
   }
-  function ccEval(pool,cands,n){var seen={},out=[];pool.forEach(function(g){if(seen[g])return;seen[g]=1;var c={},k,e=0,mx=0,r=0;cands.forEach(function(x){k=ccScore(x,g,n);c[k]=(c[k]||0)+1});for(k in c){e+=c[k]*c[k];r++;if(c[k]>mx)mx=c[k]}out.push({g:g,e:e/cands.length,r:r,mx:mx,inC:cands.indexOf(g)>=0})});return out}
   function ccClueHtml(clues,n){return clues.map(function(c){return'<div class="cc-row"><b>'+c.g+'</b><span>'+ccReply(c.k,n)+'</span></div>'}).join("")}
   function ccCheckRows(x,clues,n){return clues.map(function(c){var k=ccScore(x,c.g,n),ok=k===c.k;return'<div class="cc-row '+(ok?'ok':'bad')+'"><b>'+c.g+'</b><span>'+(ok?'matches: '+ccReply(c.k,n):'gives '+ccReply(k,n)+'<br>clue says '+ccReply(c.k,n))+'</span></div>'}).join("")}
-  function ccTally(){var t=CC.tl;return t.t?'<div class="mute" style="margin:14px 0 0;font-size:13px">This session: '+t.r+'/'+t.t+' right'+(t.s>1?' · streak '+t.s:'')+'</div>':''}
   function ccShell(inner,back){
     $("infoT").textContent="Coach";
     $("infoBody").innerHTML='<div class="cc" id="ccbox">'+(back?'<button class="pill" data-a="home" style="margin-bottom:10px">← Coach</button>':'')+inner+'</div>';
     $("ccbox").onclick=ccClick;
     $("info").classList.remove("hide");
   }
+  // ---------- teaching building blocks ----------
+  function ccSay(h){return'<div class="cc-say"><div class="cc-av">🎓</div><div class="cc-tx">'+h+'</div></div>'}
+  function ccMarks(sec,g,n){var m=[],cnt={},i;for(i=0;i<n;i++){if(sec[i]===g[i])m[i]="b";else cnt[sec[i]]=(cnt[sec[i]]||0)+1}
+    for(i=0;i<n;i++){if(m[i])continue;if(cnt[g[i]]>0){m[i]="c";cnt[g[i]]--}else m[i]="x"}return m}
+  function ccChips(g,m){return'<span class="cc-chips">'+g.split("").map(function(d,i){var c=m?m[i]:"";return'<span class="cc-chip '+c+'"><span>'+d+'</span><small>'+(c==="b"?"bull":c==="c"?"cow":"")+'</small></span>'}).join("")+'</span>'}
+  function ccStats(g,cands,n){var c={},k,e=0,mx=0,r=0,w=n*(n+1);cands.forEach(function(x){k=ccScore(x,g,n);c[k]=(c[k]||0)+1});for(k in c){r++;if(c[k]>mx)mx=c[k];if(+k!==w)e+=c[k]*c[k]}return{c:c,e:e/cands.length,mx:mx,r:r,N:cands.length}}
+  function ccHist(st,n){var ks=Object.keys(st.c).map(Number).sort(function(a,b){return st.c[b]-st.c[a]}),rest=0,i,h;
+    h=ks.slice(0,5).map(function(k){return'<div class="cc-bar"><span>'+ccShort(k,n)+'</span><span class="cc-bt"><i style="width:'+Math.max(2,Math.round(100*st.c[k]/st.N))+'%"></i></span><span class="cc-bn">'+st.c[k]+'</span></div>'}).join("");
+    for(i=5;i<ks.length;i++)rest+=st.c[ks[i]];
+    if(rest)h+='<div class="cc-bar"><span>others</span><span class="cc-bt"><i style="width:'+Math.max(2,Math.round(100*rest/st.N))+'%"></i></span><span class="cc-bn">'+rest+'</span></div>';
+    return h}
+  function ccOptCard(g,cands,n,tag,hl){var st=ccStats(g,cands,n);
+    return'<div class="card cc-oc'+(hl?' hl':'')+'"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><b style="font-size:20px;letter-spacing:.14em">'+g+'</b><span class="mute" style="font-size:12px;text-align:right">'+tag+'</span></div><div class="mute" style="font-size:12px;margin:4px 0 6px;line-height:1.45">'+(st.e<1.5?'about 1':'about '+Math.round(st.e))+' left on average · biggest group '+st.mx+' · '+st.r+' different replies</div>'+ccHist(st,n)+'</div>'}
+  function ccPatterns(n){var out=[],cur=[];(function rec(p,m){if(p===n){out.push(cur.join(""));return}for(var d=0;d<=m;d++){cur[p]=d;rec(p+1,d===m?m+1:m)}})(0,0);return out}
+  function ccRelabel(p){var d=ccShuffle("0123456789".split(""));return p.split("").map(function(c){return d[+c]}).join("")}
+  function ccNearMiss(p,n){var all=ccCodes(n),x=null,i,c,mis;for(i=0;i<600;i++){c=rnd(all);mis=0;p.clues.forEach(function(cl){if(ccScore(c,cl.g,n)!==cl.k)mis++});if(mis===1){x=c;break}if(mis>0&&!x)x=c}return x||rnd(all)}
+  var CC_OK=["Exactly right.","Yes, that's it.","Well done.","Spot on.","Right, and you're building a good habit."];
+  var CC_NO=["Not quite. Let's look at why.","Close, but not this time. Here's how it works.","That's a common slip. Let me show you."];
+  // ---------- the course ----------
+  var CCL=[
+    {id:"read",t:"Reading a reply",s:"What bulls and cows really mean"},
+    {id:"zero",t:"Crossing digits off",s:"What a reply rules out for certain"},
+    {id:"fit",t:"Could it be the secret?",s:"Test a number against every clue"},
+    {id:"find",t:"Build a number that fits",s:"Turn clues into a real candidate",typed:true},
+    {id:"open",t:"Strong openings",s:"Why your first guess matters"},
+    {id:"split",t:"Guess to split",s:"Pick the guess that tells you most"},
+    {id:"end",t:"Closing in",s:"What to play when only a few remain"},
+    {id:"live",t:"Solve one together",s:"I coach you through a whole game",live:true}
+  ];
+  function ccLes(id){if(id==="moment")return{id:"moment",t:"A moment from your games"};for(var i=0;i<CCL.length;i++)if(CCL[i].id===id)return CCL[i];return null}
+  function ccIdx(id){for(var i=0;i<CCL.length;i++)if(CCL[i].id===id)return i;return -1}
+  function ccStepHead(L,qi,qn){var i=ccIdx(L.id);return'<div class="mute cc-step">'+(i>=0?'Lesson '+(i+1)+' of '+CCL.length+' · ':'')+'<b>'+L.t+'</b>'+(qi?' · question '+qi+' of '+qn:'')+'</div>'}
+
+  // Lesson 1: reading a reply
+  function ccRQ(n,qi){
+    var sec,g,i,tr,j,t,b,c,m;
+    for(tr=0;tr<80;tr++){
+      sec=qi<2?ccDistinct(n):ccRC(n);
+      g=sec.split("");
+      for(i=0,t=1+Math.floor(Math.random()*2);i<t;i++){var a=Math.floor(Math.random()*n),d=Math.floor(Math.random()*n),x=g[a];g[a]=g[d];g[d]=x}
+      if(Math.random()<.6){j=Math.floor(Math.random()*n);g[j]=String(Math.floor(Math.random()*10))}
+      g=g.join("");
+      if(qi<2&&(ccHasRep(g)||g===sec))continue;
+      if(qi>=2&&!(ccHasRep(g)||ccHasRep(sec)))continue;
+      m=ccMarks(sec,g,n);b=0;c=0;for(i=0;i<n;i++){if(m[i]==="b")b++;else if(m[i]==="c")c++}
+      if(b+c<1||b===n)continue;
+      return{sec:sec,g:g,marks:m,b:b,c:c}
+    }
+    sec=ccDistinct(n);g=sec.split("").reverse().join("");m=ccMarks(sec,g,n);b=0;c=0;for(i=0;i<n;i++){if(m[i]==="b")b++;else if(m[i]==="c")c++}
+    return{sec:sec,g:g,marks:m,b:b,c:c}
+  }
+  function ccValidBC(b,c,n){return b>=0&&c>=0&&b+c<=n&&!(b===n-1&&c===1)}
+  function ccTRead(n){var q=ccRQ(n,0),ex=n===3?["112","111"]:["1123","1111"],kx=ccScore(ex[0],ex[1],n);
+    return ccSay("Every reply to a guess has two numbers. A <b>bull</b> is a digit that is right <i>and</i> in the right place. A <b>cow</b> is a digit that is in the secret, but in a different place.")
+      +'<div class="card" style="text-align:center;margin:8px 0"><div class="mute" style="font-size:12px">Secret</div>'+ccChips(q.sec,null)+'<div class="mute" style="font-size:12px;margin-top:8px">Your guess, marked</div>'+ccChips(q.g,q.marks)+'<div style="margin-top:8px"><b>'+ccReply(ccScore(q.sec,q.g,n),n)+'</b></div></div>'
+      +ccSay("Bulls are counted first. Then each leftover digit of your guess earns a cow if the secret still has an unmatched copy of it. Digits that earn nothing stay plain.")
+      +ccSay("<b>Careful with repeats.</b> A digit earns credit only as many times as the secret has it. If the secret is <b>"+ex[0]+"</b> and you guess <b>"+ex[1]+"</b>, you get "+ccReply(kx,n)+".")}
+  function ccExRead(q,n){var bl=[],cw=[],xs=[],i;
+    for(i=0;i<n;i++){if(q.marks[i]==="b")bl.push(i+1);else if(q.marks[i]==="c")cw.push(q.g[i]);else if(q.sec.indexOf(q.g[i])>=0)xs.push(q.g[i])}
+    return'<div class="card" style="text-align:center;margin:8px 0">'+ccChips(q.sec,null)+'<div style="height:6px"></div>'+ccChips(q.g,q.marks)+'</div>'
+      +'<div style="line-height:1.55;font-size:14px"><b>Bulls:</b> '+(bl.length?'place'+(bl.length>1?'s ':' ')+bl.join(" and ")+' match exactly.':'no digit is in the right place.')
+      +' <b>Cows:</b> '+(cw.length?cw.join(", ")+' '+(cw.length>1?'are':'is')+' in the secret, but in another place.':'none.')
+      +(xs.length?' The extra '+xs.join(", ")+' earns nothing, because the secret has no more '+(xs.length>1?'of those digits':'of that digit')+' left to match.':'')
+      +'</div>'+ccSay("So the reply is <b>"+ccReply(ccScore(q.sec,q.g,n),n)+"</b>.")}
+  function ccQRead(n,qi){
+    var q=ccRQ(n,qi),b=q.b,c=q.c,cand=[[c,b],[b+1,c],[b,c+1],[b-1,c],[b,c-1],[b+1,c-1],[b-1,c+1],[b+1,c+1]],ds=[],seen={};
+    seen[b+"-"+c]=1;
+    ccShuffle(cand).forEach(function(x){var key=x[0]+"-"+x[1];if(ds.length<3&&!seen[key]&&ccValidBC(x[0],x[1],n)){seen[key]=1;ds.push(x)}});
+    var o=ccShuffle([[b,c]].concat(ds)).map(function(x){return{t:x[0]+(x[0]===1?" bull":" bulls")+", "+x[1]+(x[1]===1?" cow":" cows"),ok:x[0]===b&&x[1]===c}});
+    return{p:ccSay(qi>=2?"This time the numbers have repeated digits, so count carefully. The secret is shown so you can work out the reply.":"Here the secret is shown so you can work out the reply yourself. What does this guess score?"),
+      v:'<div class="card" style="text-align:center;margin:8px 0"><div class="mute" style="font-size:12px">Secret</div>'+ccChips(q.sec,null)+'<div class="mute" style="font-size:12px;margin-top:8px">Guess</div>'+ccChips(q.g,null)+'</div>',
+      o:o,ex:ccExRead(q,n),hint:"Find the bulls first: same digit, same place. Then look at the digits that are left over."}}
+
+  // Lesson 2: crossing digits off
+  function ccTZero(n){var g=ccDistinct(n),rest=[],i;for(i=0;i<10;i++)if(g.indexOf(String(i))<0)rest.push(i);
+    return ccSay("A reply can rule things out for certain. If a guess gets <b>0 bulls and 0 cows</b>, none of its digits are in the secret at all.")
+      +ccClueHtml([{g:g,k:0}],n)+ccSay("So after <b>"+g+"</b> you can cross off "+g.split("").join(", ")+" for good. Only <b>"+rest.join(", ")+"</b> can still appear.")
+      +ccSay("<b>0 bulls</b> but some cows is useful too: every digit of that guess is in the wrong place. If you put a 4 first, then 4 is <i>not</i> the first digit.")}
+  function ccQZero(n,qi){
+    var g=ccDistinct(n),rest=[],i;for(i=0;i<10;i++)if(g.indexOf(String(i))<0)rest.push(String(i));
+    if(qi%2===0){
+      var out=g[Math.floor(Math.random()*n)],wr=ccShuffle(rest).slice(0,3),o=ccShuffle([out].concat(wr)).map(function(d){return{t:"<b>"+d+"</b>",ok:d===out}});
+      return{p:ccSay("This guess got no bulls and no cows. Which digit can you cross off for good?"),v:ccClueHtml([{g:g,k:0}],n),o:o,
+        ex:ccSay("0 bulls and 0 cows means no digit of <b>"+g+"</b> is in the secret. So "+g.split("").join(", ")+" are all out, and only "+rest.join(", ")+" can still appear. "+"The other options are digits this guess never tested, so they could still be in the number."),hint:"A cow or a bull would mean a digit was found. Here there are none."}
+    }
+    var cows=n===3?1:2,k=cows,i2=Math.floor(Math.random()*n),a=g[i2],j=(i2+1)%n,other=g[j],m=(i2+2)%n,
+      stm=[{t:"<b>"+a+"</b> is not in place "+(i2+1),ok:true},{t:"<b>"+g[(i2+n-1)%n]+"</b> is definitely in the secret",ok:false},{t:"The secret contains both <b>"+a+"</b> and <b>"+other+"</b>",ok:false},{t:"<b>"+other+"</b> is in place "+(m+1),ok:false}];
+    return{p:ccSay("This guess got <b>0 bulls</b> and "+cows+" cow"+(cows>1?"s":"")+". Which statement is certainly true?"),v:ccClueHtml([{g:g,k:k}],n),o:ccShuffle(stm),
+      ex:ccSay("With 0 bulls, no digit of <b>"+g+"</b> sits where you put it, so <b>"+a+"</b> cannot be in place "+(i2+1)+". The cows only say that "+cows+" of the "+n+" digits are in the number, not which ones, so the other statements are only possibilities."),hint:"Bulls tell you about places. What does having zero of them tell you about each digit's place?"}}
+
+  // Lesson 3: could it be the secret?
+  function ccTFit(n){var p=ccPuzzle(n,n===3?2:3,1,60),x=ccNearMiss(p,n),bk=ccBreakAt(x,p.clues,n),c=p.clues[bk<0?0:bk],k2=ccScore(x,c.g,n);
+    return ccSay("Before you play a guess, ask: <i>could it be the secret?</i> Pretend it is, work out what reply each earlier guess would have got, and compare with the real replies.")
+      +ccClueHtml(p.clues,n)+'<div class="cc-big">'+x+'</div>'+ccCheckRows(x,p.clues,n)
+      +ccSay(bk<0?"Every clue matches, so this number is still possible.":"Clue "+(bk+1)+" breaks it: if the secret were <b>"+x+"</b>, the guess <b>"+c.g+"</b> would get "+ccReply(k2,n)+", but the real reply was "+ccReply(c.k,n)+". One mismatch is enough to rule a number out.")}
+  function ccQFit(n){
+    var p=ccPuzzle(n,n===3?2:3,1,60),x=Math.random()<.5?rnd(p.cands):ccNearMiss(p,n),fit=ccFits(x,p.clues,n),bk=ccBreakAt(x,p.clues,n),c=p.clues[bk<0?0:bk],k2=ccScore(x,c.g,n);
+    return{p:ccSay("These guesses got these replies. Could the number below be the secret?"),v:ccClueHtml(p.clues,n)+'<div class="cc-big">'+x+'</div>',
+      o:[{t:"Yes, it fits every clue",ok:fit},{t:"No, it breaks a clue",ok:!fit}],
+      ex:ccCheckRows(x,p.clues,n)+ccSay(fit?"Each clue gives exactly the reply that <b>"+x+"</b> would produce, so it is still possible.":"Clue "+(bk+1)+" gives it away: <b>"+c.g+"</b> would score "+ccReply(k2,n)+" against "+x+", but the reply was "+ccReply(c.k,n)+"."),
+      hint:"Check one clue at a time. Count the bulls first, then the cows."}}
+
+  // Lesson 4: build a number that fits (typed)
+  function ccTFind(n){var p=ccPuzzle(n,n===3?2:3,1,40);
+    return ccSay("Now the other direction: from the replies, build a number that fits. There are usually several, and you only need one.")
+      +ccClueHtml(p.clues,n)+ccSay("A good routine: <b>1)</b> start from the clue with the most bulls, since those digits are already in the right place. <b>2)</b> Use clues with 0 bulls to keep digits out of those places. <b>3)</b> Finish by testing your number against every clue.")}
+  function ccQFind(n){var p=ccPuzzle(n,n===3?2:3,1,40),idx=ccShuffle(p.sec.split("").map(function(d,i){return i})).slice(0,Math.ceil(n/2));
+    return{typed:true,p:p,rev:idx,tries:0,done:false,fb:""}}
+  function ccFindHint(q,lvl,n){
+    if(lvl<=1){var bi=0,bb=-1,i;q.p.clues.forEach(function(c,j){var b=Math.floor(c.k/(n+1));if(b>bb){bb=b;bi=j}});
+      var c=q.p.clues[bi];return bb>0?"Start with clue "+(bi+1)+" ("+c.g+"). It has "+bb+" bull"+(bb>1?"s":"")+", so "+bb+" of its digits are exactly right in place.":"No clue has a bull, so every digit is in the wrong place in each guess. Use that to decide where each digit can go."}
+    var s=q.p.sec.split("").map(function(d,i){return q.rev.indexOf(i)>=0?d:"_"}).join(" ");return"One number that fits starts like this: <b>"+s+"</b>. Fill in the gaps and test it."}
+  function ccDrawFind(){
+    var q=CC.q,n=CC.n,L=ccLes("find"),h=ccStepHead(L,CC.qi+1,CC.qn),i;
+    h+=q.done?"":ccSay(q.tries?"Not yet. Look at the mismatch below, change your number, and try again.":"Type a number that gives exactly these replies.");
+    h+=ccClueHtml(q.p.clues,n);
+    if(!q.done){
+      for(i=1;i<=CC.hint;i++)h+=ccSay("<b>Hint:</b> "+ccFindHint(q,i,n));
+      if(q.fb)h+=q.fb;
+      h+='<input id="ccin" inputmode="numeric" pattern="[0-9]*" maxlength="'+n+'" autocomplete="off" placeholder="'+new Array(n+1).join("0")+'" value="'+(q.draft||"")+'" style="width:100%;box-sizing:border-box;margin-top:12px;font-size:26px;letter-spacing:.3em;text-align:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)"><button class="wide" data-a="check">Check my number</button>';
+      if(CC.hint<2)h+='<button class="pill" data-a="hint" style="margin-top:10px">💡 Give me a hint</button>';
+    }else h+=q.fb+'<button class="wide" data-a="next">'+(CC.qi+1<CC.qn?"Next question":"Finish lesson")+'</button>';
+    ccShell(h,true);
+    var inp=$("ccin");if(inp){inp.onkeydown=function(e){if(e.key==="Enter")ccCheckFind()};inp.oninput=function(){q.draft=inp.value};setTimeout(function(){inp.focus()},60)}
+  }
+  function ccCheckFind(){
+    var q=CC.q,n=CC.n,i=$("ccin");if(!q||q.done||!i)return;
+    var v=i.value.trim();if(!/^[0-9]+$/.test(v)||v.length!==n){toast("Enter "+n+" digits");return}
+    q.draft="";
+    if(ccFits(v,q.p.clues,n)){
+      q.done=true;var ok=q.tries===0&&CC.hint===0;CC.res.push(ok);ccLog("find",ok);
+      q.fb=ccSay(ok?ccPick(CC_OK)+" <b>"+v+"</b> gives the right reply for every clue.":"Yes, <b>"+v+"</b> works.")+ccCheckRows(v,q.p.clues,n)+ccSay((q.p.cands.length===1?"It was the only number that fits.":q.p.cands.length+" numbers fit these clues in total, so there is more than one right answer."));
+    }else{
+      q.tries++;var bk=ccBreakAt(v,q.p.clues,n),c=q.p.clues[bk],k2=ccScore(v,c.g,n);
+      if(q.tries>=2){q.done=true;CC.res.push(false);ccLog("find",false);
+        q.fb=ccSay("That one still breaks clue "+(bk+1)+". Here is one that works, and how to check it: <b>"+q.p.sec+"</b>.")+ccCheckRows(q.p.sec,q.p.clues,n)}
+      else q.fb='<div class="cc-fb no"><b>Check clue '+(bk+1)+' ('+c.g+').</b> If <b>'+v+'</b> were the secret, that guess would score '+ccReply(k2,n)+', but the reply was '+ccReply(c.k,n)+'.</div>';
+    }
+    ccDrawFind();
+  }
+
+  // Lesson 5: strong openings
+  function ccPat(n){var key="pat"+n,P=CC.cache[key],all=ccCodes(n);
+    if(!P){P=ccPatterns(n).map(function(p){return{p:p,e:ccStats(p,all,n).e}}).sort(function(a,b){return a.e-b.e});CC.cache[key]=P}return P}
+  function ccTOpen(n){var P=ccPat(n),all=ccCodes(n),good=P[0].p,bad=P[P.length-1].p.replace(/0/g,"1"),N=all.length;
+    return ccSay("Your first guess has no clues to lean on, so its job is to <b>split</b> all "+N+" possible numbers into many small groups. Compare two openings by what they leave behind.")
+      +ccOptCard(good,all,n,"tests "+n+" different digits")+ccOptCard(bad,all,n,"tests one digit")
+      +ccSay("Bars show how many of the "+N+" numbers would give each reply (B = bulls, C = cows). A good opening has no huge bar. The more different digits you test, the more the replies differ.")}
+  function ccQOpen(n){
+    var P=ccPat(n),lo=P[0].e,best=ccPick(P.filter(function(x){return x.e<=lo*1.06})),mids=P.filter(function(x){return x.e>lo*1.08&&x.e<lo*1.7}),
+      mid=mids.length?ccPick(mids):P[Math.floor(P.length/2)],bads=P.filter(function(x){return x.e>=lo*1.9}),bad=bads.length?ccPick(bads):P[P.length-1];
+    var all=ccCodes(n),opts=ccShuffle([{p:best.p,r:"best"},{p:mid.p,r:"mid"},{p:bad.p,r:"bad"}]),seen={};
+    opts.forEach(function(o){o.g=ccRelabel(o.p);while(seen[o.g])o.g=ccRelabel(o.p);seen[o.g]=1});
+    var ord=opts.slice().sort(function(a,b){return({best:0,mid:1,bad:2})[a.r]-({best:0,mid:1,bad:2})[b.r]}),tags={best:"strongest opening",mid:"decent",bad:"weak"};
+    return{p:ccSay("It's your first guess of the game. Which opening would you play?"),v:"",o:opts.map(function(o){return{t:'<b style="font-size:22px;letter-spacing:.16em">'+o.g+'</b>',ok:o.r==="best"}}),
+      ex:ord.map(function(o){return ccOptCard(o.g,all,n,tags[o.r],o.r==="best")}).join("")+ccSay("The strongest opening spreads the possibilities the most: its biggest group is the smallest. Repeating digits wastes tests, because you learn about fewer different digits."),
+      hint:"Which guess tests the most different digits at once?"}}
+
+  // Lesson 6: guess to split
+  function ccTSplit(n){var p=ccPuzzle(n,2,n===3?20:60,n===3?120:300),pool=ccSplitPool(p,n),lo=pool[0],hi=pool[pool.length-1];
+    return ccSay("Once some clues are in, the goal stays the same: pick the guess that <b>splits</b> the numbers still possible into the most, smallest groups. Right now <b>"+p.cands.length+"</b> numbers fit these clues.")
+      +ccClueHtml(p.clues,n)+ccOptCard(lo.g,p.cands,n,lo.inC?"strong split · could be the secret":"strong split",true)+ccOptCard(hi.g,p.cands,n,"weak split")
+      +ccSay("A guess does not have to be a possible secret to be useful. If it spreads the possibilities better, it earns more information. Later, when few remain, fitting guesses become more valuable (next lessons).")}
+  function ccSplitPool(p,n){var all=ccCodes(n),pool=sample(p.cands,30).concat(sample(all,70)),seen={},out=[];
+    pool.forEach(function(g){if(seen[g])return;seen[g]=1;var st=ccStats(g,p.cands,n);out.push({g:g,e:st.e,mx:st.mx,r:st.r,inC:p.cands.indexOf(g)>=0})});
+    return out.sort(function(a,b){return a.e-b.e})}
+  function ccQSplit(n){
+    var q=null,last=null,t,p,pool,lo,hi,mid;
+    for(t=0;t<25&&!q;t++){p=ccPuzzle(n,2,n===3?20:60,n===3?120:300);pool=ccSplitPool(p,n);if(pool.length<3)continue;lo=pool[0];hi=pool[pool.length-1];mid=pool[Math.floor(pool.length/2)];
+      last={p:p,lo:lo,mid:mid,hi:hi};if(hi.e>=lo.e*1.5&&mid.e>lo.e*1.12)q=last}
+    q=q||last;var opts=ccShuffle([{o:q.lo,r:"best"},{o:q.mid,r:"mid"},{o:q.hi,r:"bad"}]),tags={best:"best split",mid:"okay split",bad:"weak split"};
+    return{p:ccSay("<b>"+q.p.cands.length+"</b> numbers still fit these clues. Which guess would tell you the most?"),v:ccClueHtml(q.p.clues,n),
+      o:opts.map(function(x){return{t:'<b style="font-size:22px;letter-spacing:.16em">'+x.o.g+'</b>',ok:x.r==="best"||x.o.e<=q.lo.e*1.08}}),
+      ex:["best","mid","bad"].map(function(r){var x=opts.filter(function(y){return y.r===r})[0];return ccOptCard(x.o.g,q.p.cands,n,tags[r]+(x.o.inC?" · could be the secret":""),r==="best")}).join("")
+        +ccSay("The best guess leaves the fewest numbers on average, because it spreads them over the most different replies."+(q.lo.inC?"":" It cannot even be the secret, yet it still teaches the most.")),
+      hint:"Look for the guess whose replies would be spread most evenly, not the one that merely looks possible."}}
+
+  // Lesson 7: closing in
+  function ccTEnd(n){var q=ccQEnd(n);
+    return ccSay("When only a few numbers remain, the game changes. A guess that <b>fits every clue</b> can win <i>right now</i>. A guess that cannot be the secret wastes this turn unless it is far better at telling the rest apart.")
+      +ccClueHtml(q.pz.clues,n)+ccSay("Here "+q.pz.cands.length+" numbers fit: <b>"+q.pz.cands.join(", ")+"</b>. A guess from this list wins with probability 1 in "+q.pz.cands.length+" and still shrinks the list if it misses. Let's practise choosing.")}
+  function ccQEnd(n){
+    var best=null,t,pz,list,all,cs,ns,i,opts,ts,ex;RVE.ctx(n);var W=RVE.W();
+    for(t=0;t<80;t++){
+      pz=ccPuzzle(n,n===3?2:3,3,6);if(pz.cands.length<3||pz.cands.length>(t<30?6:12))continue;
+      cs=pz.cands;all=ccCodes(n);var nonfit=null,k;for(k=0;k<60&&!nonfit;k++){var c=rnd(all);if(cs.indexOf(c)<0)nonfit=c}
+      if(!nonfit)continue;
+      var pick=ccShuffle(cs).slice(0,2);opts=[pick[0],pick[1],nonfit];
+      list=Int32Array.from(cs.map(function(x){return parseInt(x,10)}));
+      ts=opts.map(function(g){return RVE.evalGuess(parseInt(g,10),list,list.length).T});
+      var order=ts.map(function(v,i){return i}).sort(function(a,b){return ts[a]-ts[b]});
+      if(ts[order[1]]-ts[order[0]]>=.1){best={pz:pz,opts:opts,ts:ts,win:order[0]};break}
+      if(!best)best={pz:pz,opts:opts,ts:ts,win:order[0]};
+    }
+    var b=best,N=b.pz.cands.length,order2=ccShuffle([0,1,2]);
+    b.p=ccSay("<b>"+N+"</b> numbers fit these clues. Which guess do you play?");
+    b.v=ccClueHtml(b.pz.clues,n);
+    b.o=order2.map(function(i){return{t:'<b style="font-size:22px;letter-spacing:.16em">'+b.opts[i]+'</b>',ok:i===b.win}});
+    b.ex=[0,1,2].sort(function(a,c){return b.ts[a]-b.ts[c]}).map(function(i){var fit=b.pz.cands.indexOf(b.opts[i])>=0;
+      return ccOptCard(b.opts[i],b.pz.cands,n,(fit?"could be the secret · 1 in "+N+" to win now":"cannot be the secret")+" · about "+b.ts[i].toFixed(1)+" guesses to finish",i===b.win)}).join("")
+      +ccSay(b.pz.cands.indexOf(b.opts[b.win])>=0?"The best choice is a number that <b>fits</b>: it can win right away, and the reply still separates the others. A guess that cannot be the secret spends a turn that cannot win.":"Here a guess outside the list tells the remaining numbers apart so well that it beats the fitting ones, which is rare. Check the bars before deciding.");
+    b.hint="Which guess could win this turn, and which one would leave the biggest group behind if it misses?";
+    return b}
+
+  // ---------- running lessons ----------
+  function ccTeachOf(id,n){return({read:ccTRead,zero:ccTZero,fit:ccTFit,find:ccTFind,open:ccTOpen,split:ccTSplit,end:ccTEnd})[id](n)}
+  function ccMakeOf(id,n,qi){return({read:ccQRead,zero:ccQZero,fit:ccQFit,find:ccQFind,open:ccQOpen,split:ccQSplit,end:ccQEnd})[id](n,qi)}
+  function ccOpen(id){
+    CC.tok++;CC.les=id;var L=ccLes(id);if(!L)return;
+    var h=ccStepHead(L);
+    if(L.live)h+=ccSay("We'll solve a "+CC.n+"-digit puzzle together. You choose every guess. After each reply I'll tell you what it taught us and whether there was a sharper move. Ask for a hint any time.")
+      +ccSay("Keep in mind the three ideas from the course: <b>test new digits early</b>, <b>only play fitting guesses once few remain</b>, and <b>pick guesses that split</b>.");
+    else h+=ccTeachOf(id,CC.n);
+    h+='<button class="wide" data-a="go">'+(L.live?'Start the puzzle':'Practise this')+'</button>';
+    ccShell(h,true);
+  }
+  function ccGo(){var L=ccLes(CC.les);CC.qi=0;CC.res=[];CC.qn=L.live?1:4;if(L.live)ccLiveStart();else ccNextQ()}
+  function ccNextQ(){var L=ccLes(CC.les);CC.hint=0;CC.q=ccMakeOf(L.id,CC.n,CC.qi);CC.q.done=false;ccDrawQ()}
+  function ccDrawQ(){
+    var q=CC.q,L=ccLes(CC.les),n=CC.n,h;
+    if(q.typed)return ccDrawFind();
+    h=ccStepHead(L,L.id==="moment"?0:CC.qi+1,CC.qn)+q.p+(q.v||"");
+    if(!q.done){
+      h+=q.o.map(function(o,i){return'<button class="wide ghost cc-opt" data-a="ans" data-v="'+i+'">'+o.t+'</button>'}).join("");
+      if(q.hint)h+=CC.hint?ccSay("<b>Hint:</b> "+q.hint):'<button class="pill" data-a="hint" style="margin-top:10px">💡 Give me a hint</button>';
+    }else{
+      h+=q.o.map(function(o,i){return'<div class="cc-opt cc-os '+(o.ok?'ok':(i===q.pick?'no':''))+'">'+o.t+(i===q.pick?'<span class="mute" style="font-size:12px"> · your pick</span>':'')+'</div>'}).join("")+q.fb+q.ex;
+      h+=q.final?'<button class="wide" data-a="home">Back to the coach</button>':'<button class="wide" data-a="next">'+(CC.qi+1<CC.qn?'Next question':'Finish lesson')+'</button>';
+    }
+    ccShell(h,true);
+  }
+  function ccAns(i){
+    var q=CC.q,L=ccLes(CC.les);if(!q||q.done||q.typed)return;
+    q.done=true;q.pick=i;var ok=q.o[i].ok;CC.res.push(ok);
+    if(L.id!=="moment")ccLog(L.id,ok&&!CC.hint);else ccStreak();
+    q.fb=ccSay(ok?ccPick(CC_OK):ccPick(CC_NO));
+    ccDrawQ();
+  }
+  function ccAdvance(){CC.qi++;if(CC.qi<CC.qn)ccNextQ();else ccLessonDone()}
+  function ccLessonDone(){
+    var L=ccLes(CC.les),r=CC.res.filter(Boolean).length,t=CC.res.length,i=ccIdx(L.id),nx=CCL[i+1],good=r/t>=.75,h=ccStepHead(L);
+    h+=ccSay(good?(r===t?"A clean sweep, "+r+" out of "+t+".":"Good work, "+r+" out of "+t+".")+(nx?" You're ready for the next one.":" That completes the course. Keep practising with live puzzles to keep it sharp."):"You got "+r+" out of "+t+". That's fine: this idea takes a couple of rounds. Let's go again with fresh examples.");
+    h+='<button class="wide'+(good?' ghost':'')+'" data-a="go">'+(good?'Another round':'Try again with new examples')+'</button>';
+    if(good&&nx)h+='<button class="wide" data-a="les" data-v="'+nx.id+'">Next: '+nx.t+'</button>';
+    h+='<button class="wide ghost" data-a="home">Back to the course</button>';
+    ccShell(h,false);
+  }
+
+  // ---------- Lesson 8: solve one together ----------
+  function ccLiveStart(){
+    var n=CC.n;RVE.ctx(n);var N=RVE.W().N;
+    CC.G={n:n,sec:Math.floor(Math.random()*N),list:RVE.ident(N),len:N,clues:[],hint:0,msg:"",ds:[],mv:[],done:false,draft:"",hinted:0,hintTxt:""};
+    ccDrawLive();
+  }
+  function ccDrawLive(){
+    var G=CC.G,L=ccLes("live"),n=G.n,h=ccStepHead(L),inp;
+    h+=G.msg||ccSay("I've picked a secret "+n+"-digit number. Make your first guess. Remember: test new digits early.");
+    h+=G.clues.length?'<div class="mute" style="margin:6px 0 2px;font-size:13px">Your clues · <b>'+G.len+'</b> number'+(G.len===1?'':'s')+' still fit</div>'+ccClueHtml(G.clues,n):'<div class="mute" style="margin:6px 0;font-size:13px">All '+G.len+' numbers are still possible.</div>';
+    if(!G.done){
+      if(G.hintTxt)h+=ccSay("<b>Hint:</b> "+G.hintTxt);
+      h+='<input id="ccin" inputmode="numeric" pattern="[0-9]*" maxlength="'+n+'" autocomplete="off" placeholder="'+new Array(n+1).join("0")+'" value="'+G.draft+'" style="width:100%;box-sizing:border-box;margin-top:12px;font-size:26px;letter-spacing:.3em;text-align:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)"><button class="wide" data-a="gplay">Play this guess</button><button class="pill" data-a="ghint" style="margin-top:10px">💡 Hint</button>';
+    }else h+=G.end;
+    ccShell(h,true);
+    inp=$("ccin");if(inp){inp.onkeydown=function(e){if(e.key==="Enter")ccLivePlay()};inp.oninput=function(){G.draft=inp.value};setTimeout(function(){inp.focus()},60)}
+  }
+  function ccLiveHint(){
+    var G=CC.G;if(!G||G.done)return;G.hint++;G.hinted=1;
+    if(G.hint===1){G.hintTxt=G.len>30?"There are "+G.len+" numbers left. Pick a guess that tests digits you have not tried yet, so the replies split the numbers into many small groups."
+      :G.len>6?"Down to "+G.len+". A guess that fits every clue is a good start. Even better if it also splits the rest evenly."
+      :"Only "+G.len+" left. Play one of them: if it's right you win now, and if not the reply still shrinks the list."}
+    else{RVE.ctx(G.n);var r=RVE.bestGuess(G.list,G.len,[])[0];G.hintTxt="I'd play <b>"+ccPad(r.g,G.n)+"</b>. It can give "+r.r+" different replies, and the biggest group it could leave is "+r.mx+" numbers."}
+    ccDrawLive();
+  }
+  function ccLivePlay(){
+    var G=CC.G,n=G.n,i=$("ccin");if(!G||G.done||!i)return;
+    var v=i.value.trim();if(!/^[0-9]+$/.test(v)||v.length!==n){toast("Enter "+n+" digits");return}
+    if(G.clues.some(function(c){return c.g===v})){toast("You already tried "+v);return}
+    RVE.ctx(n);
+    var g=parseInt(v,10),inL=false,j,bg=RVE.bestGuess(G.list,G.len,[g]),best=bg[0],me=null;
+    for(j=0;j<bg.length;j++)if(bg[j].g===g){me=bg[j];break}
+    for(j=0;j<G.len;j++)if(G.list[j]===g){inL=true;break}
+    var d=Math.max(0,me.T-best.T),k=RVE.sc(g,G.sec),before=G.len,nl=[];
+    for(j=0;j<G.len;j++)if(RVE.sc(g,G.list[j])===k)nl.push(G.list[j]);
+    G.clues.push({g:v,k:k});G.ds.push(d);G.hint=0;G.hintTxt="";G.draft="";
+    var bs=ccPad(best.g,n);
+    G.mv.push({g:v,d:d,bg:bs,before:before,inL:inL,first:G.clues.length===1});
+    if(k===n*(n+1)){ccLiveEnd(true);return}
+    G.list=Int32Array.from(nl);G.len=nl.length;
+    var after=G.len,msg;
+    if(d<=.08)msg=ccPick(["Sharp move.","Nicely chosen.","That's the kind of guess I'd play."])+" It cut "+before+" numbers down to "+after+".";
+    else if(d<=.3)msg="Good. It cut "+before+" down to "+after+". For a bit more, <b>"+bs+"</b> would have spread the numbers slightly better.";
+    else{
+      msg="That left "+after+" numbers, more than needed. <b>"+bs+"</b> would have spread them over "+best.r+" different replies, with no group bigger than "+best.mx+".";
+      if(!inL&&before<=8)msg+=" With only "+before+" left, a guess that fits every clue gives you a real chance to win this turn.";
+      else if(before>30&&ccHasRep(v))msg+=" Repeated digits test fewer different digits, so early on they teach less.";
+    }
+    if(G.clues.length>=12){ccLiveEnd(false);return}
+    G.msg=ccSay(msg);ccDrawLive();
+  }
+  function ccLiveEnd(win){
+    var G=CC.G,n=G.n,k=G.clues.length,w=-1,i,strong=0,poor=0,tip="",lesson="";
+    G.done=true;
+    G.ds.forEach(function(d,j){if(d<=.08)strong++;if(d>.3)poor++;if(w<0||d>G.ds[w])w=j});
+    var m=G.mv[w],ok=win&&poor<=1&&!G.hinted;ccLog("live",ok);
+    if(win){
+      if(G.ds[w]>.16){
+        tip=" The move to learn from is guess "+(w+1)+" (<b>"+m.g+"</b>): "+(m.first?"for a first guess, try different digits in every place, like "+(n===3?"012":"0123")+".":!m.inL&&m.before<=8?"only "+m.before+" numbers were left, so a guess that fits every clue was the better try.":"<b>"+m.bg+"</b> would have split the "+m.before+" numbers better.");
+        lesson=m.first?"open":(!m.inL&&m.before<=8)?"end":"split";
+      }
+      G.msg=ccSay("<b>Cracked it in "+k+" guess"+(k===1?"":"es")+"!</b> "+(strong>=Math.ceil(k/2)?"Most of your moves were strong.":"")+tip);
+    }else G.msg=ccSay("We're out of guesses. The secret was <b>"+ccPad(G.sec,n)+"</b>. Let's look at one habit to fix: "+(poor?"some guesses left bigger groups than needed. Aim to split the numbers into many small groups.":"keep testing new digits and watch for numbers that fit every clue."));
+    G.end='<button class="wide" data-a="go">Another puzzle</button>'+(lesson?'<button class="wide ghost" data-a="les" data-v="'+lesson+'">Practise: '+ccLes(lesson).t+'</button>':'')+'<button class="wide ghost" data-a="home">Back to the course</button>';
+    ccDrawLive();
+  }
+
+  // ---------- from your own games ----------
+  function ccEligible(){return S.hist.filter(function(g){return g.u&&g.u.length&&typeof g.u[0]==="object"&&g.n>=3&&g.n<=5})}
+  function ccHabits(){
+    var gs=ccEligible().slice(-8),wasted=0,total=0,ratios=[];
+    gs.forEach(function(g){var clues=[];g.u.forEach(function(t,j){if(j>0){total++;if(!ccFits(t.g,clues,g.n))wasted++}clues.push({g:t.g,k:t.k})});
+      if(g.n<=4&&/^[0-9]+$/.test(g.u[0].g)){RVE.ctx(g.n);var key="emin"+g.n;if(!CC.cache[key]){var all=RVE.ident(RVE.W().N);CC.cache[key]={all:all,e:Math.min.apply(null,RVE.canon(g.n).map(function(p){return RVE.prox(p,all,all.length)}))}}
+        var c=CC.cache[key];ratios.push(RVE.prox(parseInt(g.u[0].g,10),c.all,c.all.length)/c.e)}});
+    var avg=ratios.length?ratios.reduce(function(a,b){return a+b},0)/ratios.length:1;
+    return{wasted:wasted,total:total,open:ratios.length,ratio:avg,games:gs.length}
+  }
+  function ccRecommend(){
+    var hb=ccHabits(),id=null,say="",first=null,i,anyDone=false;
+    for(i=0;i<CCL.length;i++){if(ccMastery(CCL[i].id)>0)anyDone=true;if(!first&&ccMastery(CCL[i].id)<2)first=CCL[i].id}
+    var pick=function(les,txt){if(ccMastery(les)===2)return{id:"live",say:txt+" You already passed that lesson, so let's put it to work in a live puzzle."};return{id:les,say:txt+" Let's work on it."}};
+    var r=null;
+    if(hb.total>=6&&hb.wasted/hb.total>=.25)r=pick("fit","In your recent games, "+hb.wasted+" of "+hb.total+" guesses were already ruled out by earlier clues.");
+    else if(hb.open>=2&&hb.ratio>1.4)r=pick("open","Your opening guesses in recent games left bigger groups than the strongest openings do.");
+    if(r){id=r.id;say=r.say}
+    else if(first){id=first;say=anyDone?"Next on your course: <b>"+ccLes(first).t+"</b>. "+ccLes(first).s+".":"Hi, I'm your coach. We'll go one idea at a time: a short explanation, a worked example, then practice. Start with <b>"+ccLes(first).t+"</b>."}
+    else{id="live";say="You've passed every lesson. A live puzzle is the best way to stay sharp."}
+    return{id:id,say:say,title:ccLes(id).t,fresh:!anyDone}
+  }
+  function ccHome(){
+    CC.tok++;CC.les="";var s=ccTrain(),rec=ccRecommend(),h=ccSay(rec.say);
+    h+='<button class="wide" data-a="les" data-v="'+rec.id+'">'+(rec.fresh?"Start":"Continue")+': '+rec.title+'</button>';
+    if(s.streak)h+='<div class="mute" style="margin:10px 0 0;font-size:13px">Practice streak: <b>'+s.streak+'</b> day'+(s.streak>1?'s':'')+(s.best>s.streak?' · best '+s.best:'')+'</div>';
+    h+='<div class="mute" style="margin:14px 0 4px;font-size:13px">Digits for lessons</div><div class="opts" style="margin-bottom:4px">'+[3,4].map(function(d){return'<button class="opt'+(CC.n===d?' sel':'')+'" data-a="n" data-v="'+d+'">'+d+'</button>'}).join("")+'</div>';
+    h+='<div class="mute" style="margin:14px 0 0;font-size:13px">Your course</div>';
+    CCL.forEach(function(L,i){var m=ccMastery(L.id);h+=ccBtn("les",L.id,(m===2?'✅ ':m===1?'🟡 ':'')+(i+1)+'. '+L.t,L.s+' · '+(m===2?'mastered':m===1?'in progress':'new'))});
+    h+='<div class="mute" style="margin:14px 0 0;font-size:13px">More</div>';
+    h+=ccBtn("moment",null,"Replay a moment from your games","I pick a position from a recent game and we work it out together");
+    h+=ccBtn("book",null,"Quick rules","One page to keep in mind");
+    h+='<p class="mute" style="line-height:1.5;margin:12px 0 0;font-size:12px">Nothing here costs or earns points, and the coach is closed during a game.</p>';
+    ccShell(h,false);
+  }
+  function ccBtn(a,v,title,sub){return'<button class="wide ghost" data-a="'+a+'"'+(v!=null?' data-v="'+v+'"':'')+' style="text-align:left;margin-top:8px"><b>'+title+'</b><br><span class="mute" style="font-size:13px">'+sub+'</span></button>'}
+  function ccMoment(){
+    var gs=ccEligible().filter(function(g){return g.n<=4}).slice(-5).reverse(),tok=++CC.tok,best=null,i=0;
+    if(!gs.length){ccShell(ccSay("I need a few finished games to pick a moment from. Play some games, then come back and we'll replay a key position."),true);return}
+    ccShell(ccSay("Let me look through your recent games for a position worth working out together…")+'<div class="mute" id="ccrp" style="font-size:13px">Looking…</div>',true);
+    (function next(){
+      if(tok!==CC.tok)return;
+      if(i>=gs.length)return fin();
+      var g=gs[i++];
+      analyze(g.n,g.u,[],null,function(R){if(tok!==CC.tok)return;if(R)R.rows.forEach(function(r,j){if(!r.win&&r.N>=4&&r.d>=.16&&(!best||r.d>best.r.d))best={g:g,r:r,j:j}});next()});
+    })();
+    function fin(){
+      if(!best){ccShell(ccSay("I went through your last "+gs.length+" games and every guess was close to the best available. Nothing to fix here. A live puzzle is a good next step."),true);return}
+      var n=best.g.n,clues=best.g.u.slice(0,best.j).map(function(t){return{g:t.g,k:t.k}}),all=ccCodes(n),cands=all.filter(function(x){return ccFits(x,clues,n)}),mine=best.r.g,coach=best.r.bg,
+        opts=[mine,coach],third=null,k;
+      for(k=0;k<40&&!third;k++){var c=rnd(cands.length>2?cands:all);if(opts.indexOf(c)<0)third=c}
+      if(third)opts.push(third);
+      opts=ccShuffle(opts);
+      CC.les="moment";CC.qi=0;CC.qn=1;CC.res=[];CC.hint=0;CC.n=n;
+      CC.q={final:true,done:false,
+        p:ccSay("I found a moment in one of your recent games. After these replies, <b>"+cands.length+"</b> numbers still fit. Which guess would you play here?"),v:ccClueHtml(clues,n),
+        o:opts.map(function(g){return{t:'<b style="font-size:22px;letter-spacing:.16em">'+g+'</b>',ok:g===coach}}),
+        ex:opts.map(function(g){return ccOptCard(g,cands,n,(g===mine?"what you played":"")+(g===mine&&g===coach?" · ":"")+(g===coach?"my pick":""),g===coach)}).join("")
+          +ccSay("In the game you played <b>"+mine+"</b>. "+(cands.indexOf(mine)<0&&cands.length<=8?"Only "+cands.length+" numbers were left and that guess could not be the secret, so it could not win that turn. ":"")+"<b>"+coach+"</b> spreads the "+cands.length+" possibilities better, leaving smaller groups whatever the reply. Next time you're in a spot like this, compare options the same way."),
+        hint:""};
+      ccDrawQ();
+    }
+  }
+  function ccBook(){
+    var L=[["Read the reply","A bull is a right digit in the right place. A cow is a right digit in the wrong place. A repeated digit earns credit only as many times as the secret has it. (Lesson 1)"],
+      ["Open with different digits","Use different digits in every place, like 0123, then fresh digits next. (Lesson 5)"],
+      ["Cross things off","0 bulls and 0 cows removes all those digits for good. 0 bulls removes each digit from the place you tried. (Lesson 2)"],
+      ["Check every new guess","Test it against all earlier replies. If one reply rules it out, it can't be the secret. (Lessons 3 and 4)"],
+      ["Guess to split","The best guess spreads the remaining numbers over many replies. It need not be a possible secret. (Lesson 6)"],
+      ["Few left? Fit","With a handful left, play a number that fits every clue: it can win now. (Lesson 7)"]];
+    ccShell('<div style="font-size:17px;font-weight:700;margin:2px 0 6px">Quick rules</div>'+L.map(function(x,i){return'<div class="card" style="margin:8px 0;padding:12px"><b>'+(i+1)+'. '+x[0]+'</b><div style="margin-top:4px;line-height:1.5;font-size:14px">'+x[1]+'</div></div>'}).join(""),true);
+  }
   function ccClick(e){
     var t=e.target.closest?e.target.closest("[data-a]"):null;if(!t)return;
     var a=t.getAttribute("data-a"),v=t.getAttribute("data-v");
     if(a==="home")ccHome();
     else if(a==="n"){CC.n=+v;ccHome()}
-    else if(a==="drill")ccStart(v);
-    else if(a==="next")ccNext();
-    else if(a==="yes"||a==="no")ccAnswerFit(a==="yes");
+    else if(a==="les")ccOpen(v);
+    else if(a==="go")ccGo();
+    else if(a==="ans")ccAns(+v);
+    else if(a==="next")ccAdvance();
+    else if(a==="hint"){CC.hint++;ccDrawQ()}
     else if(a==="check")ccCheckFind();
-    else if(a==="show")ccShowFind();
-    else if(a==="pick")ccAnswerBest(+v);
-    else if(a==="revlist")ccReviewList();
-    else if(a==="review")ccReview(+v);
+    else if(a==="gplay")ccLivePlay();
+    else if(a==="ghint")ccLiveHint();
+    else if(a==="moment")ccMoment();
     else if(a==="book")ccBook();
-  }
-  function ccBtn(a,v,title,sub){return'<button class="wide ghost" data-a="'+a+'"'+(v!=null?' data-v="'+v+'"':'')+' style="text-align:left;margin-top:8px"><b>'+title+'</b><br><span class="mute" style="font-size:13px">'+sub+'</span></button>'}
-  function ccHome(){
-    var s=ccTrain(),rv=ccReviewable(),acc=function(k){var d=s.d[k];return d[1]?Math.round(d[0]/d[1]*100)+'% right · '+d[1]+' answered':'Not tried yet'};
-    var h='<p class="mute" style="line-height:1.5;margin:0 0 10px">Train here, away from the match. Drills and reviews cost and earn no points, and nothing here is available during a game.</p>';
-    if(s.streak)h+='<div class="mute" style="margin:0 0 10px">Practice streak: <b>'+s.streak+'</b> day'+(s.streak>1?'s':'')+(s.best>s.streak?' · best '+s.best:'')+'</div>';
-    h+='<div class="mute">Digits for drills</div><div class="opts" style="margin-bottom:6px">'+[3,4].map(function(d){return'<button class="opt'+(CC.n===d?' sel':'')+'" data-a="n" data-v="'+d+'">'+d+'</button>'}).join("")+'</div>';
-    h+=ccBtn("revlist",null,"Review a finished game",rv.length?'See how each guess narrowed the field':'Finish a game first, then review it here');
-    h+=ccBtn("drill","fit","Fits or not?",acc("fit"));
-    h+=ccBtn("drill","find","Find a number that fits",acc("find"));
-    h+=ccBtn("drill","best","Pick the best guess",acc("best"));
-    h+=ccBtn("book",null,"Playbook","Five short lessons on reading replies and choosing guesses");
-    ccShell(h,false);
-  }
-  function ccStart(d){CC.drill=d;CC.tl={r:0,t:0,s:0};ccNext()}
-  function ccNext(){if(CC.drill==="fit")ccFitQ();else if(CC.drill==="find")ccFindQ();else ccBestQ()}
-
-  // --- drill 1: does this number fit every clue? ---
-  function ccFitQ(){
-    var n=CC.n,p=ccPuzzle(n,n===3?2:3,1,60),all=ccCodes(n),x=null,i,c,mis;
-    if(Math.random()<.5)x=rnd(p.cands);
-    else{
-      for(i=0;i<500;i++){c=rnd(all);mis=0;p.clues.forEach(function(cl){if(ccScore(c,cl.g,n)!==cl.k)mis++});
-        if(mis===1){x=c;break}
-        if(mis>0&&!x)x=c}
-      if(!x)x=rnd(p.cands);
-    }
-    CC.q={p:p,x:x,fit:ccFits(x,p.clues,n),done:false,fb:""};
-    ccDrawFit();
-  }
-  function ccDrawFit(){
-    var q=CC.q,n=CC.n,h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Fits or not?</div><p class="mute" style="margin:0 0 8px;line-height:1.5">These guesses got these replies. Could the number below be the secret?</p>'+ccClueHtml(q.p.clues,n)+'<div class="cc-big">'+q.x+'</div>';
-    if(!q.done)h+='<div style="display:flex;gap:8px"><button class="wide" data-a="yes" style="margin:0">Fits every clue</button><button class="wide ghost" data-a="no" style="margin:0">Breaks a clue</button></div>';
-    else h+=q.fb+'<button class="wide" data-a="next">Next</button>';
-    ccShell(h+ccTally(),true);
-  }
-  function ccAnswerFit(say){
-    var q=CC.q,n=CC.n;if(!q||q.done)return;q.done=true;
-    var ok=say===q.fit;ccScoreIt("fit",ok);
-    q.fb='<div class="cc-fb '+(ok?'ok':'no')+'"><b>'+(ok?'Correct.':'Not quite.')+'</b> '+(q.fit?q.x+' gives exactly the reply shown for every clue.':q.x+' breaks at least one clue.')+'</div>'+ccCheckRows(q.x,q.p.clues,n)+(q.fit?'':'<p class="mute" style="font-size:13px;margin:8px 0 0">Tip: compare bulls first (right digit, right place), then cows.</p>');
-    ccDrawFit();
-  }
-
-  // --- drill 2: type a number that fits ---
-  function ccFindQ(){var n=CC.n;CC.q={p:ccPuzzle(n,n===3?2:3,1,40),done:false,fb:"",shown:false};ccDrawFind()}
-  function ccDrawFind(){
-    var q=CC.q,n=CC.n,h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Find a number that fits</div><p class="mute" style="margin:0 0 8px;line-height:1.5">Type any number that matches every reply. There may be several.</p>'+ccClueHtml(q.p.clues,n);
-    if(!q.done)h+='<input id="ccin" inputmode="numeric" pattern="[0-9]*" maxlength="'+n+'" autocomplete="off" placeholder="'+new Array(n+1).join("0")+'" style="width:100%;margin-top:12px;font-size:26px;letter-spacing:.3em;text-align:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)"><button class="wide" data-a="check">Check</button>';
-    else h+=q.fb+(q.ok||q.shown?'':'<button class="wide ghost" data-a="show">Show a number that fits</button>')+'<button class="wide" data-a="next">Next</button>';
-    ccShell(h+ccTally(),true);
-    var i=$("ccin");if(i){i.onkeydown=function(e){if(e.key==="Enter")ccCheckFind()};setTimeout(function(){i.focus()},60)}
-  }
-  function ccCheckFind(){
-    var q=CC.q,n=CC.n,i=$("ccin");if(!q||q.done||!i)return;
-    var v=i.value.trim();if(!/^[0-9]+$/.test(v)||v.length!==n){toast("Enter "+n+" digits");return}
-    q.done=true;q.ok=ccFits(v,q.p.clues,n);ccScoreIt("find",q.ok);
-    var cnt=q.p.cands.length;
-    q.fb='<div class="cc-fb '+(q.ok?'ok':'no')+'"><b>'+(q.ok?'Correct.':'Not quite.')+'</b> '+(q.ok?(cnt===1?v+' was the only number that fits.':v+' fits. '+cnt+' numbers fit these clues in total.'):v+' breaks at least one clue.')+'</div>'+ccCheckRows(v,q.p.clues,n);
-    ccDrawFind();
-  }
-  function ccShowFind(){var q=CC.q;if(!q||!q.done||q.shown)return;q.shown=true;q.fb+='<div class="cc-fb ok">One that fits: <b style="letter-spacing:.14em">'+rnd(q.p.cands)+'</b></div>';ccDrawFind()}
-
-  // --- drill 3: which guess splits the possibilities best? ---
-  function ccBestQ(){
-    var n=CC.n,all=ccCodes(n),q=null,last=null,t,p,pool,ev,lo,hi,mid;
-    for(t=0;t<25&&!q;t++){
-      p=ccPuzzle(n,n===3?1:2,12,n===3?150:260);
-      pool=sample(p.cands,40).concat(sample(all,50));
-      ev=ccEval(pool,p.cands,n).sort(function(a,b){return a.e-b.e});
-      if(ev.length<3)continue;
-      lo=ev[0];hi=ev[ev.length-1];mid=ev[Math.floor(ev.length/2)];
-      last={p:p,opts:ccShuffle([lo,mid,hi]),best:lo,done:false,pick:-1};
-      if(hi.e>=lo.e*1.6&&mid.e>lo.e*1.1)q=last;
-    }
-    CC.q=q||last;
-    ccDrawBest();
-  }
-  function ccDrawBest(){
-    var q=CC.q,n=CC.n,N=q.p.cands.length,h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Pick the best guess</div><p class="mute" style="margin:0 0 8px;line-height:1.5">After these replies, <b>'+N+'</b> numbers still fit. Which guess would tell you the most?</p>'+ccClueHtml(q.p.clues,n);
-    if(!q.done)h+=q.opts.map(function(o,i){return'<button class="wide ghost" data-a="pick" data-v="'+i+'"><b style="font-size:22px;letter-spacing:.16em">'+o.g+'</b></button>'}).join("");
-    else h+=q.fb+'<button class="wide" data-a="next">Next</button>';
-    ccShell(h+ccTally(),true);
-  }
-  function ccAnswerBest(i){
-    var q=CC.q,n=CC.n;if(!q||q.done)return;q.done=true;q.pick=i;
-    var o=q.opts[i],ok=o.e<=q.best.e*1.08;ccScoreIt("best",ok);
-    var rows=q.opts.map(function(x,j){var good=x.e<=q.best.e*1.08;return'<div class="cc-row '+(good?'ok':'')+'"><b>'+x.g+'</b><span>about '+Math.max(1,Math.round(x.e))+' left on average<br>'+x.r+' possible replies · worst case '+x.mx+(j===i?'<br><i>your pick</i>':'')+'</span></div>'}).join("");
-    q.fb='<div class="cc-fb '+(ok?'ok':'no')+'"><b>'+(ok?'Good pick.':'Not the sharpest.')+'</b> The best guess spreads the '+q.p.cands.length+' possibilities over the most different replies, so whatever comes back leaves the fewest numbers.'+(q.best.inC?'':' It cannot even be the answer, yet it still teaches the most.')+'</div>'+rows;
-    ccDrawBest();
-  }
-
-  // --- review a finished game ---
-  function ccReviewable(){var out=[];S.hist.forEach(function(g,i){if(g.u&&g.u.length&&typeof g.u[0]==="object"&&g.n>=3&&g.n<=5)out.push(i)});return out}
-  function ccReviewList(){
-    var rv=ccReviewable().slice(-8).reverse(),h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Review a finished game</div>';
-    if(!rv.length)h+='<p class="mute" style="line-height:1.5">No finished games to review yet. Finish one and it shows up here.</p>';
-    else{
-      h+='<p class="mute" style="margin:0 0 6px;line-height:1.5">Pick a game to see how many numbers were still possible after each of your guesses.</p>';
-      rv.forEach(function(i){var g=S.hist[i],dt=new Date(g.t);h+=ccBtn("review",i,'Game '+(i+1)+' · '+g.n+' digits',(g.res==="u"?'Cracked in '+g.u.length+' guesses':(g.opp?'Lost':'BOT won')+' after your '+g.u.length+' guesses')+(g.opp?' · vs '+esc(g.opp):'')+' · '+dt.toLocaleDateString(undefined,{month:"short",day:"numeric"}))});
-    }
-    ccShell(h,true);
-  }
-  function ccReview(i){
-    var g=S.hist[i];if(!g||!g.u||!g.u.length)return;
-    var n=g.n,all=ccCodes(n),cands=all,seen=[],line=[all.length],rows="",wasted=0,wasteAt=0,wasteLeft=0,weak=0,weakAt=0;
-    g.u.forEach(function(t,j){
-      var before=cands.length,fit=cands.indexOf(t.g)>=0,bk=fit?-1:ccBreakAt(t.g,seen,n);
-      var nxt=cands.filter(function(x){return ccScore(x,t.g,n)===t.k}),note="";
-      if(!fit){note='Could not be the answer: '+(bk>=0?'reply '+(bk+1):'an earlier reply')+' had already ruled it out.';if(before<=30){wasted++;if(!wasteAt){wasteAt=j+1;wasteLeft=before}note+=' With this few numbers left, a guess that still fits gives you a chance to win right away.'}}
-      else if(before>30&&nxt.length>before*.6){weak++;if(!weakAt)weakAt=j+1}
-      if(before>1&&before<=2500){
-        var mine=ccEval([t.g],cands,n)[0],pool=sample(cands,40).concat(sample(all,50)),bestE=ccEval(pool,cands,n).sort(function(a,b){return a.e-b.e})[0];
-        if(fit&&before>20&&mine.e>bestE.e*1.4)note+=(note?'<br>':'')+'A sharper guess here leaves about '+Math.max(1,Math.round(bestE.e))+' on average; this one about '+Math.max(1,Math.round(mine.e))+'.';
-      }
-      rows+='<div class="card" style="margin:8px 0;padding:12px"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+(j+1)+'. '+t.g+'</b><span class="mute">'+ccReply(t.k,n)+'</span></div><div class="mute" style="font-size:13px;margin-top:4px">Possible numbers: '+before+' → '+nxt.length+'</div>'+(note?'<div style="font-size:13px;margin-top:4px;line-height:1.5">'+note+'</div>':'')+'</div>';
-      seen.push({g:t.g,k:t.k});cands=nxt;line.push(nxt.length);
-    });
-    var tk=wasted?'Guess '+wasteAt+' came when only '+wasteLeft+' numbers were left, yet it could not be the answer. Once few numbers remain, play one that still fits every reply.':weak?'Guess '+weakAt+' barely narrowed things down. Try guesses that mix new digits with new positions.':'No wasted guesses: each one either could win or narrowed the field well.';
-    var h='<div style="font-size:17px;font-weight:700;margin:2px 0 4px">Game '+(i+1)+' review</div><p class="mute" style="margin:0 0 6px;line-height:1.5">'+(g.res==="u"?'You cracked it in '+g.u.length+' guesses.':(g.opp?esc(g.opp):'The BOT')+' got there first. After your '+g.u.length+' guesses, '+cands.length+' numbers still fit.')+'</p><div class="mute" style="font-size:13px;margin:0 0 8px;overflow-wrap:anywhere">'+line.join(" → ")+'</div><div class="cc-fb ok"><b>Takeaway:</b> '+tk+'</div>'+rows;
-    ccShell(h,false);
-    $("ccbox").insertAdjacentHTML("afterbegin",'<button class="pill" data-a="revlist" style="margin-bottom:10px">← Games</button>');
-  }
-
-  // --- playbook ---
-  function ccBook(){
-    var L=[["Read the reply","A bull is a right digit in the right place. A cow is a right digit in the wrong place. The reply never says which digits, so write down what each one rules in or out."],
-      ["Open with a spread","Use different digits in your first guesses, such as 1234 then 5678. The totals roughly show how many of the secret's digits come from each group."],
-      ["Check every new guess","Before you play a guess, test it against all earlier replies. If an earlier reply rules it out, it cannot be the answer. This is what Hard mode rewards."],
-      ["Guess to split, not to hope","A guess that cannot be the answer can still be the best one, if it spreads the remaining numbers over many different replies. Practise this in the best-guess drill."],
-      ["Use zeros","0 bulls means none of those digits sits in the place you tried. 0 bulls and 0 cows means none of those digits are in the number at all. Cross them out for good."]];
-    ccShell('<div style="font-size:17px;font-weight:700;margin:2px 0 6px">Playbook</div>'+L.map(function(x,i){return'<div class="card" style="margin:8px 0;padding:12px"><b>'+(i+1)+'. '+x[0]+'</b><div style="margin-top:4px;line-height:1.5;font-size:14px">'+x[1]+'</div></div>'}).join(""),true);
   }
   $("coachmenu").onclick=ccHome;
   // ===== Daily puzzle =====

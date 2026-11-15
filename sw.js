@@ -1,103 +1,71 @@
-// Cipher service worker.
-// Bump CACHE on every release (cipher-v3, v4, ...) so installed copies update.
-const CACHE = "cipher-v2";
-
-const ASSETS = [
-  "./",
-  "index.html",
-  "manifest.webmanifest",
-  "icon.svg",
-  "icon-192.png",
-  "icon-512.png",
-  "icon-maskable-512.png",
-  "apple-touch-icon.png",
-  "favicon-32.png"
+const CACHE = "cipher-v1"; // change this on every release so phones pick up the new file
+const CORE = [
+  "./", "./index.html", "./manifest.webmanifest",
+  "./icon.svg", "./icon-192.png", "./icon-512.png",
+  "./apple-touch-icon.png", "./favicon-32.png"
 ];
 
-const NAV_TIMEOUT = 4000; // slow network: fall back to the cached page after 4 s
-
-// Install: fetch fresh copies (bypassing the HTTP cache) and store each one separately,
-// so a single missing file can't break the whole install.
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) =>
-      Promise.all(
-        ASSETS.map((a) =>
-          fetch(new Request(a, { cache: "reload" }))
-            .then((res) => (res.ok ? cache.put(a, res) : null))
-            .catch(() => {})
-        )
-      )
-    )
+self.addEventListener("install", (e) => {
+  e.waitUntil(
+    caches.open(CACHE)
+      // allSettled: one missing icon must not break the install
+      .then((c) => Promise.allSettled(CORE.map((u) => c.add(u))))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// Activate: delete old caches and take control of open pages.
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-function networkFirstPage(request) {
-  const network = fetch(request, { cache: "no-cache" }).then((res) => {
-    if (res.ok) {
-      const copy = res.clone();
-      caches.open(CACHE).then((c) => c.put("index.html", copy)); // only good responses are stored
-    }
-    return res;
-  });
-  const timeout = new Promise((resolve) =>
-    setTimeout(() => resolve(caches.match("index.html", { ignoreSearch: true })), NAV_TIMEOUT)
-  );
-  return Promise.race([network, timeout])
-    .then((res) => res || network)
-    .catch(() =>
-      caches.match("index.html", { ignoreSearch: true }).then((r) => r || caches.match("./"))
-    );
-}
-
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
+self.addEventListener("fetch", (e) => {
+  const req = e.request;
+  if (req.method !== "GET") return;
   const url = new URL(req.url);
+  // Firebase, Google sign-in and everything else cross-origin goes straight to the network
+  if (url.origin !== self.location.origin) return;
 
-  // Only handle same-origin GETs. Firebase, gstatic and all online play go straight to the network.
-  if (req.method !== "GET" || url.origin !== self.location.origin) return;
-
-  // Opening the game (including challenge links like ?c=ABC123): network first, cached page as backup.
+  // Pages: network first so updates land, cached copy when offline
   if (req.mode === "navigate") {
-    event.respondWith(networkFirstPage(req));
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put("./index.html", copy));
+          return res;
+        })
+        .catch(() => caches.match("./index.html").then((r) => r || caches.match("./")))
+    );
     return;
   }
 
-  // Icons, manifest and other static files: cache first, then network.
-  event.respondWith(
-    caches.match(req, { ignoreSearch: true }).then(
-      (hit) =>
-        hit ||
-        fetch(req).then((res) => {
-          if (res.ok) {
+  // Icons and other files: serve cached, refresh in the background
+  e.respondWith(
+    caches.match(req).then((hit) => {
+      const net = fetch(req)
+        .then((res) => {
+          if (res && res.ok) {
             const copy = res.clone();
             caches.open(CACHE).then((c) => c.put(req, copy));
           }
           return res;
         })
-    )
+        .catch(() => hit);
+      return hit || net;
+    })
   );
 });
 
-// Tapping a notification (for example the daily reminder) opens or focuses the game.
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  event.waitUntil(
+// Daily-reminder notifications: tapping one opens or focuses the app
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  e.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
-      for (const c of list) {
-        if ("focus" in c) return c.focus();
-      }
+      for (const c of list) if ("focus" in c) return c.focus();
       return self.clients.openWindow("./");
     })
   );
