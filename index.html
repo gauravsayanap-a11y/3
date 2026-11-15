@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Cipher</title>
+<script>(function(){function L(){try{var o=screen.orientation;if(o&&o.lock)o.lock("portrait").catch(function(){})}catch(e){}}L();document.addEventListener("visibilitychange",L);document.addEventListener("click",L,{once:true});document.addEventListener("fullscreenchange",L)})()</script>
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--ink:#16181d;--mute:#7a7f89;--line:#eceef2;--key:#eef0f3;--acc:#2563eb;--bull:#1f7a5a;--cow:#d98a1e;--ai:#7c4dff;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
@@ -329,6 +330,11 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
 #derr{min-height:18px;font-size:13px;line-height:1.45;color:#ff7b7b;margin:6px 0 0}
 #ddo{background:#dc2626;color:#fff;font-weight:600}
 #ddo:disabled{opacity:.35}
+/* portrait only: phones turned sideways see a rotate prompt */
+#rot{display:none;position:fixed;inset:0;z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:24px;background:#0b0e17;color:#f1f0ec;font-size:16px;font-weight:600}
+#rot span{font-size:44px;line-height:1}
+#rot small{display:block;font-size:13px;font-weight:400;color:#9a9aa0}
+@media (orientation:landscape) and (max-height:500px){#rot{display:flex}}
 </style>
 </head>
 <body>
@@ -528,6 +534,7 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
     <button class="gbtn" id="nsave" style="background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;margin-top:0">Save name</button>
   </div>
 </div>
+<div id="rot" aria-live="polite"><span>📱</span>Turn your phone upright<small>Cipher plays in portrait.</small></div>
 <div id="psheet" class="hide">
   <div class="sheetbox">
     <button class="sx" id="px" aria-label="Close">✕</button>

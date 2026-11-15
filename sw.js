@@ -1,4 +1,4 @@
-const CACHE = "cipher-v1"; // change this on every release so phones pick up the new file
+const CACHE = "cipher-v2"; // change this on every release so phones pick up the new file
 const CORE = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icon.svg", "./icon-192.png", "./icon-512.png",
