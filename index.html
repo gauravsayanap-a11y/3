@@ -329,13 +329,30 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
 #derr{min-height:18px;font-size:13px;line-height:1.45;color:#ff7b7b;margin:6px 0 0}
 #ddo{background:#dc2626;color:#fff;font-weight:600}
 #ddo:disabled{opacity:.35}
+/* ===== wide screens and tablets: proper spacing, no shrink on touch devices ===== */
+@media (min-width:1000px){
+main{max-width:1160px;padding:22px 28px 32px}
+#home:not(.hide){gap:14px 20px;grid-template-rows:auto auto 1fr}
+#home>#acct{grid-column:1/-1}
+#home>#pts{grid-column:1;grid-row:2}
+#home>#streak{grid-column:1;grid-row:3}
+#home>.card:nth-child(4){grid-column:2;grid-row:2/span 2}
+#game:not(.hide){gap:12px 22px}
+#hintrow{margin-bottom:0}
+#msg:empty{min-height:0}
+#logs .box{height:calc(100vh - 220px);height:calc(100dvh - 220px);min-height:240px;max-height:none;overflow-y:auto}
+}
+@media (min-width:1100px) and (pointer:coarse){main{zoom:1}.sheetbox{zoom:1}}
 /* ===== landscape: phones and tablets turned sideways get two columns ===== */
 @media (orientation:landscape) and (min-width:640px) and (max-width:999px){
 :root{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 main{max-width:none;padding:12px 16px 20px}
 #hist,#tour,#online,#watch,#pp{max-width:720px;margin-left:auto;margin-right:auto}
-#home:not(.hide){display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;align-items:start}
+#home:not(.hide){display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto 1fr;gap:12px 16px;align-items:start}
 #home>#acct,#home>#clear{grid-column:1/-1}
+#home>#pts{grid-column:1;grid-row:2}
+#home>#streak{grid-column:1;grid-row:3}
+#home>.card:nth-child(4){grid-column:2;grid-row:2/span 2}
 #game:not(.hide){display:grid;grid-template-columns:1.1fr 1fr;gap:12px 18px;align-items:start}
 #game>#hintrow,#game>#score,#game>#msg,#game>#spdbar{grid-column:1/-1}
 #game>#logs{grid-column:1;grid-row:4/span 10}
