@@ -5,9 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b0e17">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cipher">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Cipher</title>
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--ink:#16181d;--mute:#7a7f89;--line:#eceef2;--key:#eef0f3;--acc:#2563eb;--bull:#1f7a5a;--cow:#d98a1e;--ai:#7c4dff;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);
@@ -379,6 +382,61 @@ main{padding-top:8px;padding-bottom:12px}
 #pad button,#opad button{min-height:38px}
 #logs .box{max-height:calc(100vh - 130px);max-height:calc(100dvh - 130px)}
 }
+
+/* ===== responsive pass: every screen from 320px phones to desktops ===== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;min-height:100dvh;overflow-x:hidden}
+button,.opt,.pill,.pgrid button,.pcols button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+img,svg,canvas{max-width:100%}
+input,select,textarea{font-size:16px}
+#ochatI{font-size:16px}
+main{padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-bottom:max(40px,calc(24px + env(safe-area-inset-bottom,0px)))}
+.sheetbox{max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain}
+#info .sheetbox{max-height:calc(100vh - 32px)!important;max-height:calc(100dvh - 32px)!important}
+/* digit slots and pads shrink to fit any width */
+#slots,#oslots,#ppslots{display:flex;gap:clamp(5px,2vw,10px);justify-content:center}
+.slot{flex:1 1 0;min-width:0;max-width:54px;width:auto;height:clamp(48px,14vw,62px);font-size:clamp(22px,7vw,28px)}
+#pad,#opad,#pppad{max-width:420px;margin-left:auto;margin-right:auto}
+#pad button,#opad button,#pppad button{font-size:clamp(19px,6vw,22px)}
+/* guess logs: keep digits and bull/cow text inside the column */
+.row{flex-wrap:wrap;row-gap:2px}
+.g{font-size:clamp(14px,4.6vw,18px);letter-spacing:clamp(1px,.6vw,3px)}
+.bc{font-size:clamp(11px,3.2vw,12px)}
+.box{padding-left:clamp(8px,2.6vw,14px);padding-right:clamp(8px,2.6vw,14px)}
+#bg{font-size:clamp(30px,11vw,42px);letter-spacing:clamp(4px,2vw,10px)}
+h1{font-size:clamp(24px,7vw,30px)}
+.cc-big{font-size:clamp(24px,8vw,32px)}
+.pgrid button{min-height:0;aspect-ratio:1}
+.pcols{gap:6px}.pcols button{flex:1 1 0;width:auto;max-width:42px;height:auto;aspect-ratio:1}
+.stats{grid-template-columns:repeat(auto-fit,minmax(70px,1fr))}
+.ptab{display:block;overflow-x:auto}
+.cc-row{flex-wrap:wrap}
+.lb .nm,.at{min-width:0}
+/* very narrow phones */
+@media (max-width:359px){
+main{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.card{padding:12px;border-radius:16px}
+#logs,#ola,#olu{gap:8px}
+#logs{gap:8px}
+.opt{font-size:14px;padding:11px 4px}
+.sheetbox{padding:22px 16px 16px}
+#score{padding:8px 12px;font-size:13px}
+.gh{padding:10px 12px}
+}
+/* tablets in portrait: use the extra width, bigger touch targets */
+@media (min-width:600px) and (max-width:999px) and (orientation:portrait){
+main{max-width:640px}
+#pad button,#opad button,#pppad button{min-height:64px}
+.box{height:200px}
+}
+@media (min-width:600px){.slot{max-width:64px}}
+/* desktops: real layout width instead of browser zoom */
+@media (min-width:1100px){main{zoom:1!important}.sheetbox{zoom:1!important}}
+@media (min-width:1500px){main{max-width:1240px}}
+/* short screens (landscape phones, split-screen) */
+@media (max-height:480px){.slot{height:44px}#pad button,#opad button,#pppad button{min-height:40px}}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media print{#menuwrap,#toast{display:none}}
 </style>
 </head>
 <body>
@@ -396,7 +454,7 @@ main{padding-top:8px;padding-bottom:12px}
       <div id="fmtwrap"><div class="mute">Match format</div>
       <div class="opts" id="fmt"></div></div>
       <div id="timedwrap" class="hide"><div class="mute">Clock</div><div class="opts" id="timedopt"></div></div>
-      <div id="chwrap" class="hide"><div class="mute">Challenge</div><div class="opts" id="chopt"></div></div>
+      <div id="chlock" class="mute hide" style="margin:2px 0 10px">🔒 Hard and Speed challenges unlock at Rookie (125 pts).</div><div id="chwrap" class="hide"><div class="mute">Challenge</div><div class="opts" id="chopt"></div></div>
       <div id="onlinebox" class="hide"><div id="pins"></div>
       <div class="mute">Friend duel</div>
       <button class="wide" id="ocreate">Create room</button>
@@ -640,7 +698,7 @@ main{padding-top:8px;padding-bottom:12px}
   var S={ch:0,sdl:0,fast:0,hv:0,mode:"duel",n:3,need:1,score:{u:0,a:0},round:1,starter:"u",next:"u",aSecret:"",cands:[],uT:[],aT:[],cur:"",phase:"home",busy:false,pending:"",rb:-1,rc:-1,cache:{},gid:0,lvl:0,mem:[],pts:load("bot-pts",0),hist:load("bot-hist",[]),pins:load("bot-pins",[]),nick:load("bot-nick",""),av:load("bot-av",null),deleting:false,open:-1,friends:load("bot-friends",[]),timed:0,deadline:0,lost:false};
 
   function awardPts(dl){
-    var b=levelOf(S.pts);S.pts=Math.max(0,S.pts+dl);save("bot-pts",S.pts);
+    var b=levelOf(S.pts);if(dl<0&&b===0)return;S.pts=Math.max(0,S.pts+dl);save("bot-pts",S.pts);
     var a=levelOf(S.pts);if(a!==b)setTimeout(function(){lvlPop(b,a)},250);
   }
   function lvlPop(b,a){
@@ -746,7 +804,7 @@ main{padding-top:8px;padding-bottom:12px}
     h+='<h3>How you lose points</h3><ul>'
       +'<li>Lose a round: <b>−5 × k</b></li>'
       +'<li>Lose a best-of match: <b>−10 extra</b></li>'
-      +'<li>Give up a round: <b>−10 × k</b></li>'
+      +'<li>Give up a round: <b>−10 × k</b> (free at Newbie level)</li>'
       +'<li>Points never drop below 0</li></ul>';
     h+='<p class="mute" style="margin:8px 0 4px">k depends on the digits you play:</p><table class="ptab"><tr><th>Digits</th><th>k</th><th>Win</th><th>Lose</th><th>Give up</th></tr>'
       +[3,4,5].map(function(n){var k=n-2;return'<tr><td>'+n+'</td><td>'+k+'</td><td style="color:var(--bull)">+'+10*k+'</td><td style="color:var(--cow)">−'+5*k+'</td><td style="color:var(--cow)">−'+10*k+'</td></tr>'}).join('')+'</table>';
@@ -776,7 +834,7 @@ main{padding-top:8px;padding-bottom:12px}
     $("pts").innerHTML='<div id="lvl"><span class="mute">Level '+(l+1)+'</span><span class="mute">'+S.pts+' pts</span></div><b style="font-size:22px">'+cur.n+'</b><div class="bar"><i style="width:'+pct+'%"></i></div><div class="mute">'+(nx?(nx.at-S.pts)+' pts to '+nx.n:'Top level')+'</div><button class="pill" id="infoBtn" style="margin-top:12px;min-height:0;padding:7px 14px;font-size:12px">ⓘ Points &amp; levels</button>';
     $("infoBtn").onclick=openInfo;renderStreak();
     opts($("mode"),[{label:"Duel with BOT",v:"duel"},{label:"Solo",v:"solo"},{label:"Online (friend)",v:"online"},{label:"Pass & play",v:"local"}],function(i){return i.v===S.mode},function(i){S.mode=i.v;if(i.v!=="online"&&S.need<1)S.need=1;render()});
-    $("fmtwrap").classList.toggle("hide",S.mode==="solo"||S.mode==="local");$("timedwrap").classList.toggle("hide",S.mode!=="solo");opts($("timedopt"),[{label:"No clock",v:0},{label:"Timed",v:1}],function(i){return i.v===S.timed},function(i){S.timed=i.v;render()});$("chwrap").classList.toggle("hide",S.mode!=="duel"&&S.mode!=="solo");if(S.mode!=="duel")S.ch&=1;opts($("chopt"),S.mode==="duel"?[{label:"Normal",v:0},{label:"Hard",v:1},{label:"Speed",v:2},{label:"Hard + Speed",v:3}]:[{label:"Normal",v:0},{label:"Hard",v:1}],function(i){return i.v===S.ch},function(i){S.ch=i.v;render()});$("start").classList.toggle("hide",S.mode==="online");$("onlinebox").classList.toggle("hide",S.mode!=="online");
+    $("fmtwrap").classList.toggle("hide",S.mode==="solo"||S.mode==="local");$("timedwrap").classList.toggle("hide",S.mode!=="solo");opts($("timedopt"),[{label:"No clock",v:0},{label:"Timed",v:1}],function(i){return i.v===S.timed},function(i){S.timed=i.v;render()});var nbL=levelOf(S.pts)===0;if(nbL)S.ch=0;$("chwrap").classList.toggle("hide",nbL||(S.mode!=="duel"&&S.mode!=="solo"));$("chlock").classList.toggle("hide",!nbL||(S.mode!=="duel"&&S.mode!=="solo"));if(S.mode!=="duel")S.ch&=1;opts($("chopt"),S.mode==="duel"?[{label:"Normal",v:0},{label:"Hard",v:1},{label:"Speed",v:2},{label:"Hard + Speed",v:3}]:[{label:"Normal",v:0},{label:"Hard",v:1}],function(i){return i.v===S.ch},function(i){S.ch=i.v;render()});$("start").classList.toggle("hide",S.mode==="online");$("onlinebox").classList.toggle("hide",S.mode!=="online");
     if(S.mode==="online"){renderPins();if(Date.now()-lastPres>15000){lastPres=Date.now();refreshPresence()}}
     opts($("dig"),[3,4,5].map(function(d){return{label:d+"",v:d}}),function(i){return i.v===S.n},function(i){S.n=i.v;render()});
     opts($("fmt"),(S.mode==="online"?[{n:"Free play",need:0}].concat(FORMATS):FORMATS).map(function(x){return{label:x.n,v:x.need}}),function(i){return i.v===S.need},function(i){S.need=i.v;render()});
@@ -850,7 +908,7 @@ main{padding-top:8px;padding-bottom:12px}
     if(Math.random()<pr)for(var i=0;i<80;i++){var c=rnd(all);if(new Set(c.split("")).size<c.length)return c}
     return rnd(all);
   }
-  function startMatch(){if(S.mode==="local"){startPP(false);return}S.chal=null;S.daily="";S.score={u:0,a:0};S.round=1;S.starter=(S.mode==="duel"&&levelOf(S.pts)>=FIRST_LVL)?"a":"u";startRound()}
+  function startMatch(){if(levelOf(S.pts)===0)S.ch=0;if(S.mode==="local"){startPP(false);return}S.chal=null;S.daily="";S.score={u:0,a:0};S.round=1;S.starter=(S.mode==="duel"&&levelOf(S.pts)>=FIRST_LVL)?"a":"u";startRound()}
   function startRound(){
     var all=allCodes();
     S.gid++;S.lvl=levelOf(S.pts);
@@ -867,8 +925,8 @@ main{padding-top:8px;padding-bottom:12px}
       },350);
     }else{S.phase="guess";S.cur="";render()}
   }
-  function HRD(){return !!(S.ch&1)&&!S.daily&&(S.mode==="duel"||S.mode==="solo")}
-  function SPD(){return !!(S.ch&2)&&S.mode==="duel"&&!S.daily}
+  function HRD(){return levelOf(S.pts)>0&&!!(S.ch&1)&&!S.daily&&(S.mode==="duel"||S.mode==="solo")}
+  function SPD(){return levelOf(S.pts)>0&&!!(S.ch&2)&&S.mode==="duel"&&!S.daily}
   function SPL(){return 15+5*(S.n-2)}
   setInterval(function(){
     var b=$("spdbar");
@@ -876,13 +934,13 @@ main{padding-top:8px;padding-bottom:12px}
     if(!S.sdl)S.sdl=Date.now()+SPL()*1000;
     if(!b){b=document.createElement("div");b.id="spdbar";b.style.cssText="height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:-4px 0 10px";b.innerHTML='<i style="display:block;height:100%;width:100%;background:var(--acc);transition:width .25s linear"></i>';$("score").after(b)}
     b.classList.remove("hide");var l=S.sdl-Date.now(),i=b.firstChild;i.style.width=Math.max(0,l/(SPL()*10))+"%";i.style.background=l<5000?"var(--cow)":"var(--acc)";
-    if(l<=0){S.sdl=0;S.cur="";var sp=S.pts>=1;if(sp)awardPts(-1);toast("⚡ Too slow! Turn skipped"+(sp?" (−1 pt)":""));S.next="a";say("");goNext()}
+    if(l<=0){S.sdl=0;S.cur="";var sp=S.pts>=1&&levelOf(S.pts)>0;if(sp)awardPts(-1);toast("⚡ Too slow! Turn skipped"+(sp?" (−1 pt)":""));S.next="a";say("");goNext()}
   },250);
   function submitGuess(){
     if(S.phase!=="guess"||!valid(S.cur))return;
     if(S.uT.some(function(t){return t.g===S.cur})){toast("You already tried "+S.cur);S.cur="";render();return}
     var g=S.cur,k=score(S.aSecret,g);S.cur="";
-    if(HRD()){var br=S.uT.filter(function(t){return score(g,t.g)!==t.k})[0];if(br){S.hv++;if(S.pts>=2){awardPts(-2);toast("🧠 Hard mode: "+g+" contradicts the clue for "+br.g+" (−2 pts)")}else toast("🧠 Hard mode: "+g+" contradicts the clue for "+br.g+" (not enough points, so no penalty)")}}
+    if(HRD()){var br=S.uT.filter(function(t){return score(g,t.g)!==t.k})[0];if(br){S.hv++;var kk=score(g,br.g),rp=function(q){return Math.floor(q/(S.n+1))+"B "+(q%(S.n+1))+"C"},why="🧠 Hard mode: if "+g+" were the secret, your guess "+br.g+" would have scored "+rp(kk)+", but BOT said "+rp(br.k);if(S.pts>=2&&levelOf(S.pts)>0){awardPts(-2);toast(why+" (−2 pts)",6000)}else toast(why+" (no penalty here: not enough points or Newbie level)",6000)}}
     if(SPD()&&S.sdl){if(S.sdl-Date.now()>SPL()*500)S.fast++;S.sdl=0}
     S.uT.push({g:g,k:k});
     if(Math.floor(k/(S.n+1))===S.n){endRound("u");return}
@@ -906,9 +964,9 @@ main{padding-top:8px;padding-bottom:12px}
     save("bot-hist",S.hist);
     var win=S.mode!=="solo"&&S.score[w]>=S.need,col=w==="u"?"var(--acc)":"var(--ai)",t,gain=0,before=levelOf(S.pts);
     if(w==="u"){if(S.mode==="solo")gain=Math.max(5,15*(S.n-2)+10-2*(S.uT.length-1))+tb;else{gain=10*(S.n-2);if(win&&S.need>1)gain+=20}}
-    else if(S.mode!=="solo"){gain=-(gaveUp?10:5)*(S.n-2);if(win&&S.need>1)gain-=10}
+    else if(S.mode!=="solo"){if(gaveUp&&before===0)gain=0;else{gain=-(gaveUp?10:5)*(S.n-2);if(win&&S.need>1)gain-=10}}
     if(w==="u"){if(HRD()&&!S.hv)gain+=5*(S.n-2);if(SPD())gain+=Math.min(10,S.fast*2)}
-    S.pts=Math.max(0,S.pts+gain);save("bot-pts",S.pts);
+    if(gain<0&&before===0)gain=0;S.pts=Math.max(0,S.pts+gain);save("bot-pts",S.pts);
     var after=levelOf(S.pts);
     track({gu:!!gaveUp,won:w==="u",ended:S.mode==="solo"||win,g:(w==="u"&&!gaveUp)?S.uT.length:0,mode:S.mode,n:S.n,lvl:S.lvl,daily:!!S.daily});
     if(win){
@@ -927,13 +985,13 @@ main{padding-top:8px;padding-bottom:12px}
   }
   function giveUp(){
     if(S.phase==="between"||S.phase==="over"||S.phase==="home")return;
-    var pen=10*(S.n-2);
-    ask("Give up this round?","You’ll lose "+pen+" points and BOT’s number will be revealed.","Give up",function(){giveUp2(pen)});}
+    var pen=levelOf(S.pts)===0?0:10*(S.n-2);
+    ask("Give up this round?",(pen?"You’ll lose "+pen+" points and ":"No points lost at Newbie level. ")+"BOT’s number will be revealed.","Give up",function(){giveUp2(pen)});}
   function giveUp2(pen){S.deadline=0;S.lost=true;if(S.daily)dailyMark(0);
     S.gid++;S.busy=false;
     if(S.mode==="solo"){
       awardPts(-pen);track({gu:true,won:false,ended:true,g:0,mode:"solo",n:S.n,lvl:S.lvl,daily:!!S.daily});S.phase="between";
-      say("🏳️ You gave up. BOT’s number was "+S.aSecret+". −"+pen+" pts.","var(--cow)");render();return;
+      say("🏳️ You gave up. BOT’s number was "+S.aSecret+"."+(pen?" −"+pen+" pts.":""),"var(--cow)");render();return;
     }
     endRound("a",true);
   }
@@ -944,9 +1002,9 @@ main{padding-top:8px;padding-bottom:12px}
   function holdBtn(b,tap,clr){var t,f=0;b.onpointerdown=function(){f=0;t=setTimeout(function(){f=1;clr()},450)};b.onpointerup=b.onpointerleave=b.onpointercancel=function(){clearTimeout(t)};b.onclick=function(){if(f){f=0;return}tap()};b.oncontextmenu=function(e){e.preventDefault()}}
   function tick(){var e=$("tl");if(!e||!S.deadline)return;var l=Math.max(0,Math.ceil((S.deadline-Date.now())/1000));e.textContent=Math.floor(l/60)+":"+lp(l%60);e.style.color=l<=15?"var(--cow)":""}
   function timeUp(){
-    S.deadline=0;S.gid++;S.busy=false;S.lost=true;var pen=5*(S.n-2);
+    S.deadline=0;S.gid++;S.busy=false;S.lost=true;var pen=levelOf(S.pts)===0?0:5*(S.n-2);
     awardPts(-pen);track({won:false,ended:true,g:0,mode:"solo",n:S.n,lvl:S.lvl,daily:false});sfx("lose");S.phase="between";
-    say("⏱ Time’s up! BOT’s number was "+S.aSecret+". −"+pen+" pts.","var(--cow)");render();
+    say("⏱ Time’s up! BOT’s number was "+S.aSecret+"."+(pen?" −"+pen+" pts.":""),"var(--cow)");render();
   }
   setInterval(function(){if(S.deadline&&S.phase==="guess"){if(Date.now()>=S.deadline)timeUp();else tick()}},250);
   // ===== Review engine: exact, repeatable analysis (no random sampling) =====
@@ -1393,7 +1451,7 @@ var RVE=(function(){
         if(r.rv&&r.rv[hoi])hH.osec=r.rv[hoi];
         S.hist.push(hH);O.href=hH;if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist)}
       if(wasPlaying&&!r.tid){
-        var dp=r.winner===O.role?10*(S.n-2):-(r.gaveUp===O.role?10:5)*(S.n-2);
+        var dp=r.winner===O.role?10*(S.n-2):-(r.gaveUp===O.role?10:5)*(S.n-2);if(r.gaveUp===O.role&&levelOf(S.pts)===0)dp=0;
         var nd=r.need||0,ww=r.wins||{};
         if(nd>0&&((ww.host||0)>=nd||(ww.guest||0)>=nd))dp+=r.winner===O.role?20:-10;
         awardPts(dp);
@@ -1417,7 +1475,7 @@ var RVE=(function(){
     else if(r.status==="secrets")msg=O.locked?"Waiting for "+on+" to pick a number…":"Pick your secret number ("+S.n+" digits). Your friend can’t see it.";
     else if(r.status==="playing")msg=r.turn===O.role?"Your turn: guess "+on+"’s number.":"Waiting for "+on+" to guess…";
     else if(r.winner===O.role)msg=r.gaveUp?"🎉 "+on+" gave up. You win! +"+10*(S.n-2)+" pts":"🎉 You cracked "+on+"’s number first! +"+10*(S.n-2)+" pts";
-    else msg=r.gaveUp===O.role?"🏳️ You gave up. −"+10*(S.n-2)+" pts":"😅 "+on+" cracked your number first. −"+5*(S.n-2)+" pts";
+    else msg=r.gaveUp===O.role?"🏳️ You gave up."+(levelOf(S.pts)===0?"":" −"+10*(S.n-2)+" pts"):"😅 "+on+" cracked your number first. −"+5*(S.n-2)+" pts";
     if(r.tid&&r.status==="done")msg=(r.winner===O.role?"🎉 You won this match!":"😅 You lost this match.")+" Go back to the tournament to see the standings or watch other live matches.";
     if(r.status==="done"&&over)msg+=mw>=need?" 🏆 You win the tournament "+mw+"–"+ow+"! +20 bonus.":" 🥈 "+on+" wins the tournament "+ow+"–"+mw+". −10 bonus.";
     if(r.status==="playing"&&!O.secret)msg="Your secret number was lost after a reload. Start a new game to continue.";
@@ -1922,15 +1980,15 @@ var RVE=(function(){
     var b="";
     if(!HINT.length)b='<p class="mute" style="line-height:1.6">Each riddle describes one digit of BOT’s number without ever naming it. Solve it yourself. Each riddle costs more than the last: 3, 6, 10, 15 pts… and no two riddles repeat a clue, even for the same digit.</p>';
     HINT.forEach(function(r,n){b+="<h3>Riddle "+(n+1)+" · the digit in place "+(r.pos+1)+" from the left</h3><ul>"+r.lines.map(function(t){return"<li>"+t+"</li>"}).join("")+"</ul>"});
-    if(HINT.length<S.n){var hc0=hcost(HINT.length),can0=S.pts>=hc0;b+='<button class="wide" id="rmore" style="margin-top:16px"'+(can0?'':' disabled')+'>'+(can0?(HINT.length?"Another riddle":"Get a riddle")+' · −'+hc0+' pts':'Need '+hc0+' pts · you have '+S.pts)+'</button>'}
+    if(HINT.length<S.n){var hc0=hcost(HINT.length),can0=S.pts>=hc0&&levelOf(S.pts)>0;b+='<button class="wide" id="rmore" style="margin-top:16px"'+(can0?'':' disabled')+'>'+(can0?(HINT.length?"Another riddle":"Get a riddle")+' · −'+hc0+' pts':(levelOf(S.pts)===0?'Riddles unlock at Rookie (they cost points)':'Need '+hc0+' pts · you have '+S.pts))+'</button>'}
     $("infoT").textContent="Riddle hint";$("infoBody").innerHTML=b;$("info").classList.remove("hide");
     if($("rmore"))$("rmore").onclick=function(){
       var free=[],i;for(i=0;i<S.n;i++)if(!HINT.some(function(r){return r.pos===i}))free.push(i);
-      if(!free.length)return;var hc=hcost(HINT.length);if(S.pts<hc){toast("Not enough points for a riddle");showRiddles();return}HINT.push(mkRiddle(free[Math.floor(Math.random()*free.length)]));awardPts(-hc);showRiddles();render()}}
+      if(!free.length)return;var hc=hcost(HINT.length);if(S.pts<hc||levelOf(S.pts)===0){toast("Not enough points for a riddle");showRiddles();return}HINT.push(mkRiddle(free[Math.floor(Math.random()*free.length)]));awardPts(-hc);showRiddles();render()}}
   $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
-  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (costs rise with each hint: 3, 6, 10, 15 pts. Not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place, and cancel a digit from the whole number. Pass & play: two players, one phone. Secret digits stay hidden.","🎓 Coach (in the menu): a teacher that explains each idea, practises it with you and follows your recent games. It never helps during a game and costs or earns no points.","Challenge (BOT duels, Hard also in solo): 🧠 Hard means each guess must fit all your earlier clues, or you lose 2 pts per slip, and a clean win earns a bonus. ⚡ Speed gives each guess a short timer (a skipped turn costs 1 pt) and fast guesses add bonus points to a win.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry.","Reloading or closing the page during a game counts as a give up. Pressing F5 or Ctrl/Cmd+R shows a warning first."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
+  function openHow(){$("infoT").textContent="How to play";$("infoBody").innerHTML="<ul>"+["Pick a secret number. Your opponent (BOT or a friend) does too.","Take turns guessing. Each guess scores Bulls (right digit, right place) and Cows (right digit, wrong place).","Crack their number first to win points. The 💡 Riddle hint at the top of a BOT game gives indirect riddles about its digits (costs rise with each hint: 3, 6, 10, 15 pts. Not in daily or online games).","Online: share the room code or invite link. Each turn has 60 seconds.","📝 Notes (next to the hint button): jot which digits might be, will be or should not be in each place, and cancel a digit from the whole number. Pass & play: two players, one phone. Secret digits stay hidden.","🎓 Coach (in the menu): a teacher that explains each idea, practises it with you and follows your recent games. It never helps during a game and costs or earns no points.","Challenge (unlocks at Rookie; BOT duels, Hard also in solo): 🧠 Hard means each guess must fit all your earlier clues, or you lose 2 pts per slip, and a clean win earns a bonus. ⚡ Speed gives each guess a short timer (a skipped turn costs 1 pt) and fast guesses add bonus points to a win.","Daily: one puzzle per day. Digits and trickiness (repeated digits) grow with your level, and everyone on the same tier shares one board. Fewest guesses tops the board. Timed solo adds a clock. Hold ⌫ to clear your whole entry.","Reloading or closing the page during a game counts as a give up. Pressing F5 or Ctrl/Cmd+R shows a warning first."].map(function(x){return"<li>"+x+"</li>"}).join("")+"</ul>";$("info").classList.remove("hide")}
   $("howto").onclick=openHow;
   setTimeout(function(){if(!load("bot-seen",0)){save("bot-seen",1);openHow()}},700);
   function dky(){return new Date().toISOString().slice(0,10)}
@@ -1961,8 +2019,8 @@ var RVE=(function(){
   $("tshare").onclick=function(){var d=T.data;if(!d)return;var m=["🥇","🥈","🥉"];shareOut("Cipher tournament "+T.id+" results:\n"+finalOrder(d).map(function(u,i){return(m[i]||(i+1)+".")+" "+((d.players[u]||{}).name||"?")}).join("\n"))};
   $("tquit").onclick=function(){if(!T.data||!S.user)return;var id=T.id,u=S.user.uid;leaveTour();window.botCloud.db.del("tournaments",id,"players."+u).catch(oerr)};
   $("tbody").onclick=function(e){var t=e.target,u=t.getAttribute&&t.getAttribute("data-rm"),w=t.getAttribute&&t.getAttribute("data-watch");if(u&&T.id)window.botCloud.db.del("tournaments",T.id,"players."+u).catch(oerr);if(w&&T.data&&S.user){var x=liveMatches(T.data,S.user.uid).filter(function(y){return String(y.key)===w})[0];if(x)watchOpen(x)}};
-  if("serviceWorker"in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
-  function toast(t){var e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(function(){e.classList.remove("show")},2400)}
+  if("serviceWorker"in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update().catch(function(){})})}).catch(function(){})});
+  function toast(t,ms){var e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(function(){e.classList.remove("show")},ms||2400)}
   function invite(k,c){
     var url=location.href.split(/[?#]/)[0]+"?"+k+"="+c,
         txt=nm()+" invited you to a Cipher "+(k==="tour"?"tournament":"duel")+". Join with code "+c+":";
@@ -2008,8 +2066,8 @@ var RVE=(function(){
   };
   $("ogive").onclick=function(){
     var r=O.room;if(!r||r.status!=="playing")return;
-    var pen=10*(S.n-2);
-    ask("Give up this game?","You’ll lose "+pen+" points and your friend wins.","Give up",function(){r=O.room;if(!r||r.status!=="playing")return;
+    var pen=levelOf(S.pts)===0?0:10*(S.n-2);
+    ask("Give up this game?",(pen?"You’ll lose "+pen+" points and ":"No points lost at Newbie level. ")+"your friend wins this game.","Give up",function(){r=O.room;if(!r||r.status!=="playing")return;
     var opp=O.role==="host"?"guest":"host",p={status:"done",winner:opp,gaveUp:O.role};
     p["wins."+opp]=((r.wins&&r.wins[opp])||0)+1;
     window.botCloud.room.update(O.code,p).catch(oerr);});
@@ -2808,7 +2866,6 @@ var RVE=(function(){
     var asked=0,t=setInterval(function(){if(!S.pendC){clearInterval(t);return}
       if(!S.user||!S.nick){if(!asked){asked=1;needIn()}return}
       if(window.botCloud&&window.botCloud.db){var id=S.pendC;S.pendC="";clearInterval(t);chalOpen(id)}},1500)})();
-  if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(function(){});
   // ===== Weekly goals =====
   var GOALS=[{id:"w3",t:"Win 3 games against BOT or friends",need:3,b:15,f:function(g){return g.mode!=="solo"&&g.res==="u"}},
     {id:"p8",t:"Play 8 games",need:8,b:10,f:function(){return true}},
@@ -2977,7 +3034,7 @@ var RVE=(function(){
     if(!(k==="f5"||((e.ctrlKey||e.metaKey)&&k==="r")))return;
     var g=liveGame();if(!g)return;
     e.preventDefault();
-    var pen=(g.t==="room"&&g.tid)?0:10*(g.n-2);
+    var pen=((g.t==="room"&&g.tid)||levelOf(S.pts)===0)?0:10*(g.n-2);
     ask("Reload and give up?","Reloading will count this game as a give up"+(pen?" and you’ll lose "+pen+" points":"")+"."+(g.t==="room"?" Your opponent wins.":""),"Reload",function(){location.reload()});
   },true);
   window.addEventListener("pagehide",function(e){
@@ -2991,16 +3048,16 @@ var RVE=(function(){
       $("pop").classList.remove("hide");
     },600);
   }
-  function ffPts(pen){var b=levelOf(S.pts);S.pts=Math.max(0,S.pts-pen);save("bot-pts",S.pts);var a=levelOf(S.pts);return a<b?" ⬇️ Back to "+LEVELS[a].n+". You’ve got this.":""}
+  function ffPts(pen){if(levelOf(S.pts)===0)return"";var b=levelOf(S.pts);S.pts=Math.max(0,S.pts-pen);save("bot-pts",S.pts);var a=levelOf(S.pts);return a<b?" ⬇️ Back to "+LEVELS[a].n+". You’ve got this.":""}
   function applyForfeit(g){
-    var pen=10*(g.n-2);
+    var pen=levelOf(S.pts)===0?0:10*(g.n-2);
     if(g.t==="bot"){
       var lv=ffPts(pen);
       if(g.daily)save("bot-daily",{d:g.daily,g:0,n:g.n,t:g.dt});
       S.hist.push({t:Date.now(),mode:g.mode,n:g.n,res:"a",bot:g.secret,lvl:g.lvl,ln:LEVELS[g.lvl].n,u:g.u||[],a:g.a||[]});
       if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist);
       track({gu:true,won:false,ended:true,g:0,mode:g.mode,n:g.n,lvl:g.lvl,daily:!!g.daily});
-      forfeitPop("The page was reloaded or closed during your game, so it counted as a give up. BOT’s number was "+g.secret+". −"+pen+" pts."+lv);
+      forfeitPop("The page was reloaded or closed during your game, so it counted as a give up. BOT’s number was "+g.secret+"."+(pen?" −"+pen+" pts.":"")+lv);
     }
   }
   (function(){
@@ -3021,12 +3078,12 @@ var RVE=(function(){
       var opp=me==="host"?"guest":"host",p={status:"done",winner:opp,gaveUp:me};
       p["wins."+opp]=((r.wins&&r.wins[opp])||0)+1;
       return window.botCloud.room.update(g.code,p).then(function(){
-        var pen=10*(g.n-2);
+        var pen=levelOf(S.pts)===0?0:10*(g.n-2);
         var lv2=g.tid?"":ffPts(pen);
         S.hist.push({t:Date.now(),mode:g.tid?"tour":"online",n:g.n,res:"a",opp:(r[opp]||{}).name||"Friend",u:[],a:[]});
         if(S.hist.length>40)S.hist.shift();save("bot-hist",S.hist);
         track({gu:true,won:false,ended:true,g:0,mode:"online",n:g.n,lvl:0,daily:false});
-        forfeitPop("The page was reloaded or closed during your online game, so it counted as a give up."+(g.tid?" Your opponent advances in the tournament.":" −"+pen+" pts."+lv2));
+        forfeitPop("The page was reloaded or closed during your online game, so it counted as a give up."+(g.tid?" Your opponent advances in the tournament.":(pen?" −"+pen+" pts.":"")+lv2));
       });
     }).catch(function(){});
   };
