@@ -1922,11 +1922,11 @@ var RVE=(function(){
     var b="";
     if(!HINT.length)b='<p class="mute" style="line-height:1.6">Each riddle describes one digit of BOT’s number without ever naming it. Solve it yourself. Each riddle costs more than the last: 3, 6, 10, 15 pts… and no two riddles repeat a clue, even for the same digit.</p>';
     HINT.forEach(function(r,n){b+="<h3>Riddle "+(n+1)+" · the digit in place "+(r.pos+1)+" from the left</h3><ul>"+r.lines.map(function(t){return"<li>"+t+"</li>"}).join("")+"</ul>"});
-    if(HINT.length<S.n)b+='<button class="wide" id="rmore" style="margin-top:16px">'+(HINT.length?"Another riddle":"Get a riddle")+' · −'+hcost(HINT.length)+' pts</button>';
+    if(HINT.length<S.n){var hc0=hcost(HINT.length),can0=S.pts>=hc0;b+='<button class="wide" id="rmore" style="margin-top:16px"'+(can0?'':' disabled')+'>'+(can0?(HINT.length?"Another riddle":"Get a riddle")+' · −'+hc0+' pts':'Need '+hc0+' pts · you have '+S.pts)+'</button>'}
     $("infoT").textContent="Riddle hint";$("infoBody").innerHTML=b;$("info").classList.remove("hide");
     if($("rmore"))$("rmore").onclick=function(){
       var free=[],i;for(i=0;i<S.n;i++)if(!HINT.some(function(r){return r.pos===i}))free.push(i);
-      if(!free.length)return;var hc=hcost(HINT.length);HINT.push(mkRiddle(free[Math.floor(Math.random()*free.length)]));awardPts(-hc);showRiddles();render()}}
+      if(!free.length)return;var hc=hcost(HINT.length);if(S.pts<hc){toast("Not enough points for a riddle");showRiddles();return}HINT.push(mkRiddle(free[Math.floor(Math.random()*free.length)]));awardPts(-hc);showRiddles();render()}}
   $("hint").onclick=function(){if(S.daily||!S.aSecret)return;showRiddles()};
   function sndTxt(){$("sndbtn").textContent=SND?"🔊 Sound & vibration: on":"🔇 Sound & vibration: off"}
   $("sndbtn").onclick=function(){SND=SND?0:1;save("bot-snd",SND);sndTxt();if(SND)sfx("win")};sndTxt();
