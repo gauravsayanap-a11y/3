@@ -650,6 +650,7 @@ main{max-width:640px}
       <label for="pfile">📷 Upload photo</label>
       <button id="pinit">Use my initial</button>
     </div>
+    <div class="prow hide" id="pgrow"><button id="pgoogle">Use my Google photo</button></div>
     <input type="file" id="pfile" accept="image/*" class="hide">
     <button class="psave" id="psave">Save picture</button>
     <div class="pdiv"></div>
@@ -694,7 +695,7 @@ main{max-width:640px}
   // Top levels: BOT also prefers trickier secret numbers (repeated digits) and, from Grandmaster, moves first.
   var TRICKY=[0,0,0,0,0,0,0,0.3,0.5,0.75],FIRST_LVL=8;
   function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(k==="bot-pts"){phNote();try{pushWeek()}catch(e){}}if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"||k==="bot-friends"||k==="bot-av"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow(),S.av)}
+  function save(k,v){if(S.switching)return;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(k==="bot-pts"){phNote();try{pushWeek()}catch(e){}}if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"||k==="bot-friends"||k==="bot-av"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow(),S.av)}
   var S={ch:0,sdl:0,fast:0,hv:0,mode:"duel",n:3,need:1,score:{u:0,a:0},round:1,starter:"u",next:"u",aSecret:"",cands:[],uT:[],aT:[],cur:"",phase:"home",busy:false,pending:"",rb:-1,rc:-1,cache:{},gid:0,lvl:0,mem:[],pts:load("bot-pts",0),hist:load("bot-hist",[]),pins:load("bot-pins",[]),nick:load("bot-nick",""),av:load("bot-av",null),deleting:false,open:-1,friends:load("bot-friends",[]),timed:0,deadline:0,lost:false};
 
   function awardPts(dl){
@@ -1236,17 +1237,18 @@ var RVE=(function(){
     var c=(a.c|0);if(c<0||c>=AV_COLS.length)c=0;
     if(a.t==="e"&&AV_EMOJI.indexOf(a.v)>=0)return{t:"e",v:a.v,c:c};
     if(a.t==="i")return{t:"i",c:c};
-    if(a.t==="p"&&typeof a.v==="string"&&a.v.indexOf("data:image/")===0&&a.v.length<80000)return{t:"p",v:a.v};
+    if(a.t==="p"&&typeof a.v==="string"&&((a.v.indexOf("data:image/")===0&&a.v.length<80000)||/^https:\/\/[a-z0-9-]+\.googleusercontent\.com\/[^\s"'<>]{0,300}$/i.test(a.v)))return{t:"p",v:a.v};
     return null;
   }
   S.av=cleanAv(S.av);
   function paintAv(el,a,letter){
     a=cleanAv(a);el.textContent="";el.style.background="";
-    if(a&&a.t==="p"){var im=document.createElement("img");im.alt="";im.src=a.v;el.appendChild(im);return}
+    if(a&&a.t==="p"){var im=document.createElement("img");im.alt="";im.referrerPolicy="no-referrer";im.onerror=function(){el.textContent=letter;el.style.background="linear-gradient(135deg,"+AV_COLS[0][0]+","+AV_COLS[0][1]+")"};im.src=a.v;el.appendChild(im);return}
     var c=AV_COLS[a?a.c:0];
     el.style.background="linear-gradient(135deg,"+c[0]+","+c[1]+")";
     el.textContent=(a&&a.t==="e")?a.v:letter;
   }
+  function gPhoto(){var u=S.user;return(u&&!u.isAnonymous&&u.photoURL&&/^https:\/\/[a-z0-9-]+\.googleusercontent\.com\//i.test(u.photoURL))?u.photoURL:""}
   function updateAcct(){
     var u=S.user,av=$("av");
     if(u){
@@ -1260,7 +1262,7 @@ var RVE=(function(){
     }
   }
   function openName(){
-    $("nname").value=S.nick||"";
+    $("nname").value=S.nick||((S.user&&!S.user.isAnonymous&&S.user.displayName)||"").replace(/[<>@]/g,"").slice(0,16);
     $("nsheet").classList.remove("hide");
     setTimeout(function(){$("nname").focus()},60);
   }
@@ -1293,7 +1295,7 @@ var RVE=(function(){
   function openProfile(){
     if(!S.user){$("sheet").classList.remove("hide");return}
     PD=cleanAv(S.av);
-    $("pwho").textContent=(S.nick||"No name yet")+" · "+(S.user.isAnonymous?"Guest":"Signed in");
+    $("pwho").textContent=(S.nick||"No name yet")+" · "+(S.user.isAnonymous?"Guest":(S.user.email||"Signed in"));$("pgrow").classList.toggle("hide",!gPhoto());
     drawPicker();$("psheet").classList.remove("hide");
   }
   $("av").setAttribute("role","button");$("av").setAttribute("tabindex","0");$("av").setAttribute("aria-label","Change avatar");
@@ -1302,6 +1304,7 @@ var RVE=(function(){
   $("profmenu").onclick=openProfile;
   $("px").onclick=function(){$("psheet").classList.add("hide")};
   $("pinit").onclick=function(){PD=null;drawPicker()};
+  $("pgoogle").onclick=function(){var g=gPhoto();if(g){PD={t:"p",v:g};drawPicker()}};
   $("psave").onclick=function(){
     S.av=cleanAv(PD);save("bot-av",S.av);updateAcct();
     $("psheet").classList.add("hide");toast("Avatar updated");
@@ -1365,10 +1368,23 @@ var RVE=(function(){
       setTimeout(function(){location.reload()},1400);
     }).catch(function(e){S.deleting=false;dBusy(false);dErr(dMsg(e))});
   };
-  window.botAuth=function(u){S.user=u;watchFriends();if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide")};
+  var KEEP={"bot-snd":1,"bot-seen":1,"bot-cfilter":1,"bot-owner":1};
+  // Local progress belongs to one account. A different account on the same device starts clean and loads its own cloud data.
+  function acctSwitch(u){
+    var o=null;try{o=JSON.parse(localStorage.getItem("bot-owner")||"null")}catch(e){}
+    var cur={id:u.uid,a:!!u.isAnonymous};
+    try{
+      if(!o||o.id===u.uid||(o.a&&cur.a)){localStorage.setItem("bot-owner",JSON.stringify(cur));return false}
+      S.switching=true;S.phase="home";
+      Object.keys(localStorage).forEach(function(k){if(k.indexOf("bot-")===0&&!KEEP[k])localStorage.removeItem(k)});
+      localStorage.setItem("bot-owner",JSON.stringify(cur));
+    }catch(e){return false}
+    location.reload();return true;
+  }
+  window.botAuth=function(u){if(u&&acctSwitch(u))return;S.user=u;watchFriends();if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide")};
   window.botLoaded=function(d){
     if(d.nick&&!S.nick){S.nick=d.nick;try{localStorage.setItem("bot-nick",JSON.stringify(S.nick))}catch(e){}}
-    var cav=cleanAv(d.av);if(cav){S.av=cav;try{localStorage.setItem("bot-av",JSON.stringify(S.av))}catch(e){}}
+    var cav=cleanAv(d.av);if(cav){S.av=cav;try{localStorage.setItem("bot-av",JSON.stringify(S.av))}catch(e){}}else if(!S.av&&gPhoto()){S.av={t:"p",v:gPhoto()};try{localStorage.setItem("bot-av",JSON.stringify(S.av))}catch(e){}}
     updateAcct();
     var o0=S.pts;if(typeof d.pts==="number"&&d.pts>S.pts)S.pts=d.pts;if(S.pts>o0&&WK.b!=null)WK.b+=S.pts-o0;
     var seen={};S.hist.forEach(function(g){seen[g.t]=1});
@@ -3038,7 +3054,7 @@ var RVE=(function(){
     ask("Reload and give up?","Reloading will count this game as a give up"+(pen?" and you’ll lose "+pen+" points":"")+"."+(g.t==="room"?" Your opponent wins.":""),"Reload",function(){location.reload()});
   },true);
   window.addEventListener("pagehide",function(e){
-    if(e.persisted)return;
+    if(e.persisted||S.switching)return;
     var g=liveGame();if(!g)return;
     try{localStorage.setItem("bot-forfeit",JSON.stringify(g))}catch(x){}
   });
@@ -3146,7 +3162,7 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
       try{const c=await signInAnonymously(auth);await updateProfile(c.user,{displayName:name});window.botAuth&&window.botAuth(auth.currentUser)}
       catch(e){alert(e.code==="auth/operation-not-allowed"?"Guest play isn’t switched on yet. In Firebase, enable Anonymous under Authentication > Sign-in method.":"Couldn’t start guest mode: "+e.code)}
     },
-    save:(pts,hist,pins,nick,friends,wk,av)=>{if(!user||busy)return;setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],friends:friends||[],...(nick?{nick:nick}:{}),av:av||null,updated:Date.now()},{merge:true}).catch(e=>console.warn(e));setDoc(doc(db,"leaders",user.uid),{uid:user.uid,name:nick||user.displayName||"Player",pts:pts,...(wk&&wk.k?{wk:wk.k,wpts:wk.p}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
+    save:(pts,hist,pins,nick,friends,wk,av)=>{if(!user||busy)return;setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],friends:friends||[],...(nick?{nick:nick}:{}),av:av||null,updated:Date.now()},{merge:true}).catch(e=>console.warn(e));setDoc(doc(db,"leaders",user.uid),{uid:user.uid,name:nick||(user.isAnonymous?user.displayName:null)||"Player",pts:pts,...(wk&&wk.k?{wk:wk.k,wpts:wk.p}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
   };
   window.botCloud.db={
     get:async(c,i)=>{const s=await getDoc(doc(db,c,i));return s.exists()?s.data():null},
