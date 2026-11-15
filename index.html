@@ -111,6 +111,18 @@ button{transition:transform .12s,background .2s}
 #sheet,#nsheet,#psheet,#dsheet,#pop,#info{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,8,14,.66);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 #sheet.hide,#nsheet.hide,#psheet.hide,#dsheet.hide,#pop.hide,#info.hide{display:none}
 #pop,#info{z-index:60}
+#rsheet{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(6,8,14,.8);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}#rsheet.hide{display:none}
+#frsheet,#frdet{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(6,8,14,.66);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#frdet{z-index:61}#frsheet.hide,#frdet.hide{display:none}
+.frrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px;margin-bottom:8px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink)}
+.fra{position:relative;width:40px;height:40px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:linear-gradient(135deg,#5b7cff,#a98bff)}
+.fra i{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;border:2px solid var(--hdbg,#12172a);background:#7a7f89}
+.fra i.on{background:#2ecc71}
+.frm{flex:1;min-width:0}.frm b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frm small{display:block;color:var(--mute);font-size:12px;margin-top:2px}
+.frs{font-size:12px;font-weight:700;color:var(--mute)}.frs.on{color:#2ecc71}
+.frbig{width:76px;height:76px;margin:0 auto 10px;font-size:32px}.frbig i{width:18px;height:18px}
+.inactnote{font-size:12px;line-height:1.5;margin:14px 0 0}
 #info h3{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:16px 0 6px}
 #info li{font-size:13px;line-height:1.5;margin:3px 0}#info ul{margin:0;padding-left:18px}
 .lrow{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:10px;font-size:13px}
@@ -302,6 +314,10 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
 .tin:focus{outline:none;border-color:var(--acc)}
 .remrow{display:flex;gap:8px;margin-top:6px}
 .remrow .pill{flex:1;min-height:46px;border-radius:14px}
+.lbtabs{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.lbtabs::-webkit-scrollbar{display:none}
+.lbtabs .pill{flex:1 0 auto;white-space:nowrap;padding-left:18px;padding-right:18px}
+#info .sheetbox{overflow-x:hidden}
 #spreq{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(420px,calc(100vw - 24px));z-index:55;background:var(--hdbg,#12172a);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 #spreq .sq{display:flex;gap:8px;margin-top:12px}#spreq .sq button{flex:1}
 #spOk{background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;font-weight:600}
@@ -624,6 +640,8 @@ main{max-width:640px}
     <div class="or">or</div>
     <input id="nick" placeholder="Choose a nickname" maxlength="16" autocomplete="off">
     <button class="guest" id="guestbtn">Play as guest</button>
+    <p class="mute inactnote" style="margin-top:8px">Guests play offline only: no leaderboard, online games, friends or tournaments.</p>
+    <p class="mute inactnote">Heads up: if you play no games for 30 days, your account is deactivated and your name is removed from the leaderboards. You get a reminder in the app before that, and you can reactivate any time by signing back in.</p>
   </div>
 </div>
 <div id="nsheet" class="hide">
@@ -634,6 +652,29 @@ main{max-width:640px}
     <p class="mute">Other players see this name. Your email stays private.</p>
     <input id="nname" placeholder="Choose a name" maxlength="16" autocomplete="off" style="margin-top:16px">
     <button class="gbtn" id="nsave" style="background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;margin-top:0">Save name</button>
+  </div>
+</div>
+<div id="frsheet" class="hide">
+  <div class="sheetbox" style="text-align:left;max-height:86vh;overflow-y:auto">
+    <button class="sx" id="frx" aria-label="Close">✕</button>
+    <h2 style="margin-bottom:4px">👥 Friends</h2>
+    <p class="mute" id="frsub" style="margin:0 0 12px"></p>
+    <div id="frlist"></div>
+  </div>
+</div>
+<div id="frdet" class="hide">
+  <div class="sheetbox" style="text-align:center">
+    <button class="sx" id="frdx" aria-label="Close">✕</button>
+    <div id="frdbody"></div>
+  </div>
+</div>
+<div id="rsheet" class="hide">
+  <div class="sheetbox">
+    <div class="logo">C</div>
+    <h2>Account deactivated</h2>
+    <p class="mute" id="rtxt"></p>
+    <button class="gbtn" id="rgo" style="background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;margin-top:8px">Reactivate my account</button>
+    <button class="guest" id="rout">Sign out</button>
   </div>
 </div>
 <div id="psheet" class="hide">
@@ -695,8 +736,8 @@ main{max-width:640px}
   // Top levels: BOT also prefers trickier secret numbers (repeated digits) and, from Grandmaster, moves first.
   var TRICKY=[0,0,0,0,0,0,0,0.3,0.5,0.75],FIRST_LVL=8;
   function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-  function save(k,v){if(S.switching)return;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(k==="bot-pts"){phNote();try{pushWeek()}catch(e){}}if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"||k==="bot-friends"||k==="bot-av"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow(),S.av)}
-  var S={ch:0,sdl:0,fast:0,hv:0,mode:"duel",n:3,need:1,score:{u:0,a:0},round:1,starter:"u",next:"u",aSecret:"",cands:[],uT:[],aT:[],cur:"",phase:"home",busy:false,pending:"",rb:-1,rc:-1,cache:{},gid:0,lvl:0,mem:[],pts:load("bot-pts",0),hist:load("bot-hist",[]),pins:load("bot-pins",[]),nick:load("bot-nick",""),av:load("bot-av",null),deleting:false,open:-1,friends:load("bot-friends",[]),timed:0,deadline:0,lost:false};
+  function save(k,v){if(S.switching)return;if((k==="bot-pts"||k==="bot-hist")&&!S.dormant){S.lp=Date.now();try{localStorage.setItem("bot-lp",JSON.stringify(S.lp))}catch(e){}}try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(k==="bot-pts"){phNote();try{pushWeek()}catch(e){}}if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"||k==="bot-friends"||k==="bot-av"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow(),S.av)}
+  var S={ch:0,sdl:0,fast:0,hv:0,mode:"duel",n:3,need:1,score:{u:0,a:0},round:1,starter:"u",next:"u",aSecret:"",cands:[],uT:[],aT:[],cur:"",phase:"home",busy:false,pending:"",rb:-1,rc:-1,cache:{},gid:0,lvl:0,mem:[],pts:load("bot-pts",0),hist:load("bot-hist",[]),pins:load("bot-pins",[]),nick:load("bot-nick",""),av:load("bot-av",null),deleting:false,open:-1,friends:load("bot-friends",[]),timed:0,deadline:0,lost:false,lp:load("bot-lp",0),dormant:false};
 
   function awardPts(dl){
     var b=levelOf(S.pts);if(dl<0&&b===0)return;S.pts=Math.max(0,S.pts+dl);save("bot-pts",S.pts);
@@ -1181,20 +1222,22 @@ var RVE=(function(){
   function isFriend(u){return S.friends.some(function(f){return f.uid===u})}
   function addFriend(u,n){if(!u||isFriend(u))return;S.friends.push({uid:u,name:n||"Friend"});save("bot-friends",S.friends);watchFriends();toast((n||"Friend")+" added to friends");if(S.phase==="home")renderPins()}
   function friendCode(a,b){var s=[a,b].sort().join("|"),h=5381,g=2166136261,i;for(i=0;i<s.length;i++){h=(Math.imul(h,33)^s.charCodeAt(i))>>>0;g=Math.imul(g^s.charCodeAt(i),16777619)>>>0}return"F"+h.toString(36)+g.toString(36)}
-  function friendPlay(f){
-    if(needIn())return;
+  function friendPlay(f,stay){
+    if(needGoogle())return;
     var code=friendCode(S.user.uid,f.uid),dbx=window.botCloud.db;
+    var sent=function(){toast("Challenge sent to "+f.name+". They’ll see it when they open Cipher.",3200)};
     dbx.get("rooms",code).then(function(ex){
-      var ch={by:S.user.uid,name:nm(),at:Date.now()};if(ex){dbx.update("rooms",code,{chal:ch}).catch(function(){});return joinRoom(code)}
-      return dbx.set("rooms",code,{chal:ch,n:S.n,need:S.need,nextN:null,fr:{},host:{uid:S.user.uid,name:nm()},guest:{uid:f.uid,name:f.name},status:"secrets",ready:{host:false,guest:false},turn:"host",starter:"host",wins:{host:0,guest:0},guesses:{},winner:null,created:Date.now()}).then(function(){enterRoom(code,"host")});
+      var ch={by:S.user.uid,name:nm(),at:Date.now()};if(ex){dbx.update("rooms",code,{chal:ch}).catch(function(){});if(stay){sent();return}return joinRoom(code)}
+      return dbx.set("rooms",code,{chal:ch,n:S.n,need:S.need,nextN:null,fr:{},host:{uid:S.user.uid,name:nm()},guest:{uid:f.uid,name:f.name},status:"secrets",ready:{host:false,guest:false},turn:"host",starter:"host",wins:{host:0,guest:0},guesses:{},winner:null,created:Date.now()}).then(function(){if(stay){sent();return}enterRoom(code,"host")});
     }).catch(oerr);
   }
   var LBT="week";
   function openLB(){if(needIn())return;drawLB()}
   function drawLB(){
     $("infoT").textContent="🌍 Leaderboard";
-    $("infoBody").innerHTML='<div class="remrow" style="margin:0 0 12px"><button class="pill'+(LBT==="week"?' go':'')+'" id="lbW">This week</button><button class="pill'+(LBT==="all"?' go':'')+'" id="lbA">All-time</button><button class="pill'+(LBT==="fr"?' go':'')+'" id="lbF">Friends</button><button class="pill'+(LBT==="se"?' go':'')+'" id="lbS">Season</button></div><div id="lbBody" class="mute">Loading…</div>';
+    $("infoBody").innerHTML='<div class="remrow lbtabs" id="lbTabs" style="margin:0 0 12px"><button class="pill'+(LBT==="week"?' go':'')+'" id="lbW">This week</button><button class="pill'+(LBT==="all"?' go':'')+'" id="lbA">All-time</button><button class="pill'+(LBT==="fr"?' go':'')+'" id="lbF">Friends</button><button class="pill'+(LBT==="se"?' go':'')+'" id="lbS">Season</button></div>'+(S.user&&S.user.isAnonymous?'<p class="mute" style="margin:0 0 10px;font-size:13px;line-height:1.5">You’re playing as a guest, so you don’t appear on the leaderboard. Sign in with Google to join it.</p>':'')+'<div id="lbBody" class="mute">Loading…</div>';
     $("info").classList.remove("hide");
+    (function(){var r=$("lbTabs"),a=r&&r.querySelector(".go");if(r&&a)r.scrollLeft=a.offsetLeft-(r.clientWidth-a.offsetWidth)/2})();
     $("lbW").onclick=function(){LBT="week";drawLB()};$("lbA").onclick=function(){LBT="all";drawLB()};$("lbF").onclick=function(){LBT="fr";drawLB()};$("lbS").onclick=function(){LBT="se";drawLB()};
     var box=$("lbBody"),wk=LBT==="week";
     var done=function(rows){
@@ -1206,12 +1249,62 @@ var RVE=(function(){
     if(LBT==="se"){seasonBoard(box);return}
     if(LBT==="fr"){
       if(!S.friends.length){box.className="mute";box.textContent="Add friends from an online game to compare scores here.";return}
-      Promise.all(S.friends.map(function(f){return window.botCloud.db.get("leaders",f.uid).then(function(d){return{uid:f.uid,name:(d&&d.name)||f.name,pts:(d&&d.pts)||0}}).catch(function(){return{uid:f.uid,name:f.name,pts:0}})})).then(function(rows){rows.push({uid:S.user.uid,name:nm(),pts:S.pts});rows.sort(function(a,b){return b.pts-a.pts});done(rows)});return}
+      Promise.all(S.friends.map(function(f){return window.botCloud.db.get("leaders",f.uid).then(function(d){if(d&&d.lp>0&&Date.now()-d.lp>2592e6)return null;return{uid:f.uid,name:(d&&d.name)||f.name,pts:(d&&d.pts)||0}}).catch(function(){return{uid:f.uid,name:f.name,pts:0}})})).then(function(rows){rows=rows.filter(Boolean);rows.push({uid:S.user.uid,name:nm(),pts:S.pts});rows.sort(function(a,b){return b.pts-a.pts});done(rows)});return}
     if(wk){wkNow();window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,WK,S.av);if(window.botCloud.db.weekly)window.botCloud.db.weekly(weekKey()).then(done).catch(function(){done([])});else done([])}
     else if(window.botCloud.db.leaders)window.botCloud.db.leaders().then(done).catch(function(){done([])});else done([]);
   }
   $("lbmenu").onclick=openLB;
-  $("frmenu").onclick=function(){S.mode="online";S.phase="home";render()};
+  var FD={};
+  function frOpen(){return !$("frsheet").classList.contains("hide")}
+  function frLevel(d){return d&&typeof d.pts==="number"?LEVELS[levelOf(d.pts)].n+" · "+d.pts+" pts":"Player"}
+  function frOnline(u){return !!PRES[u]}
+  function drawFriends(){
+    var box=$("frlist"),fl=S.friends.slice();
+    fl.sort(function(a,b){return (frOnline(b.uid)-frOnline(a.uid))||String(a.name).localeCompare(String(b.name))});
+    var on=fl.filter(function(f){return frOnline(f.uid)}).length;
+    $("frsub").textContent=fl.length?(on+" online · "+(fl.length-on)+" offline"):"";
+    if(!fl.length){box.innerHTML='<p class="mute" style="line-height:1.5">No friends yet. Open an online game and tap “➕ Add friend”. They’ll show up here.</p>';return}
+    box.innerHTML="";
+    fl.forEach(function(f){
+      var o=frOnline(f.uid),b=document.createElement("button");b.className="frrow";b.type="button";
+      b.innerHTML='<span class="fra">'+esc((f.name||"?").charAt(0).toUpperCase())+'<i class="'+(o?"on":"")+'"></i></span><span class="frm"><b>'+esc(f.name)+'</b><small>'+esc(frLevel(FD[f.uid]))+'</small></span><span class="frs'+(o?" on":"")+'">'+(o?"Online":"Offline")+'</span>';
+      b.onclick=function(){openFriend(f)};
+      box.appendChild(b);
+    });
+  }
+  function frFetch(){
+    if(!S.user||!window.botCloud||!window.botCloud.db)return;
+    Promise.all(S.friends.map(function(f){return window.botCloud.db.get("leaders",f.uid).then(function(d){FD[f.uid]=d;PRES[f.uid]=!!(d&&d.seen&&Date.now()-d.seen<120000)}).catch(function(){})})).then(function(){if(frOpen())drawFriends();if(!$("frdet").classList.contains("hide")&&FRC)openFriend(FRC)});
+  }
+  var FRC=null;
+  function openFriend(f){
+    FRC=f;var o=frOnline(f.uid),d=FD[f.uid];
+    $("frdbody").innerHTML='<div class="fra frbig">'+esc((f.name||"?").charAt(0).toUpperCase())+'<i class="'+(o?"on":"")+'"></i></div>'
+      +'<h2 style="margin:0 0 2px">'+esc(f.name)+'</h2>'
+      +'<p class="'+(o?"frs on":"frs")+'" style="margin:0 0 4px;font-size:14px">'+(o?"🟢 Online now":"⚪ Offline")+'</p>'
+      +'<p class="mute" style="margin:0 0 16px">'+esc(frLevel(d))+'</p>'
+      +'<p style="margin:0 0 16px;line-height:1.5">Do you want to challenge <b>'+esc(f.name)+'</b> to a Cipher duel?</p>'
+      +(o?'':'<p class="mute" style="margin:-6px 0 16px;font-size:13px;line-height:1.5">They’re offline. Your challenge will wait for them and pop up the next time they open Cipher (within 24 hours).</p>')
+      +'<button class="gbtn" id="frch" style="background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;margin-top:0">⚔️ Yes, challenge</button>'
+      +'<button class="guest" id="frno">Not now</button>'
+      +'<button class="guest" id="frrm" style="color:var(--mute);font-size:13px;margin-top:2px">Remove friend</button>';
+    $("frdet").classList.remove("hide");
+    $("frch").onclick=function(){$("frdet").classList.add("hide");$("frsheet").classList.add("hide");friendPlay(f,!frOnline(f.uid))};
+    $("frno").onclick=function(){$("frdet").classList.add("hide")};
+    $("frrm").onclick=function(){
+      S.friends=S.friends.filter(function(q){return q.uid!==f.uid});save("bot-friends",S.friends);watchFriends();
+      $("frdet").classList.add("hide");drawFriends();if(S.phase==="home")renderPins();toast(f.name+" removed from friends");
+    };
+  }
+  function openFriends(){
+    if(needGoogle())return;
+    drawFriends();$("frsheet").classList.remove("hide");frFetch();
+  }
+  $("frx").onclick=function(){$("frsheet").classList.add("hide")};
+  $("frdx").onclick=function(){$("frdet").classList.add("hide")};
+  $("frsheet").onclick=function(e){if(e.target===this)this.classList.add("hide")};
+  $("frdet").onclick=function(e){if(e.target===this)this.classList.add("hide")};
+  $("frmenu").onclick=openFriends;
 
   function press(d){if(S.phase!=="guess"||S.cur.length>=S.n)return;S.cur+=d;render()}
   function back(){if(S.phase!=="guess")return;S.cur=S.cur.slice(0,-1);render()}
@@ -1386,9 +1479,16 @@ var RVE=(function(){
     }catch(e){return false}
     location.reload();return true;
   }
-  window.botAuth=function(u){if(u&&acctSwitch(u))return true;S.user=u;watchFriends();if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide");return false};
+  window.botLP=function(){return S.lp||0};
+  window.botAuth=function(u){if(u&&acctSwitch(u))return true;if(!u){S.dormant=false;$("rsheet").classList.add("hide")}S.user=u;watchFriends();if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide");return false};
   window.botLoaded=function(d){
     if(S.switching)return;
+    var DAY=864e5,cl=(d&&typeof d.lp==="number")?d.lp:0;
+    S.lp=Math.max(S.lp||0,cl);
+    if(!S.lp)S.lp=Date.now(); // older accounts: the 30-day clock starts now
+    try{localStorage.setItem("bot-lp",JSON.stringify(S.lp))}catch(e){}
+    S.dormant=Date.now()-S.lp>30*DAY;
+    if(S.user&&S.user.isAnonymous&&window.botCloud&&window.botCloud.cleanGuest&&!S.gclean){S.gclean=1;window.botCloud.cleanGuest()}
     if(d.nick&&!S.nick){S.nick=d.nick;try{localStorage.setItem("bot-nick",JSON.stringify(S.nick))}catch(e){}}
     var cav=cleanAv(d.av);if(cav){S.av=cav;try{localStorage.setItem("bot-av",JSON.stringify(S.av))}catch(e){}}else if(!S.av&&gPhoto()){S.av={t:"p",v:gPhoto()};try{localStorage.setItem("bot-av",JSON.stringify(S.av))}catch(e){}}
     updateAcct();
@@ -1408,11 +1508,45 @@ var RVE=(function(){
     watchFriends();if(window.botCloud&&window.botCloud.beat)window.botCloud.beat();refreshPresence();
     render();tryInvite();
     if(window.botForfeitRoom)window.botForfeitRoom();
+    if(S.dormant){
+      var dd=Math.floor((Date.now()-S.lp)/864e5);
+      $("rtxt").textContent="You haven’t played for "+dd+" days, so your account was deactivated and your name was removed from the leaderboards. Your points and history are safe. Reactivate to get back on the boards.";
+      $("rsheet").classList.remove("hide");
+    }else{
+      var dy=Math.floor((Date.now()-S.lp)/864e5);
+      if(dy>=20){
+        var td=new Date().toISOString().slice(0,10),lw=null;try{lw=localStorage.getItem("bot-warn")}catch(e){}
+        if(lw!==td){
+          try{localStorage.setItem("bot-warn",td)}catch(e){}
+          var left=Math.max(1,30-dy);
+          $("infoT").textContent="⏳ Your account is inactive";
+          $("infoBody").innerHTML='<p style="line-height:1.55;margin:0 0 10px">You haven’t played for '+dy+' days. If you play no games in the next '+left+' day'+(left===1?"":"s")+', your account will be deactivated and your name removed from the leaderboards.</p><p class="mute" style="margin:0">Play any game to keep it active.</p>';
+          $("info").classList.remove("hide");
+        }
+      }
+    }
   };
+  $("rgo").onclick=function(){
+    S.dormant=false;S.lp=Date.now();try{localStorage.setItem("bot-lp",JSON.stringify(S.lp))}catch(e){}
+    $("rsheet").classList.add("hide");
+    if(window.botCloud)window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow(),S.av);
+    try{pushWeek()}catch(e){}
+    toast("Account reactivated. You’re back on the leaderboards.");
+  };
+  $("rout").onclick=function(){$("rsheet").classList.add("hide");$("acctBtn").onclick()};
   // ===== Online play: rooms live in Firestore; each player's secret stays on their own device =====
   var O={code:"",role:"",room:null,secret:"",cur:"",locked:false,unsub:null,done:false,ans:{}};
   function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
   function nm(){return S.nick||"Player"}
+  function needGoogle(){
+    if(needIn())return true;
+    if(S.user&&S.user.isAnonymous){
+      $("infoT").textContent="🔒 Google account needed";
+      $("infoBody").innerHTML='<p style="line-height:1.55;margin:0 0 14px">Guests can play against the computer, but online games, friends and tournaments need a Google account. Guests also don’t appear on the leaderboard.</p><button class="gbtn" id="gsw" style="background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;margin-top:0">Sign in with Google</button>';
+      $("info").classList.remove("hide");
+      $("gsw").onclick=function(){$("info").classList.add("hide");window.botCloud.signOut().then(function(){$("sheet").classList.remove("hide")}).catch(function(){})};
+      return true}
+    return false}
   function needIn(){if(!window.botCloud||!window.botCloud.room||!S.user){$("sheet").classList.remove("hide");return true}if(!S.nick){openName();return true}return false}
   function oerr(e){alert(((e&&e.message)||"Something went wrong.")+"\n\n[code: "+((e&&e.code)||"n/a")+" | project: "+((window.botCloud&&window.botCloud.pid)||"?")+" | signed in: "+(S.user?"yes ("+String(S.user.uid).slice(0,6)+")":"no")+"]")}
   function enterRoom(code,role){
@@ -1797,13 +1931,13 @@ var RVE=(function(){
     }
   }
   $("tcreate").onclick=function(){
-    if(needIn())return;
+    if(needGoogle())return;
     var id=code5(),d={n:S.n,status:"lobby",fmt:"ipl",org:S.user.uid,players:{},m:{},p:{},created:Date.now()};
     d.players[S.user.uid]={name:nm()};
     window.botCloud.db.set("tournaments",id,d).then(function(){enterTour(id)}).catch(oerr);
   };
   $("tjoin").onclick=function(){
-    if(needIn())return;
+    if(needGoogle())return;
     var id=$("tcode").value.trim().toUpperCase();if(!id)return;
     var dbx=window.botCloud.db;
     dbx.get("tournaments",id).then(function(d){
@@ -1864,7 +1998,7 @@ var RVE=(function(){
   }
   $("spOk").onclick=function(){setWa(true)};$("spNo").onclick=function(){setWa(false)};
   function watchOpen(x){
-    if(needIn())return;
+    if(needGoogle())return;
     var me=S.user.uid;if(x.a===me||x.b===me)return;
     watchStop();
     W={code:x.room,room:null,unsub:null,joined:false};
@@ -2021,7 +2155,7 @@ var RVE=(function(){
     return c.join("")}
   function dailyMark(g){save("bot-daily",{d:S.daily,g:g,n:S.n,t:S.dt})}
   function dailyDone(){var g=S.uT.length;dailyMark(g);
-    if(window.botCloud&&window.botCloud.db&&S.user)window.botCloud.db.set("daily",S.daily+"_"+S.user.uid,{date:S.daily+"-t"+S.dt,uid:S.user.uid,name:nm(),g:g,t:Date.now()}).catch(function(){});
+    if(window.botCloud&&window.botCloud.db&&S.user&&!S.user.isAnonymous)window.botCloud.db.set("daily",S.daily+"_"+S.user.uid,{date:S.daily+"-t"+S.dt,uid:S.user.uid,name:nm(),g:g,t:Date.now()}).catch(function(){});
     setTimeout(function(){openBoard(S.daily,S.dt)},1200)}
   function openBoard(d,t){var m0=load("bot-daily",{});if(t==null)t=m0.t!=null?m0.t:dailyT(levelOf(S.pts));var n=DT_N[t],dd=d+"-t"+t;
     $("infoT").textContent="Daily · "+DT_NAME[t]+" · "+n+" digits";$("infoBody").innerHTML='<div class="mute">Loading…</div>';$("info").classList.remove("hide");
@@ -2062,13 +2196,13 @@ var RVE=(function(){
   $("tleave").onclick=leaveTour;
   $("oleave").onclick=leave;
   $("ocreate").onclick=function(){
-    if(needIn())return;
+    if(needGoogle())return;
     var cs="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",code="";
     for(var i=0;i<5;i++)code+=cs[Math.floor(Math.random()*cs.length)];
     window.botCloud.room.create(code,{n:S.n,need:S.need,nextN:null,host:{uid:S.user.uid,name:nm()},guest:null,status:"lobby",ready:{host:false,guest:false},turn:"host",starter:"host",wins:{host:0,guest:0},guesses:{},winner:null,created:Date.now()}).then(function(){enterRoom(code,"host")}).catch(oerr);
   };
   function joinRoom(code){
-    if(needIn())return;
+    if(needGoogle())return;
     window.botCloud.room.join(code,{uid:S.user.uid,name:nm()}).then(function(d){S.n=d.n;if(d.status==="done"&&!d.tid)window.botCloud.room.update(code,{chat:{}}).catch(function(){});enterRoom(code,d.host.uid===S.user.uid?"host":"guest")}).catch(oerr);
   }
   $("ojoin").onclick=function(){var c=$("ocode").value.trim().toUpperCase();if(c)joinRoom(c)};
@@ -2357,7 +2491,7 @@ var RVE=(function(){
   var WRW=[50,30,20],pwT=0,stDone=0;
   function prevWeek(){return new Date(new Date(weekKey()+"T00:00:00Z").getTime()-7*86400000).toISOString().slice(0,10)}
   function cutOf(a){if(a.length<3)return 10;var b=a.slice().sort(function(x,y){return x-y});return Math.max(10,Math.round(b[Math.floor(b.length/2)]*.5))}
-  function pushWeek(){clearTimeout(pwT);pwT=setTimeout(function(){try{if(!S.user||S.deleting||!window.botCloud||!window.botCloud.db)return;var w=wkNow();window.botCloud.db.set("weeks",w.k+"_"+S.user.uid,{wk:w.k,uid:S.user.uid,name:nm(),wpts:w.p,pts:S.pts}).catch(function(){})}catch(e){}},1500)}
+  function pushWeek(){clearTimeout(pwT);pwT=setTimeout(function(){try{if(!S.user||S.user.isAnonymous||S.deleting||!window.botCloud||!window.botCloud.db)return;var w=wkNow();window.botCloud.db.set("weeks",w.k+"_"+S.user.uid,{wk:w.k,uid:S.user.uid,name:nm(),wpts:w.p,pts:S.pts,lp:S.lp||Date.now()}).catch(function(){})}catch(e){}},1500)}
   function settleWeek(){
     var pk=prevWeek();if(load("bot-settled","")>=pk)return;
     window.botCloud.db.weekRows(pk).then(function(rows){
@@ -2872,7 +3006,7 @@ var RVE=(function(){
   function chalShare(id){var u=chalLink(id),t="Can you crack my number on Cipher? Fewest guesses wins.";
     if(navigator.share)navigator.share({title:"Cipher challenge",text:t,url:u}).catch(function(){});
     else if(navigator.clipboard)navigator.clipboard.writeText(t+" "+u).then(function(){toast("Link copied")});else prompt("Copy this link",u)}
-  function chalCreate(){if(needIn())return;
+  function chalCreate(){if(needGoogle())return;
     var al=allCodes(),sec=al[Math.floor(Math.random()*al.length)],ab="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",id="",i;for(i=0;i<6;i++)id+=ab[Math.floor(Math.random()*ab.length)];
     var d={n:S.n,secret:sec,by:nm(),uid:S.user.uid,t:Date.now(),res:{}};
     window.botCloud.db.set("challenges",id,d).then(function(){toast("Challenge ready: "+S.n+" digits");chalShare(id)}).catch(function(){alert("Couldn’t create the challenge. Check the Firestore rule for the challenges collection.")})}
@@ -2936,7 +3070,7 @@ var RVE=(function(){
   }
 
   // ===== Friends: online dots + challenge alerts =====
-  var PRES={},lastPres=0,FRU=[],PRU=[],SEENC={};
+  var PRES={},lastPres=0,FRU=[],PRU=[],SEENC=load("bot-cseen",{}),SEENA={};
   function goOff(){if(window.botCloud&&window.botCloud.offline&&S.user)window.botCloud.offline()}
   window.addEventListener("pagehide",goOff);
   document.addEventListener("visibilitychange",function(){
@@ -2953,19 +3087,24 @@ var RVE=(function(){
     if(!S.user||!window.botCloud||!window.botCloud.room)return;
     S.friends.forEach(function(f){
       PRU.push(window.botCloud.db.watch("leaders",f.uid,function(d){
-        PRES[f.uid]=!!(d&&d.seen&&Date.now()-d.seen<120000);
+        PRES[f.uid]=!!(d&&d.seen&&Date.now()-d.seen<120000);FD[f.uid]=d;
         if(S.phase==="home"&&S.mode==="online")renderPins();
+        if(frOpen())drawFriends();
       }));
     });
     S.friends.forEach(function(f){
       var code=friendCode(S.user.uid,f.uid);
       FRU.push(window.botCloud.room.watch(code,function(r){
-        if(!r||!r.chal||r.chal.by===S.user.uid)return;
-        var at=r.chal.at;if(!at||SEENC[code]===at||Date.now()-at>120000)return;SEENC[code]=at;
+        if(!r||!r.chal)return;
+        if(r.chal.by===S.user.uid){
+          var ac=r.acc;
+          if(ac&&ac>r.chal.at&&SEENA[code]!==ac&&Date.now()-ac<3600000){SEENA[code]=ac;if(!(S.phase==="online"&&O.code===code)){if(document.hidden)pushNote("✅ "+f.name+" accepted your challenge","Open Cipher to play.");ask("Challenge accepted!",f.name+" accepted your challenge.","Join",function(){joinRoom(code)})}}
+          return}
+        var at=r.chal.at;if(!at||SEENC[code]===at||Date.now()-at>864e5)return;SEENC[code]=at;save("bot-cseen",SEENC);
         if(S.phase==="online"&&O.code===code)return;
         var who=r.chal.name||f.name;
         if(document.hidden)pushNote("🎮 "+who+" challenged you","Open Cipher to play.");
-        ask("Challenge!",who+" wants to play a Cipher duel.","Play",function(){joinRoom(code)});
+        ask("Challenge!",who+" wants to play a Cipher duel.","Play",function(){window.botCloud.db.update("rooms",code,{acc:Date.now()}).catch(function(){});joinRoom(code)});
       }));
     });
   }
@@ -3132,6 +3271,8 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
   const {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,onSnapshot,deleteField,collection,query,where,limit,getDocs,orderBy}=await import(B+"firebase-firestore.js");
   const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
   let user=null,busy=false;
+  const LP=()=>window.botLP?window.botLP():0;
+  const live=d=>!(d&&d.lp>0)||Date.now()-d.lp<=2592e6; // inactive 30+ days = hidden from leaderboards
   window.botCloud={
     signIn:()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>alert("Sign-in failed: "+e.code)),
     pid:firebaseConfig.projectId,
@@ -3164,13 +3305,18 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
       }catch(e){busy=false;throw e}
       busy=false;
     },
-    offline:()=>{if(!user||busy)return;setDoc(doc(db,"leaders",user.uid),{seen:0},{merge:true}).catch(()=>{})},
-    beat:()=>{if(!user||busy)return;setDoc(doc(db,"leaders",user.uid),{seen:Date.now()},{merge:true}).catch(()=>{})},
+    offline:()=>{if(!user||busy||user.isAnonymous)return;setDoc(doc(db,"leaders",user.uid),{seen:0},{merge:true}).catch(()=>{})},
+    beat:()=>{if(!user||busy||user.isAnonymous)return;setDoc(doc(db,"leaders",user.uid),{seen:Date.now()},{merge:true}).catch(()=>{})},
+    cleanGuest:async()=>{
+      const u=auth.currentUser;if(!u||!u.isAnonymous)return;
+      try{await deleteDoc(doc(db,"leaders",u.uid))}catch(e){}
+      for(const c of ["weeks","daily"]){try{const q=await getDocs(query(collection(db,c),where("uid","==",u.uid),limit(300)));for(const d of q.docs)await deleteDoc(d.ref).catch(()=>{})}catch(e){}}
+    },
     guest:async(name)=>{
       try{const c=await signInAnonymously(auth);await updateProfile(c.user,{displayName:name});window.botAuth&&window.botAuth(auth.currentUser)}
       catch(e){alert(e.code==="auth/operation-not-allowed"?"Guest play isn’t switched on yet. In Firebase, enable Anonymous under Authentication > Sign-in method.":"Couldn’t start guest mode: "+e.code)}
     },
-    save:(pts,hist,pins,nick,friends,wk,av)=>{if(!user||busy)return;setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],friends:friends||[],...(nick?{nick:nick}:{}),av:av||null,updated:Date.now()},{merge:true}).catch(e=>console.warn(e));setDoc(doc(db,"leaders",user.uid),{uid:user.uid,name:nick||(user.isAnonymous?user.displayName:null)||"Player",pts:pts,...(wk&&wk.k?{wk:wk.k,wpts:wk.p}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
+    save:(pts,hist,pins,nick,friends,wk,av)=>{if(!user||busy)return;setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],friends:friends||[],...(nick?{nick:nick}:{}),av:av||null,...(LP()>0?{lp:LP()}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e));if(!user.isAnonymous)setDoc(doc(db,"leaders",user.uid),{uid:user.uid,name:nick||(user.isAnonymous?user.displayName:null)||"Player",pts:pts,...(wk&&wk.k?{wk:wk.k,wpts:wk.p}:{}),...(LP()>0?{lp:LP()}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
   };
   window.botCloud.db={
     get:async(c,i)=>{const s=await getDoc(doc(db,c,i));return s.exists()?s.data():null},
@@ -3178,10 +3324,10 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
     update:(c,i,p)=>busy?Promise.resolve():updateDoc(doc(db,c,i),p),
     del:(c,i,f)=>busy?Promise.resolve():updateDoc(doc(db,c,i),{[f]:deleteField()}),
     top:async(d)=>{const q=await getDocs(query(collection(db,"daily"),where("date","==",d),limit(50)));return q.docs.map(x=>x.data())},
-    weekly:async(k)=>{const q=await getDocs(query(collection(db,"leaders"),where("wk","==",k),limit(100)));return q.docs.map(x=>x.data())},
-    weekRows:async(k)=>{const q=await getDocs(query(collection(db,"weeks"),where("wk","==",k),limit(200)));return q.docs.map(x=>x.data())},
-    weeksRange:async(a,b)=>{const q=await getDocs(query(collection(db,"weeks"),where("wk",">=",a),where("wk","<=",b),limit(500)));return q.docs.map(x=>x.data())},
-    leaders:async()=>{const q=await getDocs(query(collection(db,"leaders"),orderBy("pts","desc"),limit(50)));return q.docs.map(x=>x.data())},
+    weekly:async(k)=>{const q=await getDocs(query(collection(db,"leaders"),where("wk","==",k),limit(100)));return q.docs.map(x=>x.data()).filter(live)},
+    weekRows:async(k)=>{const q=await getDocs(query(collection(db,"weeks"),where("wk","==",k),limit(200)));return q.docs.map(x=>x.data()).filter(live)},
+    weeksRange:async(a,b)=>{const q=await getDocs(query(collection(db,"weeks"),where("wk",">=",a),where("wk","<=",b),limit(500)));return q.docs.map(x=>x.data()).filter(live)},
+    leaders:async()=>{const q=await getDocs(query(collection(db,"leaders"),orderBy("pts","desc"),limit(50)));return q.docs.map(x=>x.data()).filter(live)},
     watch:(c,i,cb)=>onSnapshot(doc(db,c,i),s=>cb(s.exists()?s.data():null))
   };
   window.botCloud.room={
