@@ -105,8 +105,8 @@ button{transition:transform .12s,background .2s}
 .at small{display:block;color:var(--mute);font-weight:400;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pill{padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--ink);white-space:nowrap}
 .pill.go{background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));border:0;color:#fff}
-#sheet,#nsheet,#pop,#info{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,8,14,.66);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-#sheet.hide,#nsheet.hide,#pop.hide,#info.hide{display:none}
+#sheet,#nsheet,#psheet,#dsheet,#pop,#info{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,8,14,.66);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#sheet.hide,#nsheet.hide,#psheet.hide,#dsheet.hide,#pop.hide,#info.hide{display:none}
 #pop,#info{z-index:60}
 #info h3{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:16px 0 6px}
 #info li{font-size:13px;line-height:1.5;margin:3px 0}#info ul{margin:0;padding-left:18px}
@@ -306,6 +306,29 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
 #pppad button{background:rgba(255,255,255,.06);border:1px solid var(--line);box-shadow:none;border-radius:16px;color:var(--ink);min-height:56px;padding:0;font-size:22px;font-weight:500}
 #pppad #ppgo{background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));border:0;color:#fff;font-size:16px;font-weight:600;box-shadow:0 8px 20px var(--glow,rgba(92,124,255,.28))}
 #pppad button:disabled{background:rgba(255,255,255,.04);box-shadow:none}
+
+/* profile + delete account */
+#av{cursor:pointer}
+#psheet .sheetbox,#dsheet .sheetbox{max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain}
+.pav{width:88px;height:88px;margin:0 auto 12px;font-size:38px;cursor:default}
+.plab{font-size:12px;font-weight:600;color:var(--mute);text-align:left;margin:16px 0 8px}
+.pgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.pgrid button{padding:0;aspect-ratio:1;min-height:44px;border-radius:12px;font-size:22px;line-height:1;background:rgba(255,255,255,.06);border:2px solid transparent;display:flex;align-items:center;justify-content:center}
+.pgrid button.on{border-color:var(--acc);background:rgba(110,168,255,.16)}
+.pcols{display:flex;justify-content:space-between;gap:6px}
+.pcols button{flex:none;width:42px;height:42px;padding:0;border-radius:50%;border:3px solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.pcols button.on{border-color:var(--ink)}
+.prow{display:flex;gap:8px;margin-top:12px}
+.prow button,.prow label{flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;padding:10px 6px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;text-align:center}
+.psave{width:100%;margin-top:16px;padding:14px;border-radius:14px;color:#fff;font-weight:600;background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff))}
+.pdiv{height:1px;background:var(--line);margin:18px 0 6px}
+.pdel{width:100%;margin-top:6px;min-height:44px;background:transparent;color:#ff7b7b;font-weight:600;font-size:14px}
+.dwarn{background:linear-gradient(135deg,#ef4444,#b91c1c)!important}
+#dconf{width:100%;font:inherit;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);margin:14px 0 4px;text-align:center;letter-spacing:.08em}
+#dconf:focus{outline:none;border-color:#ef4444}
+#derr{min-height:18px;font-size:13px;line-height:1.45;color:#ff7b7b;margin:6px 0 0}
+#ddo{background:#dc2626;color:#fff;font-weight:600}
+#ddo:disabled{opacity:.35}
 </style>
 </head>
 <body>
@@ -347,6 +370,7 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
         <button id="thmenu">🏆 Tournament history</button>
         <button id="achmenu">🏅 Achievements</button>
         <button id="remmenu">🔔 Daily reminder</button>
+        <button id="profmenu">👤 Profile &amp; account</button>
         <button id="howto">❓ How to play</button>
         <button id="sndbtn"></button>
       </div>
@@ -504,6 +528,39 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
     <button class="gbtn" id="nsave" style="background:linear-gradient(135deg,var(--g1,#5b7cff),var(--g2,#7aa0ff));color:#fff;margin-top:0">Save name</button>
   </div>
 </div>
+<div id="psheet" class="hide">
+  <div class="sheetbox">
+    <button class="sx" id="px" aria-label="Close">✕</button>
+    <div class="av pav" id="pav">?</div>
+    <h2>Your profile</h2>
+    <p class="mute" id="pwho" style="margin:0"></p>
+    <div class="plab">Pick an avatar</div>
+    <div class="pgrid" id="pemo"></div>
+    <div class="plab">Colour</div>
+    <div class="pcols" id="pcol"></div>
+    <div class="prow">
+      <label for="pfile">📷 Upload photo</label>
+      <button id="pinit">Use my initial</button>
+    </div>
+    <input type="file" id="pfile" accept="image/*" class="hide">
+    <button class="psave" id="psave">Save picture</button>
+    <div class="pdiv"></div>
+    <button class="pdel" id="pname" style="color:var(--ink)">✏️ Change name</button>
+    <button class="pdel" id="pdel">Delete account</button>
+  </div>
+</div>
+<div id="dsheet" class="hide">
+  <div class="sheetbox">
+    <button class="sx" id="dx" aria-label="Close">✕</button>
+    <div class="logo dwarn">!</div>
+    <h2>Delete your account?</h2>
+    <p class="mute" style="line-height:1.55;font-size:14px;margin:6px 0 0">This permanently erases your points, game history, friends list, leaderboard and weekly entries, and your sign-in. It can’t be undone.</p>
+    <p class="mute" id="dgoogle" style="line-height:1.5;font-size:13px;margin:8px 0 0">You’ll be asked to confirm with Google first.</p>
+    <input id="dconf" placeholder="Type DELETE to confirm" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <div id="derr" role="alert"></div>
+    <div class="joinrow" style="margin-top:14px"><button class="ghost" id="dno" style="flex:1;width:auto">Keep account</button><button id="ddo" style="flex:1;width:auto" disabled>Delete forever</button></div>
+  </div>
+</div>
 <script>
 (function(){
   var $=function(i){return document.getElementById(i)};
@@ -529,8 +586,8 @@ html.menulock,html.menulock body{overflow:hidden!important;overscroll-behavior:n
   // Top levels: BOT also prefers trickier secret numbers (repeated digits) and, from Grandmaster, moves first.
   var TRICKY=[0,0,0,0,0,0,0,0.3,0.5,0.75],FIRST_LVL=8;
   function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(k==="bot-pts"){phNote();try{pushWeek()}catch(e){}}if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"||k==="bot-friends"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow())}
-  var S={ch:0,sdl:0,fast:0,hv:0,mode:"duel",n:3,need:1,score:{u:0,a:0},round:1,starter:"u",next:"u",aSecret:"",cands:[],uT:[],aT:[],cur:"",phase:"home",busy:false,pending:"",rb:-1,rc:-1,cache:{},gid:0,lvl:0,mem:[],pts:load("bot-pts",0),hist:load("bot-hist",[]),pins:load("bot-pins",[]),nick:load("bot-nick",""),open:-1,friends:load("bot-friends",[]),timed:0,deadline:0,lost:false};
+  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(k==="bot-pts"){phNote();try{pushWeek()}catch(e){}}if(window.botCloud&&(k==="bot-pts"||k==="bot-hist"||k==="bot-pins"||k==="bot-nick"||k==="bot-friends"||k==="bot-av"))window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow(),S.av)}
+  var S={ch:0,sdl:0,fast:0,hv:0,mode:"duel",n:3,need:1,score:{u:0,a:0},round:1,starter:"u",next:"u",aSecret:"",cands:[],uT:[],aT:[],cur:"",phase:"home",busy:false,pending:"",rb:-1,rc:-1,cache:{},gid:0,lvl:0,mem:[],pts:load("bot-pts",0),hist:load("bot-hist",[]),pins:load("bot-pins",[]),nick:load("bot-nick",""),av:load("bot-av",null),deleting:false,open:-1,friends:load("bot-friends",[]),timed:0,deadline:0,lost:false};
 
   function awardPts(dl){
     var b=levelOf(S.pts);S.pts=Math.max(0,S.pts+dl);save("bot-pts",S.pts);
@@ -1041,7 +1098,7 @@ var RVE=(function(){
     if(LBT==="fr"){
       if(!S.friends.length){box.className="mute";box.textContent="Add friends from an online game to compare scores here.";return}
       Promise.all(S.friends.map(function(f){return window.botCloud.db.get("leaders",f.uid).then(function(d){return{uid:f.uid,name:(d&&d.name)||f.name,pts:(d&&d.pts)||0}}).catch(function(){return{uid:f.uid,name:f.name,pts:0}})})).then(function(rows){rows.push({uid:S.user.uid,name:nm(),pts:S.pts});rows.sort(function(a,b){return b.pts-a.pts});done(rows)});return}
-    if(wk){wkNow();window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,WK);if(window.botCloud.db.weekly)window.botCloud.db.weekly(weekKey()).then(done).catch(function(){done([])});else done([])}
+    if(wk){wkNow();window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,WK,S.av);if(window.botCloud.db.weekly)window.botCloud.db.weekly(weekKey()).then(done).catch(function(){done([])});else done([])}
     else if(window.botCloud.db.leaders)window.botCloud.db.leaders().then(done).catch(function(){done([])});else done([]);
   }
   $("lbmenu").onclick=openLB;
@@ -1063,14 +1120,33 @@ var RVE=(function(){
   document.addEventListener("keydown",function(e){
     if(/^[0-9]$/.test(e.key))press(e.key);else if(e.key==="Backspace")back();else if(e.key==="Enter")submitGuess();
   });
+  // ===== Avatar: emoji / initial on a colour, or an uploaded photo =====
+  var AV_EMOJI=["🦊","🐼","🐯","🦉","🐙","🦄","🐲","🐺","🚀","🎯","🧠","⚡","🔥","👾","🎲","🧩","🎧","👑"];
+  var AV_COLS=[["#5b7cff","#a98bff"],["#f59e0b","#ef4444"],["#10b981","#06b6d4"],["#ec4899","#8b5cf6"],["#84cc16","#10b981"],["#64748b","#334155"]];
+  function cleanAv(a){
+    if(!a||typeof a!=="object")return null;
+    var c=(a.c|0);if(c<0||c>=AV_COLS.length)c=0;
+    if(a.t==="e"&&AV_EMOJI.indexOf(a.v)>=0)return{t:"e",v:a.v,c:c};
+    if(a.t==="i")return{t:"i",c:c};
+    if(a.t==="p"&&typeof a.v==="string"&&a.v.indexOf("data:image/")===0&&a.v.length<80000)return{t:"p",v:a.v};
+    return null;
+  }
+  S.av=cleanAv(S.av);
+  function paintAv(el,a,letter){
+    a=cleanAv(a);el.textContent="";el.style.background="";
+    if(a&&a.t==="p"){var im=document.createElement("img");im.alt="";im.src=a.v;el.appendChild(im);return}
+    var c=AV_COLS[a?a.c:0];
+    el.style.background="linear-gradient(135deg,"+c[0]+","+c[1]+")";
+    el.textContent=(a&&a.t==="e")?a.v:letter;
+  }
   function updateAcct(){
     var u=S.user,av=$("av");
     if(u){
-      av.textContent=(S.nick||"?").charAt(0).toUpperCase();
+      paintAv(av,S.av,(S.nick||"?").charAt(0).toUpperCase());
       $("acctText").innerHTML=esc(S.nick||"Choose a name")+'<small>'+(S.nick?"Tap to change name · ":"")+(u.isAnonymous?"Guest":"Signed in")+'</small>';
       $("acctBtn").textContent="Sign out";$("acctBtn").className="pill";
     }else{
-      av.textContent="?";
+      paintAv(av,null,"?");
       $("acctText").innerHTML='Not signed in<small>Sign in to save progress and play online</small>';
       $("acctBtn").textContent="Sign in";$("acctBtn").className="pill go";
     }
@@ -1093,9 +1169,99 @@ var RVE=(function(){
     if(!window.botCloud){alert("Firebase isn’t set up yet. Paste your firebaseConfig into the file first.");return}
     if(S.user)window.botCloud.signOut();else $("sheet").classList.remove("hide");
   };
+
+  // ===== Profile sheet: change avatar =====
+  var PD=null;
+  function drawPicker(){
+    var pe=$("pemo"),pc=$("pcol");
+    if(!pe.children.length){
+      AV_EMOJI.forEach(function(em){var b=document.createElement("button");b.type="button";b.textContent=em;b.setAttribute("aria-label","Avatar "+em);b.onclick=function(){PD={t:"e",v:em,c:(PD&&PD.t!=="p"?PD.c:0)};drawPicker()};pe.appendChild(b)});
+      AV_COLS.forEach(function(c,i){var b=document.createElement("button");b.type="button";b.setAttribute("aria-label","Colour "+(i+1));b.style.background="linear-gradient(135deg,"+c[0]+","+c[1]+")";b.onclick=function(){if(PD&&PD.t==="e")PD={t:"e",v:PD.v,c:i};else PD={t:"i",c:i};drawPicker()};pc.appendChild(b)});
+    }
+    Array.prototype.forEach.call(pe.children,function(b,i){b.classList.toggle("on",!!PD&&PD.t==="e"&&PD.v===AV_EMOJI[i])});
+    Array.prototype.forEach.call(pc.children,function(b,i){b.classList.toggle("on",!!PD&&PD.t!=="p"&&PD.c===i||(!PD&&i===0))});
+    paintAv($("pav"),PD,(S.nick||"?").charAt(0).toUpperCase());
+  }
+  function openProfile(){
+    if(!S.user){$("sheet").classList.remove("hide");return}
+    PD=cleanAv(S.av);
+    $("pwho").textContent=(S.nick||"No name yet")+" · "+(S.user.isAnonymous?"Guest":"Signed in");
+    drawPicker();$("psheet").classList.remove("hide");
+  }
+  $("av").setAttribute("role","button");$("av").setAttribute("tabindex","0");$("av").setAttribute("aria-label","Change avatar");
+  $("av").onclick=openProfile;
+  $("av").onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();openProfile()}};
+  $("profmenu").onclick=openProfile;
+  $("px").onclick=function(){$("psheet").classList.add("hide")};
+  $("pinit").onclick=function(){PD=null;drawPicker()};
+  $("psave").onclick=function(){
+    S.av=cleanAv(PD);save("bot-av",S.av);updateAcct();
+    $("psheet").classList.add("hide");toast("Avatar updated");
+  };
+  $("pname").onclick=function(){$("psheet").classList.add("hide");openName()};
+  $("pfile").onchange=function(){
+    var f=this.files&&this.files[0];this.value="";
+    if(!f)return;
+    if(!/^image\//.test(f.type)){toast("Pick an image file");return}
+    var rd=new FileReader();
+    rd.onerror=function(){toast("Couldn’t read that image")};
+    rd.onload=function(){
+      var im=new Image();
+      im.onerror=function(){toast("Couldn’t open that image")};
+      im.onload=function(){
+        try{
+          var sz=128,cv=document.createElement("canvas");cv.width=cv.height=sz;
+          var m=Math.min(im.width,im.height),sx=(im.width-m)/2,sy=(im.height-m)/2,x=cv.getContext("2d");
+          x.fillStyle="#fff";x.fillRect(0,0,sz,sz);x.drawImage(im,sx,sy,m,m,0,0,sz,sz);
+          PD={t:"p",v:cv.toDataURL("image/jpeg",.82)};drawPicker();
+        }catch(e){toast("Couldn’t use that image")}
+      };
+      im.src=rd.result;
+    };
+    rd.readAsDataURL(f);
+  };
+
+  // ===== Delete account =====
+  function dBusy(b){
+    $("dconf").disabled=b;$("dno").disabled=b;$("dx").disabled=b;
+    $("ddo").textContent=b?"Deleting…":"Delete forever";
+    $("ddo").disabled=b||$("dconf").value.trim().toUpperCase()!=="DELETE";
+  }
+  function dErr(m){$("derr").textContent=m||""}
+  $("pdel").onclick=function(){
+    if(!S.user)return;
+    $("psheet").classList.add("hide");
+    $("dconf").value="";dErr("");dBusy(false);
+    $("dgoogle").classList.toggle("hide",!!S.user.isAnonymous);
+    $("dsheet").classList.remove("hide");
+  };
+  $("dx").onclick=$("dno").onclick=function(){$("dsheet").classList.add("hide")};
+  $("dconf").oninput=function(){dErr("");$("ddo").disabled=this.value.trim().toUpperCase()!=="DELETE"};
+  function dMsg(e){
+    var c=(e&&e.code)||"";
+    if(c==="auth/popup-closed-by-user"||c==="auth/cancelled-popup-request")return"Confirmation cancelled. Your account wasn’t deleted.";
+    if(c==="auth/popup-blocked")return"Your browser blocked the Google window. Allow pop-ups for this site and try again.";
+    if(c==="auth/user-mismatch"||c==="auth/wrong-account")return"That’s a different Google account. Choose the one you’re signed in with.";
+    if(c==="auth/requires-recent-login")return"For security, sign out, sign back in, then try deleting again.";
+    if(c==="auth/network-request-failed"||c==="unavailable")return"No connection. Check your internet and try again.";
+    if(c==="permission-denied"||c==="data-permission")return"Your saved data couldn’t be removed (permission denied), so the account was kept. The app owner needs to allow deletes in the Firestore rules.";
+    return"Couldn’t delete the account"+(c?" ("+c+")":"")+". Try again.";
+  }
+  $("ddo").onclick=function(){
+    if(!S.user||!window.botCloud||!window.botCloud.deleteAccount)return;
+    if($("dconf").value.trim().toUpperCase()!=="DELETE")return;
+    dErr("");dBusy(true);S.deleting=true;
+    window.botCloud.deleteAccount().then(function(){
+      try{Object.keys(localStorage).forEach(function(k){if(k.indexOf("bot-")===0)localStorage.removeItem(k)})}catch(e){}
+      $("derr").style.color="var(--bull)";dErr("Your account was deleted. Restarting…");
+      setTimeout(function(){location.reload()},1400);
+    }).catch(function(e){S.deleting=false;dBusy(false);dErr(dMsg(e))});
+  };
   window.botAuth=function(u){S.user=u;watchFriends();if(u)$("sheet").classList.add("hide");updateAcct();if(u)tryInvite();else if(S.inv)$("sheet").classList.remove("hide")};
   window.botLoaded=function(d){
     if(d.nick&&!S.nick){S.nick=d.nick;try{localStorage.setItem("bot-nick",JSON.stringify(S.nick))}catch(e){}}
+    var cav=cleanAv(d.av);if(cav){S.av=cav;try{localStorage.setItem("bot-av",JSON.stringify(S.av))}catch(e){}}
+    updateAcct();
     var o0=S.pts;if(typeof d.pts==="number"&&d.pts>S.pts)S.pts=d.pts;if(S.pts>o0&&WK.b!=null)WK.b+=S.pts-o0;
     var seen={};S.hist.forEach(function(g){seen[g.t]=1});
     (d.hist||[]).forEach(function(g){if(!seen[g.t])S.hist.push(g)});
@@ -1107,7 +1273,7 @@ var RVE=(function(){
     try{localStorage.setItem("bot-pins",JSON.stringify(S.pins))}catch(e){}
     var fs={};S.friends.forEach(function(x){fs[x.uid]=1});(d.friends||[]).forEach(function(x){if(!fs[x.uid])S.friends.push(x)});
     try{localStorage.setItem("bot-friends",JSON.stringify(S.friends))}catch(e){}
-    if(window.botCloud)window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow());
+    if(window.botCloud)window.botCloud.save(S.pts,S.hist,S.pins,S.nick,S.friends,wkNow(),S.av);
     if(!S.nick)openName();
     watchFriends();if(window.botCloud&&window.botCloud.beat)window.botCloud.beat();refreshPresence();
     render();tryInvite();
@@ -1844,7 +2010,7 @@ var RVE=(function(){
       if(!armed)return;
       try{history.pushState({cph:1},"")}catch(e){}
       if(open("ask")){$("askNo").click();return}
-      var ov=["pop","info","sheet","nsheet"];
+      var ov=["dsheet","psheet","pop","info","sheet","nsheet"];
       for(var i=0;i<ov.length;i++)if(open(ov[i])){$(ov[i]).classList.add("hide");return}
       if($("burger").getAttribute("aria-expanded")==="true"){$("burger").click();return}
       var h=S.phase;
@@ -2061,7 +2227,7 @@ var RVE=(function(){
   var WRW=[50,30,20],pwT=0,stDone=0;
   function prevWeek(){return new Date(new Date(weekKey()+"T00:00:00Z").getTime()-7*86400000).toISOString().slice(0,10)}
   function cutOf(a){if(a.length<3)return 10;var b=a.slice().sort(function(x,y){return x-y});return Math.max(10,Math.round(b[Math.floor(b.length/2)]*.5))}
-  function pushWeek(){clearTimeout(pwT);pwT=setTimeout(function(){try{if(!S.user||!window.botCloud||!window.botCloud.db)return;var w=wkNow();window.botCloud.db.set("weeks",w.k+"_"+S.user.uid,{wk:w.k,uid:S.user.uid,name:nm(),wpts:w.p,pts:S.pts}).catch(function(){})}catch(e){}},1500)}
+  function pushWeek(){clearTimeout(pwT);pwT=setTimeout(function(){try{if(!S.user||S.deleting||!window.botCloud||!window.botCloud.db)return;var w=wkNow();window.botCloud.db.set("weeks",w.k+"_"+S.user.uid,{wk:w.k,uid:S.user.uid,name:nm(),wpts:w.p,pts:S.pts}).catch(function(){})}catch(e){}},1500)}
   function settleWeek(){
     var pk=prevWeek();if(load("bot-settled","")>=pk)return;
     window.botCloud.db.weekRows(pk).then(function(rows){
@@ -2833,27 +2999,53 @@ if(firebaseConfig.apiKey.startsWith("PASTE")){
 }else{
   const V="10.14.1",B="https://www.gstatic.com/firebasejs/"+V+"/";
   const {initializeApp}=await import(B+"firebase-app.js");
-  const {getAuth,GoogleAuthProvider,signInWithPopup,signInAnonymously,updateProfile,signOut,onAuthStateChanged}=await import(B+"firebase-auth.js");
-  const {getFirestore,doc,getDoc,setDoc,updateDoc,onSnapshot,deleteField,collection,query,where,limit,getDocs,orderBy}=await import(B+"firebase-firestore.js");
+  const {getAuth,GoogleAuthProvider,signInWithPopup,signInAnonymously,updateProfile,signOut,onAuthStateChanged,deleteUser,reauthenticateWithPopup}=await import(B+"firebase-auth.js");
+  const {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,onSnapshot,deleteField,collection,query,where,limit,getDocs,orderBy}=await import(B+"firebase-firestore.js");
   const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-  let user=null;
+  let user=null,busy=false;
   window.botCloud={
     signIn:()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>alert("Sign-in failed: "+e.code)),
     pid:firebaseConfig.projectId,
     signOut:()=>signOut(auth),
-    offline:()=>{if(!user)return;setDoc(doc(db,"leaders",user.uid),{seen:0},{merge:true}).catch(()=>{})},
-    beat:()=>{if(!user)return;setDoc(doc(db,"leaders",user.uid),{seen:Date.now()},{merge:true}).catch(()=>{})},
+    deleteAccount:async()=>{
+      const u=auth.currentUser;
+      if(!u)throw {code:"auth/no-user"};
+      const uid=u.uid;
+      // Google accounts must confirm again before Firebase allows deletion (popup must open straight from the click)
+      if(!u.isAnonymous)await reauthenticateWithPopup(u,new GoogleAuthProvider());
+      busy=true;
+      try{
+        // 1) erase this player's data while still signed in (rules need the signed-in user)
+        const bad=[];
+        const rm=async r=>{try{await deleteDoc(r)}catch(e){bad.push(e)}};
+        await rm(doc(db,"botUsers",uid));
+        await rm(doc(db,"leaders",uid));
+        for(const c of ["weeks","daily"]){
+          try{const q=await getDocs(query(collection(db,c),where("uid","==",uid),limit(300)));for(const d of q.docs)await rm(d.ref)}catch(e){bad.push(e)}
+        }
+        if(bad.length){const e=new Error("data");e.code=bad[0].code==="permission-denied"?"permission-denied":(bad[0].code||"data-permission");throw e}
+        // 2) remove the sign-in itself
+        try{await deleteUser(u)}
+        catch(e){
+          if(e.code==="auth/requires-recent-login"&&u.isAnonymous){await signOut(auth)} // guest record holds no personal data and can't re-sign-in
+          else throw e;
+        }
+      }catch(e){busy=false;throw e}
+      busy=false;
+    },
+    offline:()=>{if(!user||busy)return;setDoc(doc(db,"leaders",user.uid),{seen:0},{merge:true}).catch(()=>{})},
+    beat:()=>{if(!user||busy)return;setDoc(doc(db,"leaders",user.uid),{seen:Date.now()},{merge:true}).catch(()=>{})},
     guest:async(name)=>{
       try{const c=await signInAnonymously(auth);await updateProfile(c.user,{displayName:name});window.botAuth&&window.botAuth(auth.currentUser)}
       catch(e){alert(e.code==="auth/operation-not-allowed"?"Guest play isn’t switched on yet. In Firebase, enable Anonymous under Authentication > Sign-in method.":"Couldn’t start guest mode: "+e.code)}
     },
-    save:(pts,hist,pins,nick,friends,wk)=>{if(!user)return;setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],friends:friends||[],...(nick?{nick:nick}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e));setDoc(doc(db,"leaders",user.uid),{uid:user.uid,name:nick||user.displayName||"Player",pts:pts,...(wk&&wk.k?{wk:wk.k,wpts:wk.p}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
+    save:(pts,hist,pins,nick,friends,wk,av)=>{if(!user||busy)return;setDoc(doc(db,"botUsers",user.uid),{pts:pts,hist:hist,pins:pins||[],friends:friends||[],...(nick?{nick:nick}:{}),av:av||null,updated:Date.now()},{merge:true}).catch(e=>console.warn(e));setDoc(doc(db,"leaders",user.uid),{uid:user.uid,name:nick||user.displayName||"Player",pts:pts,...(wk&&wk.k?{wk:wk.k,wpts:wk.p}:{}),updated:Date.now()},{merge:true}).catch(e=>console.warn(e))}
   };
   window.botCloud.db={
     get:async(c,i)=>{const s=await getDoc(doc(db,c,i));return s.exists()?s.data():null},
-    set:(c,i,d)=>setDoc(doc(db,c,i),d),
-    update:(c,i,p)=>updateDoc(doc(db,c,i),p),
-    del:(c,i,f)=>updateDoc(doc(db,c,i),{[f]:deleteField()}),
+    set:(c,i,d)=>busy?Promise.resolve():setDoc(doc(db,c,i),d),
+    update:(c,i,p)=>busy?Promise.resolve():updateDoc(doc(db,c,i),p),
+    del:(c,i,f)=>busy?Promise.resolve():updateDoc(doc(db,c,i),{[f]:deleteField()}),
     top:async(d)=>{const q=await getDocs(query(collection(db,"daily"),where("date","==",d),limit(50)));return q.docs.map(x=>x.data())},
     weekly:async(k)=>{const q=await getDocs(query(collection(db,"leaders"),where("wk","==",k),limit(100)));return q.docs.map(x=>x.data())},
     weekRows:async(k)=>{const q=await getDocs(query(collection(db,"weeks"),where("wk","==",k),limit(200)));return q.docs.map(x=>x.data())},
